@@ -1,23 +1,15 @@
-PyQt5
-plotpy
-PythonQwt
-psutil
+Coverage
+PlotPy >= 2.7.4
+myst_parser
+opencv-python-headless >= 4.5
+psutil >= 5.7
+pydata-sphinx-theme
 pylint
-ruff
-coverage
 pytest
 pytest-xvfb
-pycodestyle
-pyinstaller>=6.2
+ruff
 sphinx
-sphinx-intl
-sphinx-sitemap
-myst_parser
-sphinx_design
 sphinx-copybutton
-pydata-sphinx-theme
-esbonio
-rstcheck
-doc8
-build
-twine
+sphinx-sitemap
+sphinx_design
+sphinx_intl

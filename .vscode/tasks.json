@@ -1,0 +1,654 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "🧽 Ruff Formatter",
+            "command": "${command:python.interpreterPath}",
+            "args": [
+                "scripts/run_with_env.py",
+                "${command:python.interpreterPath}",
+                "-m",
+                "ruff",
+                "format",
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "statusbar": {
+                    "hide": true,
+                },
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true,
+            },
+            "presentation": {
+                "clear": true,
+                "echo": true,
+                "focus": false,
+                "panel": "dedicated",
+                "reveal": "always",
+                "showReuseMessage": true,
+            },
+            "type": "shell",
+        },
+        {
+            "label": "🔦 Ruff Linter",
+            "command": "${command:python.interpreterPath}",
+            "args": [
+                "scripts/run_with_env.py",
+                "${command:python.interpreterPath}",
+                "-m",
+                "ruff",
+                "check",
+                "--fix",
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "statusbar": {
+                    "hide": true,
+                },
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true,
+            },
+            "presentation": {
+                "clear": true,
+                "echo": true,
+                "focus": false,
+                "panel": "dedicated",
+                "reveal": "always",
+                "showReuseMessage": true,
+            },
+            "type": "shell",
+        },
+        {
+            "label": "🧽🔦 Ruff",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "🧽 Ruff Formatter",
+                "🔦 Ruff Linter",
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": false,
+            },
+            "presentation": {
+                "clear": true,
+                "echo": true,
+                "focus": false,
+                "panel": "dedicated",
+                "reveal": "always",
+                "showReuseMessage": true,
+            },
+            "type": "shell",
+        },
+        {
+            "label": "🔦 Pylint",
+            "command": "${command:python.interpreterPath}",
+            "args": [
+                "scripts/run_with_env.py",
+                "${command:python.interpreterPath}",
+                "-m",
+                "pylint",
+                "sigimax",
+                "--disable=duplicate-code",
+                "--disable=fixme",
+                "--disable=too-many-arguments",
+                "--disable=too-many-branches",
+                "--disable=too-many-instance-attributes",
+                "--disable=too-many-lines",
+                "--disable=too-many-locals",
+                "--disable=too-many-public-methods",
+                "--disable=too-many-statements",
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}",
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true,
+            },
+            "presentation": {
+                "clear": true,
+                "echo": true,
+                "focus": false,
+                "panel": "dedicated",
+                "reveal": "always",
+                "showReuseMessage": true,
+            },
+            "type": "shell",
+        },
+        {
+            "label": "🚀 Pytest",
+            "command": "${command:python.interpreterPath}",
+            "args": [
+                "scripts/run_with_env.py",
+                "${command:python.interpreterPath}",
+                "-m",
+                "pytest",
+                "--ff",
+                // "--gui",
+                // "--show-windows",
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "env": {
+                    // "DEBUG": "1", // ☣️ Debug mode will reset .ini settings
+                    "UNATTENDED": "1",
+                },
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true,
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "dedicated",
+                "showReuseMessage": true,
+                "clear": true,
+            },
+            "type": "shell",
+        },
+        {
+            "label": "sphinx-build",
+            "command": "${command:python.interpreterPath}",
+            "args": [
+                "scripts/run_with_env.py",
+                "${command:python.interpreterPath}",
+                "-m",
+                "sphinx",
+                "build",
+                "doc",
+                "build/gettext",
+                "-b",
+                "gettext",
+                "-W",
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "statusbar": {
+                    "hide": true,
+                },
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": false,
+            },
+            "presentation": {
+                "clear": true,
+                "echo": true,
+                "focus": false,
+                "panel": "dedicated",
+                "reveal": "always",
+                "showReuseMessage": true,
+            },
+            "type": "shell",
+        },
+        {
+            "label": "sphinx-intl update",
+            "command": "${command:python.interpreterPath}",
+            "args": [
+                "scripts/run_with_env.py",
+                "${command:python.interpreterPath}",
+                "-m",
+                "sphinx_intl",
+                "update",
+                "-d",
+                "doc/locale",
+                "-p",
+                "build/gettext",
+                "-l",
+                "fr",
+                "--no-obsolete",
+                "-w",
+                "0",
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "statusbar": {
+                    "hide": true,
+                },
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": false,
+            },
+            "presentation": {
+                "clear": true,
+                "echo": true,
+                "focus": false,
+                "panel": "dedicated",
+                "reveal": "always",
+                "showReuseMessage": true,
+            },
+            "type": "shell",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "sphinx-build",
+            ],
+        },
+        {
+            "label": "cleanup-doc-translations",
+            "command": "${command:python.interpreterPath}",
+            "args": [
+                "scripts/run_with_env.py",
+                "${command:python.interpreterPath}",
+                "-m",
+                "guidata.utils.translations",
+                "cleanup-doc",
+                "--directory",
+                ".",
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "statusbar": {
+                    "hide": true,
+                },
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": false,
+            },
+            "presentation": {
+                "clear": true,
+                "echo": true,
+                "focus": false,
+                "panel": "dedicated",
+                "reveal": "always",
+                "showReuseMessage": true,
+            },
+            "type": "shell",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "sphinx-intl update",
+            ],
+        },
+        {
+            "label": "sphinx-intl build",
+            "command": "${command:python.interpreterPath}",
+            "args": [
+                "scripts/run_with_env.py",
+                "${command:python.interpreterPath}",
+                "-m",
+                "sphinx_intl",
+                "build",
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "statusbar": {
+                    "hide": true,
+                },
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": false,
+            },
+            "presentation": {
+                "clear": true,
+                "echo": true,
+                "focus": false,
+                "panel": "dedicated",
+                "reveal": "always",
+                "showReuseMessage": true,
+            },
+            "type": "shell",
+        },
+        {
+            "label": "🔎 Scan translations",
+            "command": "${command:python.interpreterPath}",
+            "args": [
+                "scripts/run_with_env.py",
+                "${command:python.interpreterPath}",
+                "-m",
+                "guidata.utils.translations",
+                "scan",
+                "--name",
+                "sigimax",
+                "--directory",
+                ".",
+                "--copyright-holder",
+                "DataLab Platform Developers",
+                "--languages",
+                "fr",
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": false,
+            },
+            "options": {
+                "cwd": "${workspaceFolder}",
+            },
+            "presentation": {
+                "clear": true,
+                "echo": true,
+                "focus": false,
+                "panel": "dedicated",
+                "reveal": "always",
+                "showReuseMessage": true,
+            },
+            "type": "shell",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "cleanup-doc-translations",
+            ],
+        },
+        {
+            "label": "📚 Compile translations",
+            "command": "${command:python.interpreterPath}",
+            "args": [
+                "scripts/run_with_env.py",
+                "${command:python.interpreterPath}",
+                "-m",
+                "guidata.utils.translations",
+                "compile",
+                "--name",
+                "sigimax",
+                "--directory",
+                ".",
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": false,
+            },
+            "options": {
+                "cwd": "${workspaceFolder}",
+            },
+            "presentation": {
+                "clear": true,
+                "echo": true,
+                "focus": false,
+                "panel": "dedicated",
+                "reveal": "always",
+                "showReuseMessage": true,
+            },
+            "type": "shell",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "sphinx-intl build",
+            ],
+        },
+        {
+            "label": "Generate requirements",
+            "command": "${command:python.interpreterPath}",
+            "args": [
+                "scripts/run_with_env.py",
+                "${command:python.interpreterPath}",
+                "-m",
+                "guidata.utils.genreqs",
+                "all",
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "statusbar": {
+                    "hide": true,
+                },
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": false,
+            },
+            "presentation": {
+                "clear": true,
+                "echo": true,
+                "focus": false,
+                "panel": "dedicated",
+                "reveal": "always",
+                "showReuseMessage": true,
+            },
+            "type": "shell",
+        },
+        {
+            "label": "🧪 Coverage tests",
+            "type": "shell",
+            "command": "${command:python.interpreterPath}",
+            "args": [
+                "scripts/run_with_env.py",
+                "${command:python.interpreterPath}",
+                "-m",
+                "coverage",
+                "run",
+                "-m",
+                "pytest",
+                "sigimax",
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "env": {
+                    "COVERAGE_PROCESS_START": "${workspaceFolder}/.coveragerc",
+                },
+                "statusbar": {
+                    "hide": true,
+                },
+            },
+            "group": {
+                "kind": "test",
+                "isDefault": true,
+            },
+            "presentation": {
+                "panel": "dedicated",
+            },
+            "problemMatcher": [],
+        },
+        {
+            "label": "📊 Coverage full",
+            "type": "shell",
+            "windows": {
+                "command": "${command:python.interpreterPath} -m coverage combine; ${command:python.interpreterPath} -m coverage html; start htmlcov\\index.html",
+            },
+            "linux": {
+                "command": "${command:python.interpreterPath} -m coverage combine && ${command:python.interpreterPath} -m coverage html && xdg-open htmlcov/index.html",
+            },
+            "osx": {
+                "command": "${command:python.interpreterPath} -m coverage combine && ${command:python.interpreterPath} -m coverage html && open htmlcov/index.html",
+            },
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "env": {
+                    "COVERAGE_PROCESS_START": "${workspaceFolder}/.coveragerc",
+                },
+            },
+            "presentation": {
+                "panel": "dedicated",
+            },
+            "problemMatcher": [],
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "🧪 Coverage tests",
+            ],
+        },
+        {
+            "label": "Upgrade PlotPyStack",
+            "command": "${command:python.interpreterPath}",
+            "args": [
+                "scripts/run_with_env.py",
+                "${command:python.interpreterPath}",
+                "-m",
+                "pip",
+                "install",
+                "--upgrade",
+                "pip",
+                "PythonQwt",
+                "guidata",
+                "PlotPy",
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "statusbar": {
+                    "hide": true,
+                },
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true,
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false,
+            },
+            "type": "shell",
+        },
+        {
+            "label": "🔁 Reinstall guidata/plotpy dev",
+            "type": "shell",
+            "windows": {
+                "command": ".venv/scripts/pip uninstall -y guidata plotpy; Remove-Item -Recurse -Force .venv/Lib/site-packages/guidata -ErrorAction SilentlyContinue; Remove-Item -Recurse -Force .venv/Lib/site-packages/plotpy -ErrorAction SilentlyContinue; .venv/scripts/pip install -e ../guidata; .venv/scripts/pip install -e ../plotpy",
+            },
+            "linux": {
+                "command": ".venv/bin/pip uninstall -y guidata plotpy && rm -rf .venv/lib/python*/site-packages/guidata && rm -rf .venv/lib/python*/site-packages/plotpy && .venv/bin/pip install -e ../guidata && .venv/bin/pip install -e ../plotpy",
+            },
+            "osx": {
+                "command": ".venv/bin/pip uninstall -y guidata plotpy && rm -rf .venv/lib/python*/site-packages/guidata && rm -rf .venv/lib/python*/site-packages/plotpy && .venv/bin/pip install -e ../guidata && .venv/bin/pip install -e ../plotpy",
+            },
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "statusbar": {
+                    "hide": true,
+                },
+            },
+            "presentation": {
+                "panel": "dedicated",
+                "reveal": "always",
+            },
+            "problemMatcher": [],
+        },
+        {
+            "label": "🧹 Clean Up",
+            "type": "shell",
+            "command": "${command:python.interpreterPath}",
+            "args": [
+                "scripts/run_with_env.py",
+                "${command:python.interpreterPath}",
+                "-m",
+                "guidata.utils.cleanup"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false,
+            },
+        },
+        {
+            "label": "📚 Build doc",
+            "command": "${command:python.interpreterPath}",
+            "args": [
+                "scripts/run_with_env.py",
+                "${command:python.interpreterPath}",
+                "-m",
+                "sphinx",
+                "build",
+                "doc",
+                "${workspaceFolder}/build/doc",
+                "-b",
+                "html",
+                "-D",
+                "language=fr",
+                // "-W",
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}",
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true,
+            },
+            "presentation": {
+                "clear": true,
+                "echo": true,
+                "focus": false,
+                "panel": "dedicated",
+                "reveal": "always",
+                "showReuseMessage": true,
+            },
+            "type": "shell",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "Generate requirements",
+            ],
+        },
+        {
+            "label": "🌐 Open HTML doc",
+            "type": "shell",
+            "windows": {
+                "command": "start build/doc/index.html",
+            },
+            "linux": {
+                "command": "xdg-open build/doc/index.html",
+            },
+            "osx": {
+                "command": "open build/doc/index.html",
+            },
+            "options": {
+                "cwd": "${workspaceFolder}",
+            },
+            "problemMatcher": [],
+        },
+        {
+            "label": "📦 Build package",
+            "type": "shell",
+            "command": "${command:python.interpreterPath}",
+            "args": [
+                "scripts/run_with_env.py",
+                "${command:python.interpreterPath}",
+                "-m",
+                "guidata.utils.securebuild",
+                "--prebuild",
+                "python -m guidata.utils.translations compile --name sigimax --directory .",
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}",
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": false,
+            },
+            "presentation": {
+                "clear": true,
+                "panel": "dedicated",
+            },
+            "problemMatcher": [],
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "🧹 Clean Up",
+            ],
+        },
+        {
+            "label": "❔ Untracked files",
+            "type": "shell",
+            "command": "git ls-files --others | Where-Object { $_ -notmatch '^\\.' -and $_ -notmatch '^(build|dist|releases)/' -and $_ -notmatch '.(pyc|mo)$'}",
+            "options": {
+                "cwd": "${workspaceFolder}",
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true,
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "dedicated",
+                "showReuseMessage": true,
+                "clear": true,
+            },
+        },
+    ],
+}
