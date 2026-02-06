@@ -1,5 +1,7 @@
 Coverage
 PlotPy >= 2.7.4
+PyQt5 >= 5.15.6
+Sigima >= 1.1.0
 myst-nb
 myst_parser
 opencv-python-headless >= 4.5

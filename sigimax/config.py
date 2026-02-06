@@ -1,405 +1,858 @@
 # Copyright (c) DataLab Platform Developers, BSD 3-Clause license, see LICENSE file.
 
 """
-Configuration (:mod:`sigimax.config`)
--------------------------------------
+SigimaX configuration module
+----------------------------
 
-The :mod:`sigimax.config` module provides a way to manage configuration options for the
-`sigimax` library, as well as to handle translations and data paths, and other
-configuration-related tasks.
-
-It allows users to set and retrieve options that affect the behavior of the library,
-such as whether to keep results of computations or not. The options are handled as
-in-memory objects with default values provided, and can be temporarily overridden using
-a context manager.
-
-Typical usage:
-
-.. code-block:: python
-
-    from sigimax.config import options
-
-    # Get an option
-    value = options.fft_shift_enabled.get(default=True)
-
-    # Set an option
-    options.fft_shift_enabled.set(False)
-
-    # Temporarily override an option
-    with options.fft_shift_enabled.context(True):
-        ...
-
-The following table lists the available options:
-
-.. options-table::
-
-.. note::
-
-    The options are stored in an environment variable in JSON format, allowing for
-    synchronization with external configurations or other processes that may need to
-    read or modify the options. The environment variable name is defined by
-    :attr:`sigimax.config.OptionsContainer.ENV_VAR`. This is especially useful for
-    applications such as DataLab (where the `sigimax` library is used as a core
-    component) as computations may be run in separate processes.
+This module handles `SigimaX` configuration (options, images and icons).
 """
 
 from __future__ import annotations
 
-import json
 import os
-from contextlib import contextmanager
-from typing import Any, Generator
+import os.path as osp
+import sys
+from typing import Literal
 
 from guidata import configtools
+from plotpy.config import CONF as PLOTPY_CONF
+from plotpy.config import MAIN_BG_COLOR, MAIN_FG_COLOR
+from plotpy.constants import LUTAlpha
+from plotpy.styles import MarkerParam, ShapeParam
+from sigima.config import options as sigima_options
+from sigima.proc.title_formatting import (
+    PlaceholderTitleFormatter,
+    set_default_title_formatter,
+)
 
-# Translation and data path configuration
+from sigimax.utils import conf
+
+# Configure Sigima to use DataLab-compatible placeholder title formatting
+set_default_title_formatter(PlaceholderTitleFormatter())
+
+CONF_VERSION = "1.0.0"
+
+APP_NAME = "SigimaX"
 MOD_NAME = "sigimax"
+
+
 _ = configtools.get_translation(MOD_NAME)
+
+APP_DESC = _("""DataLab is a generic signal and image processing platform""")
+APP_PATH = osp.dirname(__file__)
+
+DEBUG = os.environ.get("DEBUG", "").lower() in ("1", "true")
+if DEBUG:
+    print("*** DEBUG mode *** [Reset configuration file, do not redirect std I/O]")
+
+TEST_SEGFAULT_ERROR = len(os.environ.get("TEST_SEGFAULT_ERROR", "")) > 0
+if TEST_SEGFAULT_ERROR:
+    print('*** TEST_SEGFAULT_ERROR mode *** [Enabling test action in "?" menu]')
+DATETIME_FORMAT = "%d/%m/%Y - %H:%M:%S"
+
+
+configtools.add_image_module_path(MOD_NAME, osp.join("data", "logo"))
+configtools.add_image_module_path(MOD_NAME, osp.join("data", "icons"))
+
 DATAPATH = configtools.get_module_data_path(MOD_NAME, "data")
+SHOTPATH = osp.join(
+    configtools.get_module_data_path(MOD_NAME), os.pardir, "doc", "images", "shots"
+)
+OTHER_PLUGINS_PATHLIST = [configtools.get_module_data_path(MOD_NAME, "plugins")]
 
 
-class OptionField:
-    """A configurable option field with get/set/context interface.
-
-    Args:
-        container: Options container instance to which this option belongs.
-        name: Name of the option (used for introspection or errors).
-        default: Default value of the option.
-    """
-
-    def __init__(
-        self,
-        container: OptionsContainer,
-        name: str,
-        default: Any,
-        description: str = "",
-    ) -> None:
-        self._container = container
-        self.name = name
-        self.check(default)  # Validate the default value
-        self._value = default
-        self.description = description
-
-    def check(self, value: Any) -> None:  # pylint: disable=unused-argument
-        """Check if the value is valid for this option.
-
-        Args:
-            value: The value to check.
-
-        Raises:
-            ValueError: If the value is not valid.
-        """
-        # This method can be overridden in subclasses for specific validation
-
-    def get(self, sync_env: bool = True) -> Any:
-        """Return the current value of the option.
-
-        Args:
-            sync_env: Whether to ensure the environment variable is synchronized
-             with the current value.
-
-        Returns:
-            The current value of the option.
-        """
-        if sync_env:
-            self._container.ensure_loaded_from_env()
-        return self._value
-
-    def set(self, value: Any, sync_env: bool = True) -> None:
-        """Set the value of the option.
-
-        Args:
-            value: The new value to assign.
-            sync_env: Whether to synchronize the environment variable.
-        """
-        self.check(value)  # Validate the new value
-        self._value = value
-        if sync_env:
-            self._container.sync_env()
-
-    def context(self, temp_value: Any) -> Generator[None, None, None]:
-        """Temporarily override the option within a context.
-
-        Args:
-            temp_value: Temporary value to use within the context.
-
-        Yields:
-            None. Restores the original value upon exit.
-        """
-
-        @contextmanager
-        def _ctx():
-            old_value = self._value
-            self.set(temp_value)
-            try:
-                yield
-            finally:
-                self.set(old_value)
-
-        return _ctx()
-
-
-class TypedOptionField(OptionField):
-    """A configurable option field with type checking.
+def is_frozen(module_name: str) -> bool:
+    """Test if module has been frozen (py2exe/cx_Freeze/pyinstaller)
 
     Args:
-        container: Options container instance to which this option belongs.
-        name: Name of the option (used for introspection or errors).
-        default: Default value of the option.
-        expected_type: Expected type of the option value.
-        description: Description of the option.
+        module_name (str): module name
+
+    Returns:
+        bool: True if module has been frozen (py2exe/cx_Freeze/pyinstaller)
     """
-
-    def __init__(
-        self,
-        container: OptionsContainer,
-        name: str,
-        default: Any,
-        expected_type: type,
-        description: str = "",
-    ) -> None:
-        self.expected_type = expected_type
-        super().__init__(container, name, default, description)
-
-    def check(self, value: Any) -> None:
-        """Check if the value is of the expected type.
-
-        Args:
-            value: The value to check.
-
-        Raises:
-            ValueError: If the value is not of the expected type.
-        """
-        if not isinstance(value, self.expected_type):
-            raise ValueError(
-                f"Expected {self.expected_type.__name__}, got {type(value).__name__}"
-            )
+    datapath = configtools.get_module_path(module_name)
+    parentdir = osp.normpath(osp.join(datapath, osp.pardir))
+    return not osp.isfile(__file__) or osp.isfile(parentdir)  # library.zip
 
 
-class ImageIOOptionField(OptionField):
-    """A configurable option field for image I/O formats.
+IS_FROZEN = is_frozen(MOD_NAME)
+if IS_FROZEN:
+    OTHER_PLUGINS_PATHLIST.append(osp.join(osp.dirname(sys.executable), "plugins"))
+    try:
+        os.mkdir(OTHER_PLUGINS_PATHLIST[-1])
+    except OSError:
+        pass
 
-    .. note::
 
-        This option is specifically for image I/O formats and expects a tuple of
-        tuples (or list of lists) of strings representing the formats,
-        similar to the following:
+def get_mod_source_dir() -> str | None:
+    """Return module source directory
 
-        ... code-block:: python
-
-            imageio_formats = (
-                ("*.gel", "Opticks GEL"),
-                ("*.spe", "Princeton Instruments SPE"),
-                ("*.ndpi", "Hamamatsu Slide Scanner NDPI"),
-                ("*.rec", "PCO Camera REC"),
-            )
-
-    Args:
-        container: Options container instance to which this option belongs.
-        name: Name of the option (used for introspection or errors).
-        default: Default value of the option.
-        description: Description of the option.
+    Returns:
+        str | None: module source directory, or None if not found
     """
-
-    def check(
-        self,
-        value: list[list[str, str]]
-        | list[tuple[str, str]]
-        | tuple[tuple[str, str]]
-        | tuple[list[str, str]],
-    ) -> None:
-        """Check if the value is a valid image I/O format.
-
-        Args:
-            value: The value to check.
-
-        Raises:
-            ValueError: If the value is not a valid image I/O format.
-        """
-        if not isinstance(value, (tuple, list)) or not all(
-            isinstance(item, (tuple, list)) and len(item) == 2 for item in value
-        ):
-            raise ValueError(
-                "Expected a tuple of tuples with two elements each "
-                "(format, description)"
-            )
-        for item in value:
-            if not isinstance(item[0], str) or not isinstance(item[1], str):
-                raise ValueError(
-                    "Each item must be a tuple of (format, description) as strings"
-                )
-
-    def set(self, value: Any, sync_env: bool = True) -> None:
-        """Set the value of the option.
-
-        Args:
-            value: The new value to assign.
-            sync_env: Whether to synchronize the environment variable.
-        """
-        super().set(value, sync_env)
-        # pylint: disable=cyclic-import
-        # pylint: disable=import-outside-toplevel
-        # TODO from sigima copy config file, see equivalent in sigimax
-        # from sigimax.io.image import formats
-
-        # Generate image I/O format classes based on the new value
-        # This allows dynamic loading of formats based on the configuration
-        # TODO from sigima copy config file, see equivalent in sigimax
-        # formats.generate_imageio_format_classes(value)
+    if IS_FROZEN:
+        devdir = osp.abspath(osp.join(sys.prefix, os.pardir, os.pardir))
+    else:
+        devdir = osp.abspath(osp.join(osp.dirname(__file__), os.pardir))
+    if osp.isfile(osp.join(devdir, MOD_NAME, "__init__.py")):
+        return devdir
+    # Unhandled case (this should not happen, but just in case):
+    return None
 
 
-IMAGEIO_FORMATS = (
-    ("*.gel", "Opticks GEL"),
-    ("*.spe", "Princeton Instruments SPE"),
-    ("*.ndpi", "Hamamatsu Slide Scanner NDPI"),
-    ("*.rec", "PCO Camera REC"),
-)  # Default image I/O formats
+class MainSection(conf.Section, metaclass=conf.SectionMeta):
+    """Class defining the main configuration section structure.
+    Each class attribute is an option (metaclass is automatically affecting
+    option names in .INI file based on class attribute names)."""
+
+    color_mode = conf.EnumOption(["auto", "dark", "light"], default="auto")
+    process_isolation_enabled = conf.Option()
+    rpc_server_enabled = conf.Option()
+    rpc_server_port = conf.Option()
+    webapi_localhost_no_token = conf.Option()  # Allow localhost without token
+    traceback_log_path = conf.ConfigPathOption()
+    traceback_log_available = conf.Option()
+    faulthandler_enabled = conf.Option()
+    faulthandler_log_path = conf.ConfigPathOption()
+    faulthandler_log_available = conf.Option()
+    window_maximized = conf.Option()
+    window_position = conf.Option()
+    window_size = conf.Option()
+    window_state = conf.Option()
+    base_dir = conf.WorkingDirOption()
+    available_memory_threshold = conf.Option()
+    current_tab = conf.Option()
+    plugins_enabled = conf.Option()
+    plugins_path = conf.Option()
+    tour_enabled = conf.Option()
+    v020_plugins_warning_ignore = conf.Option()  # True: do not warn, False: warn
 
 
-class OptionsContainer:
-    """Container for all configurable options in the `sigimax` library.
+class ConsoleSection(conf.Section, metaclass=conf.SectionMeta):
+    """Classs defining the console configuration section structure.
+    Each class attribute is an option (metaclass is automatically affecting
+    option names in .INI file based on class attribute names)."""
 
-    Options are exposed as attributes with `.get()`, `.set()` and `.context()` methods.
-    """
+    console_enabled = conf.Option()
+    show_console_on_error = conf.Option()
+    max_line_count = conf.Option()
+    external_editor_path = conf.Option()
+    external_editor_args = conf.Option()
 
-    #: Environment variable name for options in JSON format
-    # This is used to synchronize options with external configurations or with
-    # separate processes that may need to read or modify the options.
-    ENV_VAR = "SIGIMA_OPTIONS_JSON"
+
+class IOSection(conf.Section, metaclass=conf.SectionMeta):
+    """Class defining the I/O configuration section structure.
+    Each class attribute is an option (metaclass is automatically affecting
+    option names in .INI file based on class attribute names)."""
+
+    # HDF5 file format options
+    # ------------------------
+    # When opening an HDF5 file, ask user for confirmation if the current workspace
+    # has to be cleared before loading the file:
+    h5_clear_workspace = conf.Option()  # True: clear workspace, False: do not clear
+    h5_clear_workspace_ask = conf.Option()  # True: ask user, False: do not ask
+    # Signal or image title when importing from HDF5 file:
+    # - True: use HDF5 full dataset path in signal or image title
+    # - False: use HDF5 dataset name in signal or image title
+    h5_fullpath_in_title = conf.Option()
+    # Signal or image title when importing from HDF5 file:
+    # - True: add HDF5 file name in signal or image title
+    # - False: do not add HDF5 file name in signal or image title
+    h5_fname_in_title = conf.Option()
+
+    # ImageIO supported file formats:
+    imageio_formats = conf.Option()
+
+    # Dialog settings persistence (JSON-serialized datasets):
+    save_to_directory_settings = conf.DataSetOption()
+    add_metadata_settings = conf.DataSetOption()
+
+
+class ProcSection(conf.Section, metaclass=conf.SectionMeta):
+    """Class defining the Processing configuration section structure.
+    Each class attribute is an option (metaclass is automatically affecting
+    option names in .INI file based on class attribute names)."""
+
+    # Operation mode:
+    # - "single": single operand mode
+    # - "pairwise": pairwise operation mode
+    operation_mode = conf.EnumOption(["single", "pairwise"], default="single")
+
+    # ROI extraction strategy:
+    # - True: extract all ROIs in a single signal or image
+    # - False: extract each ROI in a separate signal or image
+    extract_roi_singleobj = conf.Option()
+
+    # Keep analysis results after processing:
+    # - True: keep analysis results (dangerous because results may not be valid anymore)
+    # - False: do not keep analysis results (default)
+    keep_results = conf.Option()
+
+    # Show systematically result dialog after processing:
+    show_result_dialog = conf.Option()
+
+    # Use xmin and xmax bounds from current signal when creating a new signal:
+    use_signal_bounds = conf.Option()
+
+    # Use dimensions from current image when creating a new image:
+    use_image_dims = conf.Option()
+
+    # FFT shift enabled state for signal/image processing:
+    # - True: FFT shift is enabled (default)
+    # - False: FFT shift is disabled
+    fft_shift_enabled = conf.Option()
+
+    # Auto-normalize convolution kernel for signal/image processing:
+    # - True: automatically normalize kernel (default)
+    # - False: do not normalize kernel
+    auto_normalize_kernel = conf.Option()
+
+    # Ignore warnings during computation:
+    # - True: ignore warnings
+    # - False: do not ignore warnings
+    ignore_warnings = conf.Option()
+
+    # X-array compatibility behavior for multi-signal computations:
+    # - "ask": ask user for confirmation when x-arrays are incompatible (default)
+    # - "interpolate": automatically interpolate when x-arrays are incompatible
+    xarray_compat_behavior = conf.EnumOption(["ask", "interpolate"], default="ask")
+
+    # History and analysis tabs font
+    small_mono_font = conf.FontOption()
+
+
+class ViewSection(conf.Section, metaclass=conf.SectionMeta):
+    """Class defining the view configuration section structure.
+    Each class attribute is an option (metaclass is automatically affecting
+    option names in .INI file based on class attribute names)."""
+
+    # Toolbar position:
+    # - "top": top
+    # - "bottom": bottom
+    # - "left": left
+    # - "right": right
+    plot_toolbar_position = conf.Option()
+
+    # Ignore information message when inserting object title as annotation label:
+    ignore_title_insertion_msg = conf.Option()
+
+    # String formatting for shape legends
+    sig_format = conf.Option()
+    ima_format = conf.Option()
+
+    show_label = conf.Option()
+    auto_refresh = conf.Option()
+    show_first_only = conf.Option()  # Show only first selected item
+    show_contrast = conf.Option()
+    sig_linewidth = conf.Option()
+    sig_linewidth_perfs_threshold = conf.Option()
+    sig_antialiasing = conf.Option()
+    sig_autodownsampling = conf.Option()
+    sig_autodownsampling_maxpoints = conf.Option()
+
+    # Autoscale margin settings for plots (percentage values)
+    sig_autoscale_margin_percent = conf.Option()
+    ima_autoscale_margin_percent = conf.Option()
+
+    # If True, lock aspect ratio of images to 1:1 (ignore physical pixel size)
+    ima_aspect_ratio_1_1 = conf.Option()
+
+    # Default visualization settings at item creation
+    # (e.g. see adapter's `make_item` methods in datalab/adapters_plotpy/*.py)
+    ima_eliminate_outliers = conf.Option()
+
+    # Default visualization settings, persisted in object metadata
+    # (e.g. see `BaseDataPanel.update_metadata_view_settings`)
+    sig_def_shade = conf.Option()
+    sig_def_curvestyle = conf.Option()
+    sig_def_baseline = conf.Option()
+    # ⚠️ Do not add "sig_def_use_dsamp" and "sig_def_dsamp_factor" options here
+    # because it would not be compatible with the auto-downsampling feature.
+
+    # Default visualization settings, persisted in object metadata
+    # (e.g. see `BaseDataPanel.update_metadata_view_settings`)
+    ima_def_colormap = conf.Option()
+    ima_def_invert_colormap = conf.Option()
+    ima_def_interpolation = conf.Option()
+    ima_def_alpha = conf.Option()
+    ima_def_alpha_function = conf.Option()
+    ima_def_keep_lut_range = conf.Option()
+
+    # Annotated shape and marker visualization settings for signals
+    sig_shape_param = conf.DataSetOption()
+    sig_marker_param = conf.DataSetOption()
+
+    # Annotated shape and marker visualization settings for images
+    ima_shape_param = conf.DataSetOption()
+    ima_marker_param = conf.DataSetOption()
+
+    # Datetime axis format strings for different time units
+    # Format strings use Python's strftime format codes
+    sig_datetime_format_s = conf.Option()  # Format for s, min, h
+    sig_datetime_format_ms = conf.Option()  # Format for ms, us, ns
+
+    # Maximum number of geometry shapes to draw on plot
+    # Even if more results are stored, only the first N shapes are drawn
+    max_shapes_to_draw = conf.Option()
+
+    # Maximum number of table cells (rows × columns) to display in merged result
+    # label on plot. If exceeded, rows are truncated to stay within this limit.
+    # This prevents slowdown with results that have many columns (e.g., polygons)
+    max_cells_in_label = conf.Option()
+
+    # Maximum number of columns to display in merged result label
+    # If exceeded, only the first N columns are shown. This ensures readability
+    # for results with many columns (e.g., polygon coordinates: x0, y0, x1, y1...)
+    max_cols_in_label = conf.Option()
+
+    # Show merged result label on plot by default
+    show_result_label = conf.Option()
 
     @classmethod
-    def set_env(cls, value: str) -> None:
-        """Set the environment variable with the given JSON string.
+    def get_def_dict(cls, category: Literal["ima", "sig"]) -> dict:
+        """Get default visualization settings as a dictionary
 
         Args:
-            value: A JSON string representation of the options to set.
+            category: category ("ima" or "sig", respectively for image and signal)
+
+        Returns:
+            Default visualization settings as a dictionary
         """
-        os.environ[cls.ENV_VAR] = value
+        assert category in ("ima", "sig")
+        prefix = f"{category}_def_"
+        def_dict = {}
+        for attrname in dir(cls):
+            if attrname.startswith(prefix):
+                name = attrname[len(prefix) :]
+                opt = getattr(cls, attrname)
+                defval = opt.get(None)
+                if defval is not None:
+                    def_dict[name] = defval
+        return def_dict
 
     @classmethod
-    def get_env(cls) -> str:
-        """Get the current value of the environment variable.
-
-        Returns:
-            The JSON string representation of the options from the environment variable.
-        """
-        return os.environ.get(cls.ENV_VAR, "{}")
-
-    def __init__(self) -> None:
-        # Add new options here
-        self
-
-    def describe_all(self) -> None:
-        """Print the name, value, and description of all options."""
-        for name in vars(self):
-            opt = getattr(self, name)
-            if isinstance(opt, OptionField):
-                print(f"{name} = {opt.get()}  # {opt.description}")
-
-    def generate_rst_doc(self) -> str:
-        """Generate reStructuredText documentation for all options.
-
-        Returns:
-            A string containing the reStructuredText documentation.
-        """
-        doc = """.. list-table::
-    :header-rows: 1
-    :align: left
-
-    * - Name
-      - Default Value
-      - Description
-"""
-        for name in vars(self):
-            opt = getattr(self, name)
-            if isinstance(opt, OptionField):
-                # Process description to work within table cells
-                description = opt.description.strip()
-                # For table cells, we need to indent continuation lines properly
-                # and handle multi-line content correctly
-                description_lines = description.split("\n")
-                if len(description_lines) > 1:
-                    # Multi-line descriptions need special handling in RST tables
-                    processed_lines = [description_lines[0]]  # First line
-                    for line in description_lines[1:]:
-                        if line.strip():  # Non-empty lines
-                            processed_lines.append("        " + line.strip())
-                        else:  # Empty lines
-                            processed_lines.append("")
-                    description = "\n".join(processed_lines)
-
-                # Get the value and format it nicely
-                value = repr(opt.get(sync_env=False))
-                if len(value) > 200:  # Truncate very long values
-                    value = value[:197] + "..."
-
-                doc += f"    * - ``{name}``\n"
-                doc += f"      - ``{value}``\n"
-                doc += f"      - {description}\n"
-        return doc
-
-    def ensure_loaded_from_env(self) -> None:
-        """Lazy-load from JSON env var on first access."""
-        value = self.get_env()
-        try:
-            values = json.loads(value)
-            self.from_dict(values)
-        except Exception as exc:  # pylint: disable=broad-except
-            # If loading fails, we just log a warning and continue with defaults
-            print(f"[sigimax] Warning: failed to load options from env: {exc}")
-
-    def to_env_json(self) -> str:
-        """Return the current options as a JSON string for environment variable.
-
-        Returns:
-            A JSON string representation of the current options.
-        """
-        return json.dumps(self.to_dict())
-
-    def sync_env(self) -> None:
-        """Update env var with current option values."""
-        self.set_env(self.to_env_json())
-
-    def to_dict(self) -> dict[str, Any]:
-        """Return the current option values as a dictionary.
-
-        Returns:
-            A dictionary with option names as keys and their current values.
-        """
-        return {
-            name: getattr(self, name).get(sync_env=False)
-            for name in vars(self)
-            if isinstance(getattr(self, name), OptionField)
-        }
-
-    def from_dict(self, values: dict[str, Any]) -> None:
-        """Set option values from a dictionary.
+    def set_def_dict(cls, category: Literal["ima", "sig"], def_dict: dict) -> None:
+        """Set default visualization settings from a dictionary
 
         Args:
-            values: A dictionary with option names as keys and their new values.
+            category: category ("ima" or "sig", respectively for image and signal)
+            def_dict: default visualization settings as a dictionary
         """
-        for name, value in values.items():
-            if hasattr(self, name):
-                opt = getattr(self, name)
-                if isinstance(opt, OptionField):
-                    opt.set(value, sync_env=False)
-        self.sync_env()
+        assert category in ("ima", "sig")
+        prefix = f"{category}_def_"
+        for attrname in dir(cls):
+            if attrname.startswith(prefix):
+                name = attrname[len(prefix) :]
+                opt = getattr(cls, attrname)
+                if name in def_dict:
+                    opt.set(def_dict[name])
 
 
-#: Global instance of the options container
-options = OptionsContainer()
+# Usage (example): Conf.console.console_enabled.get(True)
+class Conf(conf.Configuration, metaclass=conf.ConfMeta):
+    """Class defining DataLab configuration structure.
+    Each class attribute is a section (metaclass is automatically affecting
+    section names in .INI file based on class attribute names)."""
 
-# Generate OPTIONS_RST at module load time after options is created
-# This avoids circular import issues since everything is already loaded
-OPTIONS_RST = options.generate_rst_doc()
+    main = MainSection()
+    console = ConsoleSection()
+    view = ViewSection()
+    proc = ProcSection()
+    io = IOSection()
 
 
-def __getattr__(name: str):
-    """Handle lazy evaluation of module-level attributes.
+def get_old_log_fname(fname):
+    """Return old log fname from current log fname"""
+    return osp.splitext(fname)[0] + ".1.log"
 
-    This provides backward compatibility for any code that might access OPTIONS_RST.
-    """
-    if name == "OPTIONS_RST":
-        # Return the global variable if it exists, otherwise generate it
-        return globals().get("OPTIONS_RST", options.generate_rst_doc())
-    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+
+def initialize():
+    """Initialize application configuration"""
+    # TODO : from import datalab -> need to be made generic
+    config_app_name = ""
+    Conf.initialize(config_app_name, CONF_VERSION, load=not DEBUG)
+
+    # Set default values:
+    # -------------------
+    # (do not use "set" method here to avoid overwriting user settings in .INI file)
+    # Setting here the default values only for the most critical options. The other
+    # options default values are set when used in the application code.
+    #
+    # Main section
+    Conf.main.color_mode.get("auto")
+    Conf.main.process_isolation_enabled.get(True)
+    Conf.main.rpc_server_enabled.get(True)
+    Conf.main.webapi_localhost_no_token.get(
+        True
+    )  # Enabled by default (Web API is off by default)
+    Conf.main.traceback_log_path.get(f".{APP_NAME}_traceback.log")
+    Conf.main.faulthandler_log_path.get(f".{APP_NAME}_faulthandler.log")
+    Conf.main.available_memory_threshold.get(500)
+    Conf.main.plugins_enabled.get(True)
+    Conf.main.plugins_path.get(Conf.get_path("plugins"))
+    Conf.main.tour_enabled.get(True)
+    Conf.main.v020_plugins_warning_ignore.get(False)
+    # Console section
+    Conf.console.console_enabled.get(True)
+    Conf.console.show_console_on_error.get(False)
+    Conf.console.external_editor_path.get("code")
+    Conf.console.external_editor_args.get("-g {path}:{line_number}")
+    # IO section
+    Conf.io.h5_clear_workspace.get(True)  # Default to avoid objects UUID reset
+    Conf.io.h5_clear_workspace_ask.get(True)
+    Conf.io.h5_fullpath_in_title.get(False)
+    Conf.io.h5_fname_in_title.get(True)
+    iofmts = Conf.io.imageio_formats.get(())
+    if len(iofmts) > 0:
+        sigima_options.imageio_formats.set(iofmts)  # Sync with sigima config
+    # Proc section
+    Conf.proc.operation_mode.get("single")
+    Conf.proc.use_signal_bounds.get(False)
+    Conf.proc.use_image_dims.get(True)
+    Conf.proc.fft_shift_enabled.get(True)
+    sigima_options.fft_shift_enabled.set(True)  # Sync with sigima config
+    Conf.proc.auto_normalize_kernel.get(False)
+    sigima_options.auto_normalize_kernel.set(False)  # Sync with sigima config
+    Conf.proc.extract_roi_singleobj.get(False)
+    Conf.proc.keep_results.get(False)
+    Conf.proc.show_result_dialog.get(True)
+    Conf.proc.ignore_warnings.get(False)
+    Conf.proc.xarray_compat_behavior.get("ask")
+    Conf.proc.small_mono_font.get((configtools.MONOSPACE, 8, False))
+    # View section
+    tb_pos = Conf.view.plot_toolbar_position.get("left")
+    assert tb_pos in ("top", "bottom", "left", "right")
+    Conf.view.ignore_title_insertion_msg.get(False)
+    Conf.view.sig_linewidth.get(1.0)
+    Conf.view.sig_linewidth_perfs_threshold.get(1000)
+    Conf.view.sig_autodownsampling.get(True)
+    Conf.view.sig_autodownsampling_maxpoints.get(100000)
+    Conf.view.sig_autoscale_margin_percent.get(2.0)
+    Conf.view.ima_autoscale_margin_percent.get(1.0)
+    Conf.view.ima_aspect_ratio_1_1.get(False)
+    Conf.view.ima_eliminate_outliers.get(0.1)
+    Conf.view.sig_def_shade.get(0.0)
+    Conf.view.sig_def_curvestyle.get("Lines")
+    Conf.view.sig_def_baseline.get(0.0)
+    Conf.view.ima_def_colormap.get("viridis")
+    Conf.view.ima_def_invert_colormap.get(False)
+    Conf.view.ima_def_interpolation.get(5)
+    Conf.view.ima_def_alpha.get(1.0)
+    Conf.view.ima_def_alpha_function.get(LUTAlpha.NONE.value)
+    Conf.view.ima_def_keep_lut_range.get(False)
+
+    # Datetime format strings: % must be escaped as %% for ConfigParser
+    Conf.view.sig_datetime_format_s.get("%%H:%%M:%%S")
+    Conf.view.sig_datetime_format_ms.get("%%H:%%M:%%S.%%f")
+
+    Conf.view.max_shapes_to_draw.get(1000)
+    Conf.view.max_cells_in_label.get(100)
+    Conf.view.max_cols_in_label.get(15)
+    Conf.view.show_result_label.get(True)
+
+    # Initialize PlotPy configuration with versioned app name
+    PLOTPY_CONF.set_application(
+        osp.join(config_app_name, "plotpy"), CONF_VERSION, load=False
+    )
+
+
+def reset():
+    """Reset application configuration"""
+    Conf.reset()
+    initialize()
+
+
+initialize()
+
+ROI_LINE_COLOR = "#5555ff"
+ROI_SEL_LINE_COLOR = "#9393ff"
+MARKER_LINE_COLOR = "#A11818"
+MARKER_TEXT_COLOR = "#440909"
+
+PLOTPY_DEFAULTS = {
+    "plot": {
+        #
+        # XXX: If needed in the future, add here the default settings for PlotPy:
+        # that will override the PlotPy settings.
+        # That is the right way to customize the PlotPy settings for shapes and
+        # annotations when they are added using tools from the DataLab application
+        # (see `BaseDataPanel.ANNOTATION_TOOLS`).
+        # For example, for shapes:
+        # "shape/drag/line/color": "#00ffff",
+        #
+        # Overriding default plot settings from PlotPy
+        "title/font/size": 11,
+        "title/font/bold": False,
+        "selected_curve_symbol/marker": "Ellipse",
+        "selected_curve_symbol/edgecolor": "#a0a0a4",
+        "selected_curve_symbol/facecolor": MAIN_FG_COLOR,
+        "selected_curve_symbol/alpha": 0.3,
+        "selected_curve_symbol/size": 5,
+        "marker/curve/text/textcolor": "black",
+        # Cross marker style (shown when pressing Alt key on plot)
+        "marker/cross/symbol/marker": "Cross",
+        "marker/cross/symbol/edgecolor": MAIN_FG_COLOR,
+        "marker/cross/symbol/facecolor": "#ff0000",
+        "marker/cross/symbol/alpha": 1.0,
+        "marker/cross/symbol/size": 8,
+        "marker/cross/text/font/family": "default",
+        "marker/cross/text/font/size": 8,
+        "marker/cross/text/font/bold": False,
+        "marker/cross/text/font/italic": False,
+        "marker/cross/text/textcolor": "#000000",
+        "marker/cross/text/background_color": "#ffffff",
+        "marker/cross/text/background_alpha": 0.7,
+        "marker/cross/line/style": "DashLine",
+        "marker/cross/line/color": MARKER_LINE_COLOR,
+        "marker/cross/line/width": 1.0,
+        "marker/cross/markerstyle": "Cross",
+        "marker/cross/spacing": 7,
+        # Cursor line and symbol style
+        "marker/cursor/line/style": "SolidLine",
+        "marker/cursor/line/color": MARKER_LINE_COLOR,
+        "marker/cursor/line/width": 1.0,
+        "marker/cursor/symbol/marker": "NoSymbol",
+        "marker/cursor/symbol/size": 11,
+        "marker/cursor/symbol/edgecolor": MAIN_BG_COLOR,
+        "marker/cursor/symbol/facecolor": "#ff9393",
+        "marker/cursor/symbol/alpha": 1.0,
+        "marker/cursor/sel_line/style": "SolidLine",
+        "marker/cursor/sel_line/color": MARKER_LINE_COLOR,
+        "marker/cursor/sel_line/width": 2.0,
+        "marker/cursor/sel_symbol/marker": "NoSymbol",
+        "marker/cursor/sel_symbol/size": 11,
+        "marker/cursor/sel_symbol/edgecolor": MAIN_BG_COLOR,
+        "marker/cursor/sel_symbol/facecolor": MARKER_LINE_COLOR,
+        "marker/cursor/sel_symbol/alpha": 0.8,
+        "marker/cursor/text/font/size": 9,
+        "marker/cursor/text/font/family": "default",
+        "marker/cursor/text/font/bold": False,
+        "marker/cursor/text/font/italic": False,
+        "marker/cursor/text/textcolor": MARKER_TEXT_COLOR,
+        "marker/cursor/text/background_color": "#ffffff",
+        "marker/cursor/text/background_alpha": 0.7,
+        "marker/cursor/sel_text/font/size": 9,
+        "marker/cursor/sel_text/font/family": "default",
+        "marker/cursor/sel_text/font/bold": False,
+        "marker/cursor/sel_text/font/italic": False,
+        "marker/cursor/sel_text/textcolor": MARKER_TEXT_COLOR,
+        "marker/cursor/sel_text/background_color": "#ffffff",
+        "marker/cursor/sel_text/background_alpha": 0.7,
+        # Default annotation text style for segments:
+        "shape/segment/line/style": "SolidLine",
+        "shape/segment/line/color": "#00ff55",
+        "shape/segment/line/width": 1.0,
+        "shape/segment/sel_line/style": "SolidLine",
+        "shape/segment/sel_line/color": "#00ff55",
+        "shape/segment/sel_line/width": 2.0,
+        "shape/segment/fill/style": "NoBrush",
+        "shape/segment/sel_fill/style": "NoBrush",
+        "shape/segment/symbol/marker": "XCross",
+        "shape/segment/symbol/size": 9,
+        "shape/segment/symbol/edgecolor": "#00ff55",
+        "shape/segment/symbol/facecolor": "#00ff55",
+        "shape/segment/symbol/alpha": 1.0,
+        "shape/segment/sel_symbol/marker": "XCross",
+        "shape/segment/sel_symbol/size": 12,
+        "shape/segment/sel_symbol/edgecolor": "#00ff55",
+        "shape/segment/sel_symbol/facecolor": "#00ff55",
+        "shape/segment/sel_symbol/alpha": 0.7,
+        # Default style for drag shapes: (global annotations style)
+        "shape/drag/line/style": "SolidLine",
+        "shape/drag/line/color": "#00ff55",
+        "shape/drag/line/width": 1.0,
+        "shape/drag/fill/style": "SolidPattern",
+        "shape/drag/fill/color": MAIN_BG_COLOR,
+        "shape/drag/fill/alpha": 0.1,
+        "shape/drag/symbol/marker": "Rect",
+        "shape/drag/symbol/size": 3,
+        "shape/drag/symbol/edgecolor": "#00ff55",
+        "shape/drag/symbol/facecolor": "#00ff55",
+        "shape/drag/symbol/alpha": 1.0,
+        "shape/drag/sel_line/style": "SolidLine",
+        "shape/drag/sel_line/color": "#00ff55",
+        "shape/drag/sel_line/width": 2.0,
+        "shape/drag/sel_fill/style": "SolidPattern",
+        "shape/drag/sel_fill/color": MAIN_BG_COLOR,
+        "shape/drag/sel_fill/alpha": 0.1,
+        "shape/drag/sel_symbol/marker": "Rect",
+        "shape/drag/sel_symbol/size": 7,
+        "shape/drag/sel_symbol/edgecolor": "#00ff55",
+        "shape/drag/sel_symbol/facecolor": "#00ff00",
+        "shape/drag/sel_symbol/alpha": 0.7,
+    },
+    "results": {
+        # Annotated shape style for result shapes:
+        #   Signals:
+        "s/annotation/line/style": "SolidLine",
+        "s/annotation/line/color": "#00aa00",
+        "s/annotation/line/width": 2,
+        "s/annotation/fill/style": "NoBrush",
+        "s/annotation/fill/color": MAIN_BG_COLOR,
+        "s/annotation/fill/alpha": 0.1,
+        "s/annotation/symbol/marker": "XCross",
+        "s/annotation/symbol/size": 7,
+        "s/annotation/symbol/edgecolor": "#00aa00",
+        "s/annotation/symbol/facecolor": "#00aa00",
+        "s/annotation/symbol/alpha": 1.0,
+        "s/annotation/sel_line/style": "DashLine",
+        "s/annotation/sel_line/color": "#00ff00",
+        "s/annotation/sel_line/width": 1,
+        "s/annotation/sel_fill/style": "SolidPattern",
+        "s/annotation/sel_fill/color": MAIN_BG_COLOR,
+        "s/annotation/sel_fill/alpha": 0.1,
+        "s/annotation/sel_symbol/marker": "Rect",
+        "s/annotation/sel_symbol/size": 9,
+        "s/annotation/sel_symbol/edgecolor": "#00aa00",
+        "s/annotation/sel_symbol/facecolor": "#00ff00",
+        "s/annotation/sel_symbol/alpha": 0.7,
+        #   Images:
+        "i/annotation/line/style": "SolidLine",
+        "i/annotation/line/color": "#ffff00",
+        "i/annotation/line/width": 2,
+        "i/annotation/fill/style": "SolidPattern",
+        "i/annotation/fill/color": MAIN_BG_COLOR,
+        "i/annotation/fill/alpha": 0.1,
+        "i/annotation/symbol/marker": "Rect",
+        "i/annotation/symbol/size": 3,
+        "i/annotation/symbol/edgecolor": "#ffff00",
+        "i/annotation/symbol/facecolor": "#ffff00",
+        "i/annotation/symbol/alpha": 1.0,
+        "i/annotation/sel_line/style": "SolidLine",
+        "i/annotation/sel_line/color": "#00ff00",
+        "i/annotation/sel_line/width": 2,
+        "i/annotation/sel_fill/style": "SolidPattern",
+        "i/annotation/sel_fill/color": MAIN_BG_COLOR,
+        "i/annotation/sel_fill/alpha": 0.1,
+        "i/annotation/sel_symbol/marker": "Rect",
+        "i/annotation/sel_symbol/size": 9,
+        "i/annotation/sel_symbol/edgecolor": "#00aa00",
+        "i/annotation/sel_symbol/facecolor": "#00ff00",
+        "i/annotation/sel_symbol/alpha": 0.7,
+        # Marker styles for results:
+        #   Signals:
+        "s/marker/cursor/line/style": "DashLine",
+        "s/marker/cursor/line/color": MARKER_LINE_COLOR,
+        "s/marker/cursor/line/width": 1.0,
+        "s/marker/cursor/symbol/marker": "Ellipse",
+        "s/marker/cursor/symbol/size": 11,
+        "s/marker/cursor/symbol/edgecolor": MAIN_BG_COLOR,
+        "s/marker/cursor/symbol/facecolor": MARKER_LINE_COLOR,
+        "s/marker/cursor/symbol/alpha": 0.7,
+        "s/marker/cursor/sel_line/style": "DashLine",
+        "s/marker/cursor/sel_line/color": MARKER_LINE_COLOR,
+        "s/marker/cursor/sel_line/width": 2.0,
+        "s/marker/cursor/sel_symbol/marker": "Ellipse",
+        "s/marker/cursor/sel_symbol/size": 11,
+        "s/marker/cursor/sel_symbol/edgecolor": MARKER_LINE_COLOR,
+        "s/marker/cursor/sel_symbol/facecolor": MARKER_LINE_COLOR,
+        "s/marker/cursor/sel_symbol/alpha": 0.7,
+        "s/marker/cursor/text/font/size": 9,
+        "s/marker/cursor/text/font/family": "default",
+        "s/marker/cursor/text/font/bold": False,
+        "s/marker/cursor/text/font/italic": False,
+        "s/marker/cursor/text/textcolor": MARKER_TEXT_COLOR,
+        "s/marker/cursor/text/background_color": "#ffffff",
+        "s/marker/cursor/text/background_alpha": 0.7,
+        "s/marker/cursor/sel_text/font/size": 9,
+        "s/marker/cursor/sel_text/font/family": "default",
+        "s/marker/cursor/sel_text/font/bold": False,
+        "s/marker/cursor/sel_text/font/italic": False,
+        "s/marker/cursor/sel_text/textcolor": MARKER_TEXT_COLOR,
+        "s/marker/cursor/sel_text/background_color": "#ffffff",
+        "s/marker/cursor/sel_text/background_alpha": 0.7,
+        "s/marker/cursor/markerstyle": "Cross",
+        #   Images:
+        "i/marker/cursor/line/style": "DashLine",
+        "i/marker/cursor/line/color": MARKER_LINE_COLOR,
+        "i/marker/cursor/line/width": 1.0,
+        "i/marker/cursor/symbol/marker": "Diamond",
+        "i/marker/cursor/symbol/size": 11,
+        "i/marker/cursor/symbol/edgecolor": MARKER_LINE_COLOR,
+        "i/marker/cursor/symbol/facecolor": MARKER_LINE_COLOR,
+        "i/marker/cursor/symbol/alpha": 0.7,
+        "i/marker/cursor/sel_line/style": "DashLine",
+        "i/marker/cursor/sel_line/color": MARKER_LINE_COLOR,
+        "i/marker/cursor/sel_line/width": 2.0,
+        "i/marker/cursor/sel_symbol/marker": "Diamond",
+        "i/marker/cursor/sel_symbol/size": 11,
+        "i/marker/cursor/sel_symbol/edgecolor": MARKER_LINE_COLOR,
+        "i/marker/cursor/sel_symbol/facecolor": MARKER_LINE_COLOR,
+        "i/marker/cursor/sel_symbol/alpha": 0.7,
+        "i/marker/cursor/text/font/size": 9,
+        "i/marker/cursor/text/font/family": "default",
+        "i/marker/cursor/text/font/bold": False,
+        "i/marker/cursor/text/font/italic": False,
+        "i/marker/cursor/text/textcolor": MARKER_TEXT_COLOR,
+        "i/marker/cursor/text/background_color": "#ffffff",
+        "i/marker/cursor/text/background_alpha": 0.7,
+        "i/marker/cursor/sel_text/font/size": 9,
+        "i/marker/cursor/sel_text/font/family": "default",
+        "i/marker/cursor/sel_text/font/bold": False,
+        "i/marker/cursor/sel_text/font/italic": False,
+        "i/marker/cursor/sel_text/textcolor": MARKER_TEXT_COLOR,
+        "i/marker/cursor/sel_text/background_color": "#ffffff",
+        "i/marker/cursor/sel_text/background_alpha": 0.7,
+        "i/marker/cursor/markerstyle": "Cross",
+        # Style for labels:
+        "label/symbol/marker": "NoSymbol",
+        "label/symbol/size": 0,
+        "label/symbol/edgecolor": MAIN_BG_COLOR,
+        "label/symbol/facecolor": MAIN_BG_COLOR,
+        "label/border/style": "SolidLine",
+        "label/border/color": "#cbcbcb",
+        "label/border/width": 1,
+        "label/font/size": 8,
+        "label/font/family/nt": ["Cascadia Code", "Consolas", "Courier New"],
+        "label/font/family/posix": "Bitstream Vera Sans Mono",
+        "label/font/family/mac": "Monaco",
+        "label/font/bold": False,
+        "label/font/italic": False,
+        "label/color": MAIN_FG_COLOR,
+        "label/bgcolor": MAIN_BG_COLOR,
+        "label/bgalpha": 0.8,
+        "label/anchor": "TL",
+        "label/xc": 10,
+        "label/yc": 10,
+        "label/abspos": True,
+        "label/absg": "TL",
+        "label/xg": 0.0,
+        "label/yg": 0.0,
+    },
+    "roi": {  # Shape style for ROI
+        # Signals:
+        # - Editable ROI (ROI editor):
+        "s/editable/fill": "#ffff00",
+        "s/editable/shade": 0.10,
+        "s/editable/line/style": "SolidLine",
+        "s/editable/line/color": "#ffff00",
+        "s/editable/line/width": 1,
+        "s/editable/fill/style": "SolidPattern",
+        "s/editable/fill/color": MAIN_BG_COLOR,
+        "s/editable/fill/alpha": 0.1,
+        "s/editable/symbol/marker": "Rect",
+        "s/editable/symbol/size": 3,
+        "s/editable/symbol/edgecolor": "#ffff00",
+        "s/editable/symbol/facecolor": "#ffff00",
+        "s/editable/symbol/alpha": 1.0,
+        "s/editable/sel_line/style": "SolidLine",
+        "s/editable/sel_line/color": "#00ff00",
+        "s/editable/sel_line/width": 1,
+        "s/editable/sel_fill/style": "SolidPattern",
+        "s/editable/sel_fill/color": MAIN_BG_COLOR,
+        "s/editable/sel_fill/alpha": 0.1,
+        "s/editable/sel_symbol/marker": "Rect",
+        "s/editable/sel_symbol/size": 9,
+        "s/editable/sel_symbol/edgecolor": "#00aa00",
+        "s/editable/sel_symbol/facecolor": "#00ff00",
+        "s/editable/sel_symbol/alpha": 0.7,
+        # - Readonly ROI (plot):
+        "s/readonly/line/style": "SolidLine",
+        "s/readonly/line/color": ROI_LINE_COLOR,
+        "s/readonly/line/width": 1,
+        "s/readonly/sel_line/style": "SolidLine",
+        "s/readonly/sel_line/color": ROI_SEL_LINE_COLOR,
+        "s/readonly/sel_line/width": 2,
+        "s/readonly/fill": ROI_LINE_COLOR,
+        "s/readonly/shade": 0.10,
+        "s/readonly/symbol/marker": "Ellipse",
+        "s/readonly/symbol/size": 7,
+        "s/readonly/symbol/edgecolor": MAIN_BG_COLOR,
+        "s/readonly/symbol/facecolor": ROI_LINE_COLOR,
+        "s/readonly/symbol/alpha": 1.0,
+        "s/readonly/sel_symbol/marker": "Ellipse",
+        "s/readonly/sel_symbol/size": 9,
+        "s/readonly/sel_symbol/edgecolor": MAIN_BG_COLOR,
+        "s/readonly/sel_symbol/facecolor": ROI_SEL_LINE_COLOR,
+        "s/readonly/sel_symbol/alpha": 0.9,
+        "s/readonly/multi/color": "#806060",
+        # Images:
+        # - Editable ROI (ROI editor):
+        "i/editable/line/style": "SolidLine",
+        "i/editable/line/color": "#ffff00",
+        "i/editable/line/width": 1,
+        "i/editable/fill/style": "SolidPattern",
+        "i/editable/fill/color": MAIN_BG_COLOR,
+        "i/editable/fill/alpha": 0.1,
+        "i/editable/symbol/marker": "Rect",
+        "i/editable/symbol/size": 3,
+        "i/editable/symbol/edgecolor": "#ffff00",
+        "i/editable/symbol/facecolor": "#ffff00",
+        "i/editable/symbol/alpha": 1.0,
+        "i/editable/sel_line/style": "SolidLine",
+        "i/editable/sel_line/color": "#00ff00",
+        "i/editable/sel_line/width": 1,
+        "i/editable/sel_fill/style": "SolidPattern",
+        "i/editable/sel_fill/color": MAIN_BG_COLOR,
+        "i/editable/sel_fill/alpha": 0.1,
+        "i/editable/sel_symbol/marker": "Rect",
+        "i/editable/sel_symbol/size": 9,
+        "i/editable/sel_symbol/edgecolor": "#00aa00",
+        "i/editable/sel_symbol/facecolor": "#00ff00",
+        "i/editable/sel_symbol/alpha": 0.7,
+        # - Readonly ROI (plot):
+        "i/readonly/line/style": "DotLine",
+        "i/readonly/line/color": ROI_LINE_COLOR,
+        "i/readonly/line/width": 1,
+        "i/readonly/fill/style": "SolidPattern",
+        "i/readonly/fill/color": MAIN_BG_COLOR,
+        "i/readonly/fill/alpha": 0.1,
+        "i/readonly/symbol/marker": "NoSymbol",
+        "i/readonly/symbol/size": 5,
+        "i/readonly/symbol/edgecolor": ROI_LINE_COLOR,
+        "i/readonly/symbol/facecolor": ROI_LINE_COLOR,
+        "i/readonly/symbol/alpha": 0.6,
+        "i/readonly/sel_line/style": "DotLine",
+        "i/readonly/sel_line/color": "#0000ff",
+        "i/readonly/sel_line/width": 1,
+        "i/readonly/sel_fill/style": "SolidPattern",
+        "i/readonly/sel_fill/color": MAIN_BG_COLOR,
+        "i/readonly/sel_fill/alpha": 0.1,
+        "i/readonly/sel_symbol/marker": "Rect",
+        "i/readonly/sel_symbol/size": 8,
+        "i/readonly/sel_symbol/edgecolor": "#0000aa",
+        "i/readonly/sel_symbol/facecolor": "#0000ff",
+        "i/readonly/sel_symbol/alpha": 0.7,
+    },
+}
+
+# PlotPy configuration will be initialized in initialize() function
+PLOTPY_CONF.update_defaults(PLOTPY_DEFAULTS)
+
+
+class DataLabShapeParam(ShapeParam):
+    """ShapeParam subclass with internal items hidden from settings dialog"""
+
+    def __init__(self):
+        super().__init__()
+        # Hide internal items that should not appear in settings dialog
+        for item in self._items:
+            if item._name in ("label", "readonly", "private"):
+                item.set_prop("display", hide=True)
+
+
+def initialize_default_plotpy_instances():
+    """Initialize default PlotPy instances for DataLab configuration options"""
+    # Initialize default instances for DataSetOptions now that PLOTPY_DEFAULTS exists
+    _sig_shapeparam = DataLabShapeParam()
+    _sig_shapeparam.read_config(PLOTPY_CONF, "results", "s/annotation")
+    Conf.view.sig_shape_param.set_default_instance(_sig_shapeparam)
+    Conf.view.sig_shape_param.get()
+
+    _sig_markerparam = MarkerParam()
+    _sig_markerparam.read_config(PLOTPY_CONF, "results", "s/marker/cursor")
+    Conf.view.sig_marker_param.set_default_instance(_sig_markerparam)
+    Conf.view.sig_marker_param.get()
+
+    _ima_shapeparam = DataLabShapeParam()
+    _ima_shapeparam.read_config(PLOTPY_CONF, "results", "i/annotation")
+    Conf.view.ima_shape_param.set_default_instance(_ima_shapeparam)
+    Conf.view.ima_shape_param.get()
+
+    _ima_markerparam = MarkerParam()
+    _ima_markerparam.read_config(PLOTPY_CONF, "results", "i/marker/cursor")
+    Conf.view.ima_marker_param.set_default_instance(_ima_markerparam)
+    Conf.view.ima_marker_param.get()
+
+
+initialize_default_plotpy_instances()
