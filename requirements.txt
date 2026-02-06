@@ -1,5 +1,6 @@
 Coverage
 PlotPy >= 2.7.4
+myst-nb
 myst_parser
 opencv-python-headless >= 4.5
 psutil >= 5.7
@@ -12,4 +13,5 @@ sphinx
 sphinx-copybutton
 sphinx-sitemap
 sphinx_design
+sphinx_gallery
 sphinx_intl

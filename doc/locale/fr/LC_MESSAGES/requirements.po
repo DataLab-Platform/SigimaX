@@ -1,0 +1,153 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2025, DataLab Platform Developers
+# This file is distributed under the same license as the SigimaX package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: SigimaX \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-02-06 14:45+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: fr\n"
+"Language-Team: fr <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.17.0\n"
+
+msgid "The `sigimax` package requires the following Python modules:"
+msgstr ""
+
+msgid "Name"
+msgstr ""
+
+msgid "Version"
+msgstr ""
+
+msgid "Summary"
+msgstr ""
+
+msgid "Python"
+msgstr ""
+
+msgid ">=3.9, <4"
+msgstr ""
+
+msgid "Python programming language"
+msgstr ""
+
+msgid "PlotPy"
+msgstr ""
+
+msgid ">= 2.7.4"
+msgstr ""
+
+msgid "Curve and image plotting tools for Python/Qt applications"
+msgstr ""
+
+msgid "psutil"
+msgstr ""
+
+msgid ">= 5.7"
+msgstr ""
+
+msgid "Cross-platform lib for process and system monitoring."
+msgstr ""
+
+msgid "Optional modules for development:"
+msgstr ""
+
+msgid "ruff"
+msgstr ""
+
+msgid "An extremely fast Python linter and code formatter, written in Rust."
+msgstr ""
+
+msgid "pylint"
+msgstr ""
+
+msgid "python code static checker"
+msgstr ""
+
+msgid "Coverage"
+msgstr ""
+
+msgid "Code coverage measurement for Python"
+msgstr ""
+
+msgid "Optional modules for building the documentation:"
+msgstr ""
+
+msgid "sphinx"
+msgstr ""
+
+msgid "Python documentation generator"
+msgstr ""
+
+msgid "sphinx_intl"
+msgstr ""
+
+msgid "Sphinx utility that make it easy to translate and to apply translation."
+msgstr ""
+
+msgid "sphinx-sitemap"
+msgstr ""
+
+msgid "Sitemap generator for Sphinx"
+msgstr ""
+
+msgid "myst_parser"
+msgstr ""
+
+msgid "An extended [CommonMark](https://spec.commonmark.org/) compliant parser,"
+msgstr ""
+
+msgid "myst-nb"
+msgstr ""
+
+msgid "A Jupyter Notebook Sphinx reader built on top of the MyST markdown parser."
+msgstr ""
+
+msgid "sphinx_design"
+msgstr ""
+
+msgid "A sphinx extension for designing beautiful, view size responsive web components."
+msgstr ""
+
+msgid "sphinx_gallery"
+msgstr ""
+
+msgid "A Sphinx extension that builds an HTML gallery of examples from any set of Python scripts."
+msgstr ""
+
+msgid "sphinx-copybutton"
+msgstr ""
+
+msgid "Add a copy button to each of your code cells."
+msgstr ""
+
+msgid "pydata-sphinx-theme"
+msgstr ""
+
+msgid "Bootstrap-based Sphinx theme from the PyData community"
+msgstr ""
+
+msgid "Optional modules for running test suite:"
+msgstr ""
+
+msgid "pytest"
+msgstr ""
+
+msgid "pytest: simple powerful testing with Python"
+msgstr ""
+
+msgid "pytest-xvfb"
+msgstr ""
+
+msgid "A pytest plugin to run Xvfb (or Xephyr/Xvnc) for tests."
+msgstr ""
+

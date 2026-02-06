@@ -57,9 +57,15 @@ Optional modules for building the documentation:
     * - myst_parser
       - 
       - An extended [CommonMark](https://spec.commonmark.org/) compliant parser,
+    * - myst-nb
+      - 
+      - A Jupyter Notebook Sphinx reader built on top of the MyST markdown parser.
     * - sphinx_design
       - 
       - A sphinx extension for designing beautiful, view size responsive web components.
+    * - sphinx_gallery
+      - 
+      - A Sphinx extension that builds an HTML gallery of examples from any set of Python scripts.
     * - sphinx-copybutton
       - 
       - Add a copy button to each of your code cells.
