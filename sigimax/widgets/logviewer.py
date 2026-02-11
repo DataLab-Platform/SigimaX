@@ -66,8 +66,8 @@ def get_log_prompt_message() -> str | None:
     return None
 
 
-def exec_datalab_logviewer_dialog(parent: QW.QWidget | None = None) -> None:
-    """View DataLab logs"""
+def exec_sigimax_logviewer_dialog(parent: QW.QWidget | None = None) -> None:
+    """View SigimaX logs"""
     fnames = [osp.normpath(fname) for fname in get_log_filenames() if osp.isfile(fname)]
     dlg = LogViewerWindow(fnames, parent=parent)
     if dlg.is_empty:
