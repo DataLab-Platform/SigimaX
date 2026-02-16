@@ -40,6 +40,7 @@ from plotpy import config as plotpy_config
 from qtpy import QtCore as QC
 from qtpy import QtGui as QG
 from qtpy import QtWidgets as QW
+from qtpy.compat import getopenfilenames, getsavefilename
 
 # from qtpy.compat import getopenfilenames, getsavefilename
 from sigima.objects import ImageObj, SignalObj, create_image, create_signal
@@ -49,7 +50,6 @@ from sigimax import __docurl__, __homeurl__, __supporturl__, env
 from sigimax.config import (
     APP_DESC,
     APP_NAME,
-    DATAPATH,
     DEBUG,
     TEST_SEGFAULT_ERROR,
     Conf,
@@ -60,7 +60,7 @@ from sigimax.gui.actionhandler import ActionCategory
 from sigimax.gui.docks import DockablePlotWidget
 from sigimax.utils import qthelpers as qth
 from sigimax.utils.qthelpers import (
-    # add_corner_menu,
+    add_corner_menu,
     bring_to_front,
     configure_menu_about_to_show,
 )
@@ -132,12 +132,6 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         self.showlabel_action: QW.QAction | None = None
 
         self.file_menu: QW.QMenu | None = None
-        self.create_menu: QW.QMenu | None = None
-        self.edit_menu: QW.QMenu | None = None
-        # TODO : check if we kept operation, processing and analysis menus in SigimaX
-        self.operation_menu: QW.QMenu | None = None
-        self.processing_menu: QW.QMenu | None = None
-        self.analysis_menu: QW.QMenu | None = None
         self.view_menu: QW.QMenu | None = None
         self.help_menu: QW.QMenu | None = None
 
@@ -153,21 +147,6 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
 
         self.__restore_pos_and_size()
         execenv.log(self, "Initialization done")
-
-    # ------Misc.
-    @property
-    def panels(
-        self,
-    ) -> (
-        tuple
-    ):  # TODO check extract Panel (abstract and base)// tuple[AbstractPanel, ...]:
-        """Return the tuple of implemented panels (signal, image)
-
-        Returns:
-            Tuple of panels
-        """
-        # return (self.signalpanel, self.imagepanel, self.macropanel)
-        return ()
 
     def __set_low_memory_state(self, state: bool) -> None:
         """Set memory warning state"""
@@ -271,37 +250,15 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
 
     def take_menu_screenshots(self) -> None:  # pragma: no cover
         """Take menu screenshots"""
-        return
-        # for panel in self.panels:
-        # TODO check extract BasePanel and AbstractPanel
-        # if isinstance(panel, base.BaseDataPanel):
-        #    self.tabwidget.setCurrentWidget(panel)
-        #    for name in (
-        #        "file",
-        #        "create",
-        #        "edit",
-        #        "roi",
-        #        "view",
-        #        "operation",
-        #        "processing",
-        #        "analysis",
-        #        "help",
-        #    ):
-        #        menu = getattr(self, f"{name}_menu")
-        #        menu.popup(self.pos())
-        #        qth.grab_save_window(menu, f"{panel.objectName()}_{name}")
-        #        menu.close()
-        # TODO check extract BasePanel and AbstractPanel
-        # if panel in (self.signalpanel, self.imagepanel):
-        #    panel: BaseDataPanel
-        #    # Take screenshots of Edit menu submenus (Metadata and Annotations)
-        #    for submenu, suffix in (
-        #        (panel.acthandler.metadata_submenu, "_edit_metadata"),
-        #        (panel.acthandler.annotations_submenu, "_edit_annotations"),
-        #    ):
-        #        submenu.popup(self.pos())
-        #        qth.grab_save_window(submenu, f"{panel.objectName()}{suffix}")
-        #        submenu.close()
+        for name in (
+            "file",
+            "view",
+            "help",
+        ):
+            menu = getattr(self, f"{name}_menu")
+            menu.popup(self.pos())
+            qth.grab_save_window(menu, f"{name}_menu")
+            menu.close()
 
     # ------GUI setup
     def __restore_pos_and_size(self) -> None:
@@ -365,14 +322,10 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         """
         self.__configure_statusbar(console)
         self.__setup_global_actions()
-        # self.__add_signal_image_panels()
         self.__setup_central_widget()
         self.__add_menus()
         if console:
             self.__setup_console()
-        self.__update_actions(update_other_data_panel=True)
-        # self.__add_macro_panel()
-        self.__configure_panels()
         # Now that everything is set up, we can restore the window state:
         self.__restore_state()
 
@@ -411,6 +364,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
 
     def __setup_global_actions(self) -> None:
         """Setup global actions"""
+        # TODO : setup H5 actions generically (check if we keep them in SigimaX)
         self.openh5_action = create_action(
             self,
             _("Open HDF5 files..."),
@@ -470,40 +424,12 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
             tip=_("Auto-refresh plot when object is modified, added or removed"),
             toggled=self.handle_autorefresh_action,
         )
-        # TODO check if it's generic
-        # self.showfirstonly_action = create_action(
-        #    self,
-        #    _("Show first object only"),
-        #    icon=get_icon("show_first.svg"),
-        #    tip=_("Show only the first selected object (signal or image)"),
-        #    toggled=self.toggle_show_first_only,
-        # )
-        # self.showlabel_action = create_action(
-        #    self,
-        #    _("Show graphical object titles"),
-        #    icon=get_icon("show_titles.svg"),
-        #    tip=_("Show or hide ROI and other graphical object titles or subtitles"),
-        #    toggled=self.toggle_show_titles,
-        # )
 
     def __setup_central_widget(self) -> None:
         """Setup central widget (main panel)"""
-        # TODO check extract BasePanel and AbstractPanel
-        # self.tabwidget.setMaximumWidth(600)
-        # s_idx = self.tabwidget.addTab(
-        #    self.signalpanel, get_icon("signal.svg"), _("Signal Panel")
-        # )
-        # i_idx = self.tabwidget.addTab(
-        #    self.imagepanel, get_icon("image.svg"), _("Image Panel")
-        # )
-        # self.tabwidget.setTabToolTip(
-        #    s_idx, _("1D Signals: Manage and process one-dimensional data")
-        # )
-        # self.tabwidget.setTabToolTip(
-        #    i_idx, _("2D Images: Manage and process two-dimensional data")
-        # )
-
         # Apply enhanced tab bar styling
+        self.tabwidget = QW.QTabWidget()
+        self.tabmenu = add_corner_menu(self.tabwidget)
         tab_bar = self.tabwidget.tabBar()
         font = tab_bar.font()
         font.setPointSize(10)
@@ -515,43 +441,31 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
 
     def __update_tab_icon_size(self) -> None:
         """Update tab icon size based on tab bar height"""
-        tab_bar = self.tabwidget.tabBar()
-        if tab_bar.height() > 0:
-            # Use approximately 80% of tab height for icon size
-            icon_size = int(tab_bar.height() * 0.8)
-            self.tabwidget.setIconSize(QC.QSize(icon_size, icon_size))
+        if self.tabwidget is not None:
+            tab_bar = self.tabwidget.tabBar()
+            if tab_bar.height() > 0:
+                # Use approximately 80% of tab height for icon size
+                icon_size = int(tab_bar.height() * 0.8)
+                self.tabwidget.setIconSize(QC.QSize(icon_size, icon_size))
 
-    @staticmethod
-    def __get_local_doc_path() -> str | None:
-        """Return local documentation path, if it exists"""
-        locale = QC.QLocale.system().name()
-        for suffix in ("_" + locale[:2], "_en"):
-            path = osp.join(DATAPATH, "doc", f"{APP_NAME}{suffix}.pdf")
-            if osp.isfile(path):
-                return path
-        return None
+    # TODO: handle doc path if exist generically
+    # @staticmethod
+    # def __get_local_doc_path() -> str | None:
+    #    """Return local documentation path, if it exists"""
+    #    locale = QC.QLocale.system().name()
+    #    for suffix in ("_" + locale[:2], "_en"):
+    #        path = osp.join(DATAPATH, "doc", f"{APP_NAME}{suffix}.pdf")
+    #        if osp.isfile(path):
+    #            return path
+    #    return None
 
     def __add_menus(self) -> None:
         """Adding menus"""
         self.file_menu = self.menuBar().addMenu(_("&File"))
         configure_menu_about_to_show(self.file_menu, self.__update_file_menu)
-        self.create_menu = self.menuBar().addMenu(_("&Create"))
-        self.edit_menu = self.menuBar().addMenu(_("&Edit"))
-        # TODO : check if we keep operation, processing and analysis menus in SigimaX
-        self.operation_menu = self.menuBar().addMenu(_("Operations"))
-        self.processing_menu = self.menuBar().addMenu(_("Processing"))
-        self.analysis_menu = self.menuBar().addMenu(_("Analysis"))
         self.view_menu = self.menuBar().addMenu(_("&View"))
         configure_menu_about_to_show(self.view_menu, self.__update_view_menu)
         self.help_menu = self.menuBar().addMenu("?")
-        for menu in (
-            self.create_menu,
-            self.edit_menu,
-            self.operation_menu,
-            self.processing_menu,
-            self.analysis_menu,
-        ):
-            configure_menu_about_to_show(menu, self.__update_generic_menu)
         help_menu_actions = [
             create_action(
                 self,
@@ -560,7 +474,8 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
                 triggered=lambda: webbrowser.open(__docurl__),
             ),
         ]
-        localdocpath = self.__get_local_doc_path()
+        # TODO : setup generic doc path
+        localdocpath = None  # self.__get_local_doc_path()
         if localdocpath is not None:
             help_menu_actions += [
                 create_action(
@@ -662,42 +577,9 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         cdock.visibilityChanged.connect(self.consolestatus.console_visibility_changed)
         self.consolestatus.SIG_SHOW_CONSOLE.connect(self.console.show_console)
 
-    def __configure_panels(self) -> None:
-        """Configure panels"""
-        # Connectings signals
-        for panel in self.panels:
-            panel.SIG_OBJECT_ADDED.connect(self.set_modified)
-            panel.SIG_OBJECT_REMOVED.connect(self.set_modified)
-        self.macropanel.SIG_OBJECT_MODIFIED.connect(self.set_modified)
-        # Initializing common panel actions
-        self.autorefresh_action.setChecked(Conf.view.auto_refresh.get(True))
-        self.showfirstonly_action.setChecked(Conf.view.show_first_only.get(False))
-        self.showlabel_action.setChecked(Conf.view.show_label.get(False))
-        # Restoring current tab from last session
-        tab_idx = Conf.main.current_tab.get(None)
-        if tab_idx is not None:
-            self.tabwidget.setCurrentIndex(tab_idx)
-        # Set focus on current panel, so that keyboard shortcuts work (Fixes #10)
-        self.tabwidget.currentWidget().setFocus()
-
-    # TODO check extract BasePanel and AbstractPanel + no processor in SigimaX
-    # def set_process_isolation_enabled(self, state: bool) -> None:
-    #    """Enable/disable process isolation
-    #
-    #    Args:
-    #        state: True to enable process isolation
-    #    """
-    #    for processor in (self.imagepanel.processor, self.signalpanel.processor):
-    #        processor.set_process_isolation_enabled(state)
-
-    # ------GUI refresh
-    def has_objects(self) -> bool:
-        """Return True if sig/ima panels have any object"""
-        return sum(len(panel) for panel in self.panels) > 0
-
     def set_modified(self, state: bool = True) -> None:
         """Set mainwindow modified state"""
-        state = state and self.has_objects()
+        state = state
         self.__is_modified = state
         title = APP_NAME + ("*" if state else "")
         if not sigimax.__version__.replace(".", "").isdigit():
@@ -715,53 +597,11 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         self.addDockWidget(location, dockwidget)
         return dockwidget
 
-    def repopulate_panel_trees(self) -> None:
-        """Repopulate all panel trees"""
-        # TODO check extract BasePanel and AbstractPanel
-        # for panel in self.panels:
-        #    if isinstance(panel, base.BaseDataPanel):
-        #        panel.objview.populate_tree()
-
-    def __update_actions(self, update_other_data_panel: bool = False) -> None:
-        """Update selection dependent actions
-
-        Args:
-            update_other_data_panel: True to update other data panel actions
-             (i.e. if the current panel is the signal panel, also update the image
-             panel actions, and vice-versa)
-        """
-        # TODO check extract BasePanel and AbstractPanel
-        # is_signal = self.tabwidget.currentWidget() is self.signalpanel
-        # panel = self.signalpanel if is_signal else self.imagepanel
-        # other_panel = self.imagepanel if is_signal else self.signalpanel
-        # if update_other_data_panel:
-        #    other_panel.selection_changed()
-        # panel.selection_changed()
-        # self.signalpanel_toolbar.setVisible(is_signal)
-        # self.imagepanel_toolbar.setVisible(not is_signal)
-
-    def __update_generic_menu(self, menu: QW.QMenu | None = None) -> None:
-        """Update menu before showing up -- Generic method"""
-        if menu is None:
-            menu = self.sender()
-        menu.clear()
-        panel = self.tabwidget.currentWidget()
-        category = {
-            self.file_menu: ActionCategory.FILE,
-            self.create_menu: ActionCategory.CREATE,
-            self.edit_menu: ActionCategory.EDIT,
-            self.view_menu: ActionCategory.VIEW,
-            self.operation_menu: ActionCategory.OPERATION,
-            self.processing_menu: ActionCategory.PROCESSING,
-            self.analysis_menu: ActionCategory.ANALYSIS,
-        }[menu]
-        actions = panel.get_category_actions(category)
-        add_actions(menu, actions)
-
     def __update_file_menu(self) -> None:
         """Update file menu before showing up"""
-        self.saveh5_action.setEnabled(self.has_objects())
-        self.__update_generic_menu(self.file_menu)
+        self.saveh5_action.setEnabled(
+            True
+        )  # TODO enable/disable based on workspace state
         add_actions(
             self.file_menu,
             [
@@ -776,7 +616,6 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
 
     def __update_view_menu(self) -> None:
         """Update view menu before showing up"""
-        self.__update_generic_menu(self.view_menu)
         add_actions(self.view_menu, [None] + self.createPopupMenu().actions())
 
     def handle_autorefresh_action(self, state: bool) -> None:
@@ -821,27 +660,178 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         # Apply the change
         self.toggle_auto_refresh(state)
 
-    # This method is intentionally *not* remote controlled
-    # (see TODO regarding RemoteClient.add_object method)
-    #  @remote_controlled
-    def add_object(
-        self, obj: SignalObj | ImageObj, group_id: str = "", set_current=True
-    ) -> None:
-        """Add object - signal or image
+    @staticmethod
+    def __check_h5file(filename: str, operation: str) -> str:
+        """Check HDF5 filename"""
+        filename = osp.abspath(osp.normpath(filename))
+        bname = osp.basename(filename)
+        if operation == "load" and not osp.isfile(filename):
+            raise IOError(f'File not found "{bname}"')
+        Conf.main.base_dir.set(filename)
+        return filename
+
+    def save_to_h5_file(self, filename=None) -> None:
+        """Save to a HDF5 file
 
         Args:
-            obj: object to add (signal or image)
-            group_id: group ID (optional)
-            set_current: True to set the object as current object
+            filename: HDF5 filename. If None, a file dialog is opened.
+
+        Raises:
+            IOError: if filename is invalid or file cannot be saved.
         """
-        # TODO check extract BasePanel and AbstractPanel and if we keep it in SigimaX
-        # if self.confirm_memory_state():
-        #    if isinstance(obj, SignalObj):
-        #        self.signalpanel.add_object(obj, group_id, set_current)
-        #    elif isinstance(obj, ImageObj):
-        #        self.imagepanel.add_object(obj, group_id, set_current)
-        #    else:
-        #        raise TypeError(f"Unsupported object type {type(obj)}")
+        if filename is None:
+            basedir = Conf.main.base_dir.get()
+            with qth.save_restore_stds():
+                filename, _fl = getsavefilename(
+                    self,
+                    _("Save"),
+                    basedir,
+                    "HDF5 (*.h5 *.hdf5 *.hdf *.he5);;All files (*)",
+                )
+            if not filename:
+                return
+        with qth.qt_try_loadsave_file(self, filename, "save"):
+            self.save_h5_workspace(filename)
+
+    def open_h5_files(
+        self,
+        h5files: list[str] | None = None,
+        import_all: bool | None = None,
+        reset_all: bool | None = None,
+    ) -> None:
+        """Open/import HDF5 files.
+
+        Args:
+            h5files: HDF5 filenames (optionally with dataset name, separated by ":")
+            import_all: Import all datasets from HDF5 files
+            reset_all: Reset all application data before importing
+        """
+        if not self.confirm_memory_state():
+            return
+        if reset_all is None:
+            # When workspace is empty, always preserve UUIDs (reset_all=True)
+            # since there's no risk of conflicts
+            reset_all = Conf.io.h5_clear_workspace.get()
+            if Conf.io.h5_clear_workspace_ask.get():
+                # Build message with optional note for native workspace import
+                msg = _(
+                    "Do you want to clear current workspace "
+                    "(signals and images) before importing data from "
+                    "HDF5 files?"
+                )
+                # Only show the UUID conflict note when importing native DataLab
+                # workspace files (import_all=True), not when using HDF5 browser
+                if import_all:
+                    msg += "<br><br>" + _(
+                        "<u>Note:</u> If you choose <i>No</i>, when importing "
+                        "DataLab workspace files, objects with conflicting "
+                        "identifiers will have their processing history lost "
+                        "(features like 'Show source' and 'Recompute' will not "
+                        "work for those objects). Non-conflicting objects will "
+                        "preserve their processing history."
+                    )
+                msg += "<br><br>" + _(
+                    "Choosing to ignore this message will prevent it "
+                    "from being displayed again, and will use the "
+                    "current setting (%s)."
+                ) % (_("Yes") if reset_all else _("No"))
+                answer = QW.QMessageBox.question(
+                    self,
+                    _("Warning"),
+                    msg,
+                    QW.QMessageBox.Yes | QW.QMessageBox.No | QW.QMessageBox.Ignore,
+                )
+                if answer == QW.QMessageBox.Yes:
+                    reset_all = True
+                elif answer == QW.QMessageBox.No:
+                    reset_all = False
+                elif answer == QW.QMessageBox.Ignore:
+                    Conf.io.h5_clear_workspace_ask.set(False)
+        if h5files is None:
+            basedir = Conf.main.base_dir.get()
+            with qth.save_restore_stds():
+                h5files, _fl = getopenfilenames(
+                    self,
+                    _("Open"),
+                    basedir,
+                    _("HDF5 files (*.h5 *.hdf5 *.hdf *.he5);;All files (*)"),
+                )
+        if not h5files:
+            return
+        filenames, dsetnames = [], []
+        for fname_with_dset in h5files:
+            if "," in fname_with_dset:
+                filename, dsetname = fname_with_dset.split(",")
+                dsetnames.append(dsetname)
+            else:
+                filename = fname_with_dset
+                dsetnames.append(None)
+            filenames.append(filename)
+        if import_all is None and all(dsetname is None for dsetname in dsetnames):
+            self.browse_h5_files(filenames, reset_all)
+            return
+        for filename, dsetname in zip(filenames, dsetnames):
+            if import_all is None and dsetname is None:
+                self.import_h5_file(filename, reset_all)
+            else:
+                with qth.qt_try_loadsave_file(self, filename, "load"):
+                    filename = self.__check_h5file(filename, "load")
+                    # TODO :H5BrowserDialog to import specific dataset(s) from file
+                    # (only generic h5 files)
+                    print(
+                        f"Importing dataset '{dsetname}' from file '{filename}' (reset_all={reset_all})"
+                    )
+                    # if dsetname is None:
+                    #    self.h5inputoutput.open_file(filename, import_all, reset_all)
+                    # else:
+                    #    self.h5inputoutput.import_dataset_from_file(filename, dsetname)
+            reset_all = False
+
+    def browse_h5_files(self, filenames: list[str], reset_all: bool) -> None:
+        """Browse HDF5 files
+
+        Args:
+            filenames: HDF5 filenames
+            reset_all: Reset all application data before importing
+        """
+        for filename in filenames:
+            self.__check_h5file(filename, "load")
+        # TODO : implement generic HDF5 browser in SigimaX
+        print("Browse HDF5 files:", filenames, "reset_all:", reset_all)
+        # self.h5inputoutput.import_files(filenames, False, reset_all)
+
+    def save_h5_workspace(self, filename: str) -> None:
+        """Save current workspace to a native DataLab HDF5 file without GUI elements.
+
+        This method can be safely called from the internal console as it does not
+        create any Qt widgets, dialogs, or progress bars. It is designed for
+        programmatic use when saving DataLab workspace files.
+
+        Args:
+            filename: HDF5 filename to save to
+
+        Raises:
+            IOError: If file cannot be saved
+        """
+        filename = self.__check_h5file(filename, "save")
+        # TODO : implement generic HDF5 saving in SigimaX (without GUI elements)
+        # self.h5inputoutput.save_file(filename)
+        print(f"Saving workspace to file '{filename}'")
+        self.set_modified(False)
+
+    def import_h5_file(self, filename: str, reset_all: bool | None = None) -> None:
+        """Import HDF5 file into SigimaX (with optional reset of current workspace)
+
+        Args:
+            filename: HDF5 filename (optionally with dataset name,
+            separated by ":")
+            reset_all: Delete all SigimaX project data
+        """
+        with qth.qt_try_loadsave_file(self, filename, "load"):
+            filename = self.__check_h5file(filename, "load")
+            # TODO : implement generic HDF5 importing in SigimaX (without GUI elements)
+            print(f"Importing file '{filename}' (reset_all={reset_all})")
+            # self.h5inputoutput.import_files([filename], False, reset_all)
 
     def get_version(self) -> str:
         """Return SigimaX public version.
@@ -860,91 +850,6 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         """Raise SigimaX main window"""
         bring_to_front(self)
 
-    def add_signal(
-        self,
-        title: str,
-        xdata: np.ndarray,
-        ydata: np.ndarray,
-        xunit: str = "",
-        yunit: str = "",
-        xlabel: str = "",
-        ylabel: str = "",
-        group_id: str = "",
-        set_current: bool = True,
-    ) -> bool:  # pylint: disable=too-many-arguments
-        """Add signal data to SigimaX main application.
-
-        Args:
-            title: Signal title
-            xdata: X data
-            ydata: Y data
-            xunit: X unit. Defaults to ""
-            yunit: Y unit. Defaults to ""
-            xlabel: X label. Defaults to ""
-            ylabel: Y label. Defaults to ""
-            group_id: group id in which to add the signal. Defaults to ""
-            set_current: if True, set the added signal as current
-
-        Returns:
-            True if signal was added successfully, False otherwise
-
-        Raises:
-            ValueError: Invalid xdata dtype
-            ValueError: Invalid ydata dtype
-        """
-        obj = create_signal(
-            title,
-            xdata,
-            ydata,
-            units=(xunit, yunit),
-            labels=(xlabel, ylabel),
-        )
-        self.add_object(obj, group_id, set_current)
-        return True
-
-    def add_image(
-        self,
-        title: str,
-        data: np.ndarray,
-        xunit: str = "",
-        yunit: str = "",
-        zunit: str = "",
-        xlabel: str = "",
-        ylabel: str = "",
-        zlabel: str = "",
-        group_id: str = "",
-        set_current: bool = True,
-    ) -> bool:  # pylint: disable=too-many-arguments
-        """Add image data to SigimaX main application.
-
-        Args:
-            title: Image title
-            data: Image data
-            xunit: X unit. Defaults to ""
-            yunit: Y unit. Defaults to ""
-            zunit: Z unit. Defaults to ""
-            xlabel: X label. Defaults to ""
-            ylabel: Y label. Defaults to ""
-            zlabel: Z label. Defaults to ""
-            group_id: group id in which to add the image. Defaults to ""
-            set_current: if True, set the added image as current
-
-        Returns:
-            True if image was added successfully, False otherwise
-
-        Raises:
-            ValueError: Invalid data dtype
-        """
-        obj = create_image(
-            title,
-            data,
-            units=(xunit, yunit, zunit),
-            labels=(xlabel, ylabel, zlabel),
-        )
-        self.add_object(obj, group_id, set_current)
-        return True
-
-    # ------?
     def __about(self) -> None:  # pragma: no cover
         """About dialog box"""
         self.check_stable_release()
@@ -989,9 +894,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
 
         if self.console is not None:
             self.console.update_color_mode()
-        # TODO check extract BasePanel and AbstractPanel
-        # if self.macropanel is not None:
-        #    self.macropanel.update_color_mode()
+
         if self.docks is not None:
             for dock in self.docks.values():
                 widget = dock.widget()
@@ -1043,9 +946,6 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
             elif answer == QW.QMessageBox.Cancel:
                 return False
         self.hide()  # Avoid showing individual widgets closing one after the other
-        for panel in self.panels:
-            if panel is not None:
-                panel.close()
         if self.console is not None:
             try:
                 self.console.close()

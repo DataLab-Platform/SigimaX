@@ -1,10 +1,10 @@
 # Copyright (c) DataLab Platform Developers, BSD 3-Clause license, see LICENSE file.
 
 """
-DataLab pytest configuration
+SigimaX pytest configuration
 ----------------------------
 
-This file contains the configuration for running pytest in DataLab. It is
+This file contains the configuration for running pytest in SigimaX. It is
 executed before running any tests.
 """
 
@@ -94,7 +94,7 @@ def pytest_report_header(config):  # pylint: disable=unused-argument
         ("Sigima", sigima, None),
     ]
     git_repos = get_git_info_for_modules(modules_config)
-    git_info_lines = format_git_info_for_pytest(git_repos, "DataLab")
+    git_info_lines = format_git_info_for_pytest(git_repos, "SigimaX")
     if git_info_lines:
         infolist.extend(git_info_lines)
 

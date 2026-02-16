@@ -1,7 +1,7 @@
 # Copyright (c) DataLab Platform Developers, BSD 3-Clause license, see LICENSE file.
 
 """
-DataLab Qt utilities
+SigimaX Qt utilities
 """
 
 from __future__ import annotations
@@ -31,7 +31,6 @@ from qtpy import QtWidgets as QW
 from sigimax.config import (
     APP_NAME,
     DATETIME_FORMAT,
-    SHOTPATH,
     Conf,
     _,
     get_old_log_fname,
@@ -184,7 +183,8 @@ def is_running_tests() -> bool:
     return "pytest" in sys.modules
 
 
-# TODO : check if datalab specific (check implement generic MainWindow -> use for plugins only ?)
+# TODO : check if datalab specific (check implement generic MainWindow
+# -> use for plugins only ?)
 @contextmanager
 def try_or_log_error(context: str) -> Generator[None, None, None]:
     """Try to execute a function and log an error message if it fails"""
@@ -450,10 +450,11 @@ def grab_save_window(
         # DataLab screenshot names or numbered items don't get timestamp
         add_timestamp = False
 
-    # Use guidata's grab_save_window with DataLab-specific configuration
-    guidata_grab_save_window(
-        widget=widget, name=name, save_dir=SHOTPATH, add_timestamp=add_timestamp
-    )
+    # TODO : handle sreenshot path from config generically
+    # Use guidata's grab_save_window with configuration
+    # guidata_grab_save_window(
+    #    widget=widget, name=name, save_dir=SHOTPATH, add_timestamp=add_timestamp
+    # )
 
 
 # TODO : check if datalab specific (check implement generic MainWindow)
@@ -627,7 +628,8 @@ def resize_widget_to_parent(
         widget.resize(min_size, min_size)
 
 
-# TODO : check if datalab specific (seems to be : check implement generic MainWindow -> image_panels)
+# TODO : check if datalab specific (seems to be : check implement generic MainWindow
+# -> image_panels)
 def add_corner_menu(
     tabwidget: QW.QTabWidget, corner: QC.Qt.Corner | None = None
 ) -> QW.QMenu:

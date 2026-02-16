@@ -12,13 +12,10 @@ from __future__ import annotations
 import os
 import os.path as osp
 import sys
-from typing import Literal
 
 from guidata import configtools
 from plotpy.config import CONF as PLOTPY_CONF
 from plotpy.config import MAIN_BG_COLOR, MAIN_FG_COLOR
-from plotpy.constants import LUTAlpha
-from plotpy.styles import MarkerParam, ShapeParam
 from sigima.config import options as sigima_options
 from sigima.proc.title_formatting import (
     PlaceholderTitleFormatter,
@@ -27,7 +24,7 @@ from sigima.proc.title_formatting import (
 
 from sigimax.utils import conf
 
-# Configure Sigima to use DataLab-compatible placeholder title formatting
+# Configure Sigima to use placeholder title formatting
 set_default_title_formatter(PlaceholderTitleFormatter())
 
 CONF_VERSION = "1.0.0"
@@ -38,7 +35,9 @@ MOD_NAME = "sigimax"
 
 _ = configtools.get_translation(MOD_NAME)
 
-APP_DESC = _("""DataLab is a generic signal and image processing platform""")
+APP_DESC = _("""SigimaX is a GUI library working with Sigima and PlotPyStack.
+             It provides a App configuration system, a generic MainWindow class and a
+             set of widgets to build applications on top of Sigima and PlotPyStack.""")
 APP_PATH = osp.dirname(__file__)
 
 DEBUG = os.environ.get("DEBUG", "").lower() in ("1", "true")
@@ -50,15 +49,14 @@ if TEST_SEGFAULT_ERROR:
     print('*** TEST_SEGFAULT_ERROR mode *** [Enabling test action in "?" menu]')
 DATETIME_FORMAT = "%d/%m/%Y - %H:%M:%S"
 
+# TODO : handle data data, icon and logo generically
+# configtools.add_image_module_path(MOD_NAME, osp.join("data", "logo"))
+# configtools.add_image_module_path(MOD_NAME, osp.join("data", "icons"))
 
-configtools.add_image_module_path(MOD_NAME, osp.join("data", "logo"))
-configtools.add_image_module_path(MOD_NAME, osp.join("data", "icons"))
-
-DATAPATH = configtools.get_module_data_path(MOD_NAME, "data")
-SHOTPATH = osp.join(
-    configtools.get_module_data_path(MOD_NAME), os.pardir, "doc", "images", "shots"
-)
-OTHER_PLUGINS_PATHLIST = [configtools.get_module_data_path(MOD_NAME, "plugins")]
+# DATAPATH = configtools.get_module_data_path(MOD_NAME, "data")
+# SHOTPATH = osp.join(
+#    configtools.get_module_data_path(MOD_NAME), os.pardir, "doc", "images", "shots"
+# )
 
 
 def is_frozen(module_name: str) -> bool:
@@ -76,12 +74,6 @@ def is_frozen(module_name: str) -> bool:
 
 
 IS_FROZEN = is_frozen(MOD_NAME)
-if IS_FROZEN:
-    OTHER_PLUGINS_PATHLIST.append(osp.join(osp.dirname(sys.executable), "plugins"))
-    try:
-        os.mkdir(OTHER_PLUGINS_PATHLIST[-1])
-    except OSError:
-        pass
 
 
 def get_mod_source_dir() -> str | None:
@@ -107,9 +99,6 @@ class MainSection(conf.Section, metaclass=conf.SectionMeta):
 
     color_mode = conf.EnumOption(["auto", "dark", "light"], default="auto")
     process_isolation_enabled = conf.Option()
-    rpc_server_enabled = conf.Option()
-    rpc_server_port = conf.Option()
-    webapi_localhost_no_token = conf.Option()  # Allow localhost without token
     traceback_log_path = conf.ConfigPathOption()
     traceback_log_available = conf.Option()
     faulthandler_enabled = conf.Option()
@@ -122,14 +111,10 @@ class MainSection(conf.Section, metaclass=conf.SectionMeta):
     base_dir = conf.WorkingDirOption()
     available_memory_threshold = conf.Option()
     current_tab = conf.Option()
-    plugins_enabled = conf.Option()
-    plugins_path = conf.Option()
-    tour_enabled = conf.Option()
-    v020_plugins_warning_ignore = conf.Option()  # True: do not warn, False: warn
 
 
 class ConsoleSection(conf.Section, metaclass=conf.SectionMeta):
-    """Classs defining the console configuration section structure.
+    """Class defining the console configuration section structure.
     Each class attribute is an option (metaclass is automatically affecting
     option names in .INI file based on class attribute names)."""
 
@@ -168,59 +153,6 @@ class IOSection(conf.Section, metaclass=conf.SectionMeta):
     add_metadata_settings = conf.DataSetOption()
 
 
-class ProcSection(conf.Section, metaclass=conf.SectionMeta):
-    """Class defining the Processing configuration section structure.
-    Each class attribute is an option (metaclass is automatically affecting
-    option names in .INI file based on class attribute names)."""
-
-    # Operation mode:
-    # - "single": single operand mode
-    # - "pairwise": pairwise operation mode
-    operation_mode = conf.EnumOption(["single", "pairwise"], default="single")
-
-    # ROI extraction strategy:
-    # - True: extract all ROIs in a single signal or image
-    # - False: extract each ROI in a separate signal or image
-    extract_roi_singleobj = conf.Option()
-
-    # Keep analysis results after processing:
-    # - True: keep analysis results (dangerous because results may not be valid anymore)
-    # - False: do not keep analysis results (default)
-    keep_results = conf.Option()
-
-    # Show systematically result dialog after processing:
-    show_result_dialog = conf.Option()
-
-    # Use xmin and xmax bounds from current signal when creating a new signal:
-    use_signal_bounds = conf.Option()
-
-    # Use dimensions from current image when creating a new image:
-    use_image_dims = conf.Option()
-
-    # FFT shift enabled state for signal/image processing:
-    # - True: FFT shift is enabled (default)
-    # - False: FFT shift is disabled
-    fft_shift_enabled = conf.Option()
-
-    # Auto-normalize convolution kernel for signal/image processing:
-    # - True: automatically normalize kernel (default)
-    # - False: do not normalize kernel
-    auto_normalize_kernel = conf.Option()
-
-    # Ignore warnings during computation:
-    # - True: ignore warnings
-    # - False: do not ignore warnings
-    ignore_warnings = conf.Option()
-
-    # X-array compatibility behavior for multi-signal computations:
-    # - "ask": ask user for confirmation when x-arrays are incompatible (default)
-    # - "interpolate": automatically interpolate when x-arrays are incompatible
-    xarray_compat_behavior = conf.EnumOption(["ask", "interpolate"], default="ask")
-
-    # History and analysis tabs font
-    small_mono_font = conf.FontOption()
-
-
 class ViewSection(conf.Section, metaclass=conf.SectionMeta):
     """Class defining the view configuration section structure.
     Each class attribute is an option (metaclass is automatically affecting
@@ -233,131 +165,19 @@ class ViewSection(conf.Section, metaclass=conf.SectionMeta):
     # - "right": right
     plot_toolbar_position = conf.Option()
 
-    # Ignore information message when inserting object title as annotation label:
-    ignore_title_insertion_msg = conf.Option()
-
-    # String formatting for shape legends
-    sig_format = conf.Option()
-    ima_format = conf.Option()
-
     show_label = conf.Option()
     auto_refresh = conf.Option()
-    show_first_only = conf.Option()  # Show only first selected item
-    show_contrast = conf.Option()
-    sig_linewidth = conf.Option()
-    sig_linewidth_perfs_threshold = conf.Option()
-    sig_antialiasing = conf.Option()
-    sig_autodownsampling = conf.Option()
-    sig_autodownsampling_maxpoints = conf.Option()
-
-    # Autoscale margin settings for plots (percentage values)
-    sig_autoscale_margin_percent = conf.Option()
-    ima_autoscale_margin_percent = conf.Option()
-
-    # If True, lock aspect ratio of images to 1:1 (ignore physical pixel size)
-    ima_aspect_ratio_1_1 = conf.Option()
-
-    # Default visualization settings at item creation
-    # (e.g. see adapter's `make_item` methods in datalab/adapters_plotpy/*.py)
-    ima_eliminate_outliers = conf.Option()
-
-    # Default visualization settings, persisted in object metadata
-    # (e.g. see `BaseDataPanel.update_metadata_view_settings`)
-    sig_def_shade = conf.Option()
-    sig_def_curvestyle = conf.Option()
-    sig_def_baseline = conf.Option()
-    # ⚠️ Do not add "sig_def_use_dsamp" and "sig_def_dsamp_factor" options here
-    # because it would not be compatible with the auto-downsampling feature.
-
-    # Default visualization settings, persisted in object metadata
-    # (e.g. see `BaseDataPanel.update_metadata_view_settings`)
-    ima_def_colormap = conf.Option()
-    ima_def_invert_colormap = conf.Option()
-    ima_def_interpolation = conf.Option()
-    ima_def_alpha = conf.Option()
-    ima_def_alpha_function = conf.Option()
-    ima_def_keep_lut_range = conf.Option()
-
-    # Annotated shape and marker visualization settings for signals
-    sig_shape_param = conf.DataSetOption()
-    sig_marker_param = conf.DataSetOption()
-
-    # Annotated shape and marker visualization settings for images
-    ima_shape_param = conf.DataSetOption()
-    ima_marker_param = conf.DataSetOption()
-
-    # Datetime axis format strings for different time units
-    # Format strings use Python's strftime format codes
-    sig_datetime_format_s = conf.Option()  # Format for s, min, h
-    sig_datetime_format_ms = conf.Option()  # Format for ms, us, ns
-
-    # Maximum number of geometry shapes to draw on plot
-    # Even if more results are stored, only the first N shapes are drawn
-    max_shapes_to_draw = conf.Option()
-
-    # Maximum number of table cells (rows × columns) to display in merged result
-    # label on plot. If exceeded, rows are truncated to stay within this limit.
-    # This prevents slowdown with results that have many columns (e.g., polygons)
-    max_cells_in_label = conf.Option()
-
-    # Maximum number of columns to display in merged result label
-    # If exceeded, only the first N columns are shown. This ensures readability
-    # for results with many columns (e.g., polygon coordinates: x0, y0, x1, y1...)
-    max_cols_in_label = conf.Option()
-
-    # Show merged result label on plot by default
-    show_result_label = conf.Option()
-
-    @classmethod
-    def get_def_dict(cls, category: Literal["ima", "sig"]) -> dict:
-        """Get default visualization settings as a dictionary
-
-        Args:
-            category: category ("ima" or "sig", respectively for image and signal)
-
-        Returns:
-            Default visualization settings as a dictionary
-        """
-        assert category in ("ima", "sig")
-        prefix = f"{category}_def_"
-        def_dict = {}
-        for attrname in dir(cls):
-            if attrname.startswith(prefix):
-                name = attrname[len(prefix) :]
-                opt = getattr(cls, attrname)
-                defval = opt.get(None)
-                if defval is not None:
-                    def_dict[name] = defval
-        return def_dict
-
-    @classmethod
-    def set_def_dict(cls, category: Literal["ima", "sig"], def_dict: dict) -> None:
-        """Set default visualization settings from a dictionary
-
-        Args:
-            category: category ("ima" or "sig", respectively for image and signal)
-            def_dict: default visualization settings as a dictionary
-        """
-        assert category in ("ima", "sig")
-        prefix = f"{category}_def_"
-        for attrname in dir(cls):
-            if attrname.startswith(prefix):
-                name = attrname[len(prefix) :]
-                opt = getattr(cls, attrname)
-                if name in def_dict:
-                    opt.set(def_dict[name])
 
 
 # Usage (example): Conf.console.console_enabled.get(True)
 class Conf(conf.Configuration, metaclass=conf.ConfMeta):
-    """Class defining DataLab configuration structure.
+    """Class defining SigimaX configuration structure.
     Each class attribute is a section (metaclass is automatically affecting
     section names in .INI file based on class attribute names)."""
 
     main = MainSection()
     console = ConsoleSection()
     view = ViewSection()
-    proc = ProcSection()
     io = IOSection()
 
 
@@ -381,17 +201,9 @@ def initialize():
     # Main section
     Conf.main.color_mode.get("auto")
     Conf.main.process_isolation_enabled.get(True)
-    Conf.main.rpc_server_enabled.get(True)
-    Conf.main.webapi_localhost_no_token.get(
-        True
-    )  # Enabled by default (Web API is off by default)
     Conf.main.traceback_log_path.get(f".{APP_NAME}_traceback.log")
     Conf.main.faulthandler_log_path.get(f".{APP_NAME}_faulthandler.log")
     Conf.main.available_memory_threshold.get(500)
-    Conf.main.plugins_enabled.get(True)
-    Conf.main.plugins_path.get(Conf.get_path("plugins"))
-    Conf.main.tour_enabled.get(True)
-    Conf.main.v020_plugins_warning_ignore.get(False)
     # Console section
     Conf.console.console_enabled.get(True)
     Conf.console.show_console_on_error.get(False)
@@ -405,50 +217,9 @@ def initialize():
     iofmts = Conf.io.imageio_formats.get(())
     if len(iofmts) > 0:
         sigima_options.imageio_formats.set(iofmts)  # Sync with sigima config
-    # Proc section
-    Conf.proc.operation_mode.get("single")
-    Conf.proc.use_signal_bounds.get(False)
-    Conf.proc.use_image_dims.get(True)
-    Conf.proc.fft_shift_enabled.get(True)
-    sigima_options.fft_shift_enabled.set(True)  # Sync with sigima config
-    Conf.proc.auto_normalize_kernel.get(False)
-    sigima_options.auto_normalize_kernel.set(False)  # Sync with sigima config
-    Conf.proc.extract_roi_singleobj.get(False)
-    Conf.proc.keep_results.get(False)
-    Conf.proc.show_result_dialog.get(True)
-    Conf.proc.ignore_warnings.get(False)
-    Conf.proc.xarray_compat_behavior.get("ask")
-    Conf.proc.small_mono_font.get((configtools.MONOSPACE, 8, False))
     # View section
     tb_pos = Conf.view.plot_toolbar_position.get("left")
     assert tb_pos in ("top", "bottom", "left", "right")
-    Conf.view.ignore_title_insertion_msg.get(False)
-    Conf.view.sig_linewidth.get(1.0)
-    Conf.view.sig_linewidth_perfs_threshold.get(1000)
-    Conf.view.sig_autodownsampling.get(True)
-    Conf.view.sig_autodownsampling_maxpoints.get(100000)
-    Conf.view.sig_autoscale_margin_percent.get(2.0)
-    Conf.view.ima_autoscale_margin_percent.get(1.0)
-    Conf.view.ima_aspect_ratio_1_1.get(False)
-    Conf.view.ima_eliminate_outliers.get(0.1)
-    Conf.view.sig_def_shade.get(0.0)
-    Conf.view.sig_def_curvestyle.get("Lines")
-    Conf.view.sig_def_baseline.get(0.0)
-    Conf.view.ima_def_colormap.get("viridis")
-    Conf.view.ima_def_invert_colormap.get(False)
-    Conf.view.ima_def_interpolation.get(5)
-    Conf.view.ima_def_alpha.get(1.0)
-    Conf.view.ima_def_alpha_function.get(LUTAlpha.NONE.value)
-    Conf.view.ima_def_keep_lut_range.get(False)
-
-    # Datetime format strings: % must be escaped as %% for ConfigParser
-    Conf.view.sig_datetime_format_s.get("%%H:%%M:%%S")
-    Conf.view.sig_datetime_format_ms.get("%%H:%%M:%%S.%%f")
-
-    Conf.view.max_shapes_to_draw.get(1000)
-    Conf.view.max_cells_in_label.get(100)
-    Conf.view.max_cols_in_label.get(15)
-    Conf.view.show_result_label.get(True)
 
     # Initialize PlotPy configuration with versioned app name
     PLOTPY_CONF.set_application(
@@ -464,6 +235,9 @@ def reset():
 
 initialize()
 
+# TODO : handle these colors in a more generic way (e.g. in PlotPy configuration,
+# or in a dedicated config section for shapes and annotations)
+# -> config/config_plotpy.py ?
 ROI_LINE_COLOR = "#5555ff"
 ROI_SEL_LINE_COLOR = "#9393ff"
 MARKER_LINE_COLOR = "#A11818"
@@ -475,8 +249,7 @@ PLOTPY_DEFAULTS = {
         # XXX: If needed in the future, add here the default settings for PlotPy:
         # that will override the PlotPy settings.
         # That is the right way to customize the PlotPy settings for shapes and
-        # annotations when they are added using tools from the DataLab application
-        # (see `BaseDataPanel.ANNOTATION_TOOLS`).
+        # annotations.
         # For example, for shapes:
         # "shape/drag/line/color": "#00ffff",
         #
@@ -818,41 +591,3 @@ PLOTPY_DEFAULTS = {
 
 # PlotPy configuration will be initialized in initialize() function
 PLOTPY_CONF.update_defaults(PLOTPY_DEFAULTS)
-
-
-class DataLabShapeParam(ShapeParam):
-    """ShapeParam subclass with internal items hidden from settings dialog"""
-
-    def __init__(self):
-        super().__init__()
-        # Hide internal items that should not appear in settings dialog
-        for item in self._items:
-            if item._name in ("label", "readonly", "private"):
-                item.set_prop("display", hide=True)
-
-
-def initialize_default_plotpy_instances():
-    """Initialize default PlotPy instances for DataLab configuration options"""
-    # Initialize default instances for DataSetOptions now that PLOTPY_DEFAULTS exists
-    _sig_shapeparam = DataLabShapeParam()
-    _sig_shapeparam.read_config(PLOTPY_CONF, "results", "s/annotation")
-    Conf.view.sig_shape_param.set_default_instance(_sig_shapeparam)
-    Conf.view.sig_shape_param.get()
-
-    _sig_markerparam = MarkerParam()
-    _sig_markerparam.read_config(PLOTPY_CONF, "results", "s/marker/cursor")
-    Conf.view.sig_marker_param.set_default_instance(_sig_markerparam)
-    Conf.view.sig_marker_param.get()
-
-    _ima_shapeparam = DataLabShapeParam()
-    _ima_shapeparam.read_config(PLOTPY_CONF, "results", "i/annotation")
-    Conf.view.ima_shape_param.set_default_instance(_ima_shapeparam)
-    Conf.view.ima_shape_param.get()
-
-    _ima_markerparam = MarkerParam()
-    _ima_markerparam.read_config(PLOTPY_CONF, "results", "i/marker/cursor")
-    Conf.view.ima_marker_param.set_default_instance(_ima_markerparam)
-    Conf.view.ima_marker_param.get()
-
-
-initialize_default_plotpy_instances()
