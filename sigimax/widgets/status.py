@@ -1,7 +1,7 @@
 # Copyright (c) DataLab Platform Developers, BSD 3-Clause license, see LICENSE file.
 
 """
-DataLab main window status bar widgets
+SigimaX main window status bar widgets
 """
 
 from __future__ import annotations

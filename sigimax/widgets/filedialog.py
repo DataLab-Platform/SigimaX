@@ -73,10 +73,9 @@ def get_open_file_names(
 
 def test_get_open_file_names():
     """Test get_open_file_names function"""
-    datalab_widgets_path = osp.dirname(__file__)
+    widgets_path = osp.dirname(__file__)
     sel_files = [
-        osp.join(datalab_widgets_path, fname)
-        for fname in os.listdir(datalab_widgets_path)[:2]
+        osp.join(widgets_path, fname) for fname in os.listdir(widgets_path)[:2]
     ]
     with qt_app_context():
         filenames, selectedfilter = get_open_file_names(

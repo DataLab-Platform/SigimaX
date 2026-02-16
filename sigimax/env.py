@@ -1,7 +1,7 @@
 # Copyright (c) DataLab Platform Developers, BSD 3-Clause license, see LICENSE file.
 
 """
-DataLab environmnent utilities
+SigimaX environment utilities
 """
 
 from __future__ import annotations
@@ -18,7 +18,7 @@ from typing import Any, Generator
 
 from guidata.env import ExecEnv as GuiDataExecEnv
 
-# We could import DEBUG from datalab.config, but is it really worth it?
+# We could import DEBUG from sigimax.config, but is it really worth it?
 DEBUG = os.environ.get("DEBUG", "").lower() in ("1", "true")
 
 
@@ -130,7 +130,7 @@ class VerbosityLevels(enum.Enum):
 
 
 class DLExecEnv:
-    """Object representing DataLab test environment"""
+    """Object representing SigimaX test environment"""
 
     UNATTENDED_ARG = "unattended"
     ACCEPT_DIALOGS_ARG = "accept_dialogs"
@@ -138,16 +138,14 @@ class DLExecEnv:
     SCREENSHOT_ARG = "screenshot"
     SCREENSHOT_PATH_ARG = "screenshot_path"
     DELAY_ARG = "delay"
-    XMLRPCPORT_ARG = "xmlrpcport"
-    DO_NOT_QUIT_ENV = "DATALAB_DO_NOT_QUIT"
+    DO_NOT_QUIT_ENV = "SIGIMAX_DO_NOT_QUIT"
     UNATTENDED_ENV = GuiDataExecEnv.UNATTENDED_ENV
     ACCEPT_DIALOGS_ENV = GuiDataExecEnv.ACCEPT_DIALOGS_ENV
     VERBOSE_ENV = GuiDataExecEnv.VERBOSE_ENV
     SCREENSHOT_ENV = GuiDataExecEnv.SCREENSHOT_ENV
     SCREENSHOT_PATH_ENV = GuiDataExecEnv.SCREENSHOT_PATH_ENV
     DELAY_ENV = GuiDataExecEnv.DELAY_ENV
-    XMLRPCPORT_ENV = "DATALAB_XMLRPCPORT"
-    CATCHER_TEST_ENV = "DATALAB_CATCHER_TEST"
+    CATCHER_TEST_ENV = "SIGIMAX_CATCHER_TEST"
 
     def __init__(self):
         self.h5files = None
@@ -156,14 +154,14 @@ class DLExecEnv:
         # Check if "pytest" is in the command line arguments:
         if "pytest" not in sys.argv[0]:
             # Do not parse command line arguments when running tests with pytest
-            # (otherwise, pytest arguments are parsed as DataLab arguments)
+            # (otherwise, pytest arguments are parsed as SigimaX arguments)
             self.parse_args()
         if self.unattended:  # Do not run this code in production
             # Check that calling `to_dict` do not raise any exception
             self.to_dict()
 
     def iterate_over_attrs_envvars(self) -> Generator[tuple[str, str], None, None]:
-        """Iterate over DataLab environment variables
+        """Iterate over SigimaX environment variables
 
         Yields:
             A tuple (attribute name, environment variable name)
@@ -240,7 +238,7 @@ class DLExecEnv:
     def do_not_quit(self):
         """Keep QApplication running (and widgets opened) after test execution,
         even in unattended mode (e.g. useful for testing the remote client API:
-        we need to run DataLab in unattended mode [to avoid any user interaction
+        we need to run SigimaX app in unattended mode [to avoid any user interaction
         during the test] but we also need to keep the QApplication running to
         be able to send commands to the remote client API).
         """
@@ -347,9 +345,9 @@ class DLExecEnv:
         """Parse command line arguments"""
         # <!> WARNING <!>
         # Do not add an option '-c' to avoid any conflict with macro command
-        # execution mecanism used with DataLab standalone version (see start.pyw)
+        # execution mecanism used with SigimaX standalone version (see start.pyw)
 
-        parser = argparse.ArgumentParser(description="Run DataLab")
+        parser = argparse.ArgumentParser(description="Run SigimaX application")
         parser.add_argument(
             "h5",
             nargs="?",
@@ -366,10 +364,10 @@ class DLExecEnv:
             help="path to open with HDF5 browser",
         )
         parser.add_argument(
-            "-v", "--version", action="store_true", help="show DataLab version"
+            "-v", "--version", action="store_true", help="show SigimaX version"
         )
         parser.add_argument(
-            "--reset", action="store_true", help="reset DataLab configuration"
+            "--reset", action="store_true", help="reset SigimaX configuration"
         )
         parser.add_argument(
             "--" + self.UNATTENDED_ARG,
@@ -420,14 +418,14 @@ class DLExecEnv:
         if args.h5browser:
             self.h5browser_file = args.h5browser
         if args.version:
-            version = os.environ["DATALAB_VERSION"]
-            print(f"DataLab {version} on {platform.system()}")
+            version = os.environ["SIGIMAX_VERSION"]
+            print(f"SigimaX {version} on {platform.system()}")
             sys.exit()
-        if args.reset:  # Remove ".DataLab" configuration directory
+        if args.reset:  # Remove ".SigimaX" configuration directory
             # pylint: disable=import-outside-toplevel
             from sigimax.config import Conf
 
-            print("Resetting DataLab configuration...", end=" ")
+            print("Resetting SigimaX configuration...", end=" ")
             try:
                 Conf.reset()
             except Exception:  # pylint: disable=broad-except
@@ -447,7 +445,6 @@ class DLExecEnv:
             self.SCREENSHOT_PATH_ARG,
             self.VERBOSE_ARG,
             self.DELAY_ARG,
-            self.XMLRPCPORT_ARG,
         ):
             argvalue = getattr(args, argname)
             if argvalue is not None:

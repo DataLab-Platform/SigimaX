@@ -266,7 +266,7 @@ def multigaussian_fit(x, y, peak_indices, parent=None, name=None):
     # Get initial parameter estimates from Sigima MultiGaussianFitComputer
     computer = fitting.MultiGaussianFitComputer(x, y, peak_indices)
     initial_params = computer.compute_initial_params()
-    # Use Sigima parameters to populate DataLab params
+    # Use Sigima parameters to populate SigimaX params
     params = []
     for index, i0 in enumerate(peak_indices):
         stri = f"{index + 1:02d}"
@@ -357,7 +357,7 @@ def multilorentzian_fit(
     # Get initial parameter estimates from Sigima MultiLorentzianFitComputer
     computer = fitting.MultiLorentzianFitComputer(x, y, peak_indices)
     initial_params = computer.compute_initial_params()
-    # Use Sigima parameters to populate DataLab params
+    # Use Sigima parameters to populate SigimaX params
     params = []
     for index, i0 in enumerate(peak_indices):
         stri = f"{index + 1:02d}"

@@ -1,10 +1,10 @@
 # Copyright (c) DataLab Platform Developers, BSD 3-Clause license, see LICENSE file.
 
 """
-DataLab Wizard Widget
+SigimaX Wizard Widget
 ---------------------
 
-The DataLab Wizard is a widget that guides the user through a series of steps
+The SigimaX Wizard is a widget that guides the user through a series of steps
 to complete a task. It is implemented as a series of pages, each of which is
 a separate widget.
 

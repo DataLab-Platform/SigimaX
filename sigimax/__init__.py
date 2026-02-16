@@ -10,10 +10,6 @@ user interfaces (thanks to `PlotPyStack`_ libraries).
 
 It helps building scientific computing applications by providing a set of GUI modules.
 
-It is a part of the DataLab Platform, which aims at providing a
-comprehensive set of tools for data analysis and visualization, around
-the DataLab application.
-
 .. _PlotPyStack: https://github.com/PlotPyStack
 """
 
