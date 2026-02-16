@@ -716,15 +716,13 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
                 # Build message with optional note for native workspace import
                 msg = _(
                     "Do you want to clear current workspace "
-                    "(signals and images) before importing data from "
+                    "before importing data from "
                     "HDF5 files?"
                 )
-                # Only show the UUID conflict note when importing native DataLab
-                # workspace files (import_all=True), not when using HDF5 browser
                 if import_all:
                     msg += "<br><br>" + _(
                         "<u>Note:</u> If you choose <i>No</i>, when importing "
-                        "DataLab workspace files, objects with conflicting "
+                        "workspace files, objects with conflicting "
                         "identifiers will have their processing history lost "
                         "(features like 'Show source' and 'Recompute' will not "
                         "work for those objects). Non-conflicting objects will "
@@ -801,12 +799,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         # self.h5inputoutput.import_files(filenames, False, reset_all)
 
     def save_h5_workspace(self, filename: str) -> None:
-        """Save current workspace to a native DataLab HDF5 file without GUI elements.
-
-        This method can be safely called from the internal console as it does not
-        create any Qt widgets, dialogs, or progress bars. It is designed for
-        programmatic use when saving DataLab workspace files.
-
+        """Save current workspace to a HDF5 file without GUI elements.
         Args:
             filename: HDF5 filename to save to
 
