@@ -53,7 +53,7 @@ DATETIME_FORMAT = "%d/%m/%Y - %H:%M:%S"
 
 # TODO : handle data data, icon and logo generically
 # configtools.add_image_module_path(MOD_NAME, osp.join("data", "logo"))
-# configtools.add_image_module_path(MOD_NAME, osp.join("data", "icons"))
+configtools.add_image_module_path(MOD_NAME, osp.join("data", "icons"))
 
 # DATAPATH = configtools.get_module_data_path(MOD_NAME, "data")
 # SHOTPATH = osp.join(
