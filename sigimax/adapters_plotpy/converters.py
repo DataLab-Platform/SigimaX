@@ -51,10 +51,10 @@ def plotitem_to_singleroi(
         A single ROI instance
     """
     # pylint: disable=import-outside-toplevel
-    from datalab.adapters_plotpy.roi.image import (
+    from sigimax.adapters_plotpy.roi.image import (
         CircularROIPlotPyAdapter,
     )
-    from datalab.adapters_plotpy.roi.signal import (
+    from sigimax.adapters_plotpy.roi.signal import (
         SegmentROIPlotPyAdapter,
     )
 

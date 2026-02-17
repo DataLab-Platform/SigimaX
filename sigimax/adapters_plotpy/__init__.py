@@ -40,10 +40,6 @@ from .objects.base import TypePlotItem
 from .objects.image import (
     ImageObjPlotPyAdapter,
 )
-from .objects.scalar import (
-    GeometryPlotPyAdapter,
-    TablePlotPyAdapter,
-)
 from .objects.signal import CURVESTYLES, SignalObjPlotPyAdapter
 from .roi.base import TypeROIItem, configure_roi_item
 from .roi.image import (
