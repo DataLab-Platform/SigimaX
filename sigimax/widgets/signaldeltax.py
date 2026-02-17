@@ -12,9 +12,6 @@ import warnings
 from typing import TYPE_CHECKING
 
 import numpy as np
-
-# TODO : datalab adapter, need to check imports and dependencies
-from datalab.adapters_plotpy import CURVESTYLES, create_adapter_from_object
 from guidata.configtools import get_icon
 from plotpy.builder import make
 from plotpy.plot import PlotDialog
@@ -23,6 +20,7 @@ from qtpy import QtGui as QG
 from qtpy import QtWidgets as QW
 from sigima.tools.signal.pulse import full_width_at_y
 
+from sigimax.adapters_plotpy import CURVESTYLES, create_adapter_from_object
 from sigimax.config import _
 from sigimax.utils.qthelpers import resize_widget_to_parent
 
@@ -41,7 +39,6 @@ class SignalDeltaXDialog(PlotDialog):
     """
 
     def __init__(self, signal: SignalObj, parent: QWidget | None = None) -> None:
-        # TODO : datalab adapter, need to check imports and dependencies
         self.__curve_styles = CURVESTYLES.style_generator()
         self.__signal = signal
         self.__coords: list[float, float, float, float] | None = None
@@ -91,7 +88,6 @@ class SignalDeltaXDialog(PlotDialog):
         self.button_layout.insertWidget(0, xygroup)
 
         obj = self.__signal
-        # TODO : datalab adapter, need to check imports and dependencies
         with CURVESTYLES.alternative(self.__curve_styles):
             self.curve = create_adapter_from_object(obj).make_item()
         plot = self.get_plot()

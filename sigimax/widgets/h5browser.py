@@ -13,7 +13,6 @@ import os
 import os.path as osp
 from typing import TYPE_CHECKING, Any, Callable
 
-from datalab.adapters_plotpy import CURVESTYLES, create_adapter_from_object
 from guidata.qthelpers import (
     add_actions,
     create_action,
@@ -32,8 +31,8 @@ from qtpy import QtGui as QG
 from qtpy import QtWidgets as QW
 from qtpy.compat import getopenfilename
 from sigima import ImageObj, SignalObj
-from sigima.viz import viz_plotpy
 
+from sigimax.adapters_plotpy import CURVESTYLES, create_adapter_from_object
 from sigimax.config import Conf, _
 from sigimax.h5 import H5Importer
 from sigimax.utils.qthelpers import block_signals, qt_handle_error_message
@@ -509,12 +508,11 @@ class PlotPreview(QW.QStackedWidget):
         if isinstance(obj, SignalObj):
             obj: SignalObj
             widget = self.curvewidget
-            item = viz_plotpy.__create_curve_item(obj)
         else:
             obj: ImageObj
             widget = self.imagewidget
-            item = viz_plotpy.__create_image_item(obj)
-        # with CURVESTYLES.suspend():
+        with CURVESTYLES.suspend():
+            item = create_adapter_from_object(obj).make_item()
         plot = widget.get_plot()
         plot.del_all_items()
         plot.add_item(item)

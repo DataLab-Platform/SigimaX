@@ -9,13 +9,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
-
-# TODO : datalab adapter, need to check imports and dependencies
-from datalab.adapters_plotpy import create_adapter_from_object
 from guidata.configtools import get_icon
 from plotpy.builder import make
 from plotpy.plot import PlotDialog, PlotOptions
 
+from sigimax.adapters_plotpy import create_adapter_from_object
 from sigimax.config import _
 from sigimax.utils.qthelpers import resize_widget_to_parent
 
@@ -81,7 +79,6 @@ class ImageBackgroundDialog(PlotDialog):
     def __setup_dialog(self) -> None:
         """Setup dialog box"""
         obj = self.__image
-        # TODO: datalab adapter, need to check imports and dependencies
         self.imageitem = create_adapter_from_object(obj).make_item()
         plot = self.get_plot()
         if obj.is_uniform_coords:

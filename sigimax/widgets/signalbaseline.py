@@ -9,13 +9,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import numpy as np
-
-# TODO : datalab adapter, need to check imports and dependencies
-from datalab.adapters_plotpy import CURVESTYLES, create_adapter_from_object
 from guidata.configtools import get_icon
 from plotpy.builder import make
 from plotpy.plot import PlotDialog
 
+from sigimax.adapters_plotpy import CURVESTYLES, create_adapter_from_object
 from sigimax.config import _
 from sigimax.utils.qthelpers import resize_widget_to_parent
 
@@ -34,7 +32,6 @@ class SignalBaselineDialog(PlotDialog):
     """
 
     def __init__(self, signal: SignalObj, parent: QWidget | None = None) -> None:
-        # TODO : datalab adapter, need to check imports and dependencies
         self.__curve_styles = CURVESTYLES.style_generator()
         self.__baseline: float | None = None
         self.__x_range: tuple[float, float] = [np.nan, np.nan]
@@ -54,7 +51,6 @@ class SignalBaselineDialog(PlotDialog):
     def __setup_dialog(self) -> None:
         """Setup dialog box"""
         obj = self.__signal
-        # TODO : datalab adapter, need to check imports and dependencies
         with CURVESTYLES.alternative(self.__curve_styles):
             self.curve = create_adapter_from_object(obj).make_item()
         plot = self.get_plot()
