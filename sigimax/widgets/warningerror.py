@@ -197,7 +197,7 @@ class WarningErrorMessageBox(QW.QDialog):
 
     def ignore(self):
         """Ignore warning next time"""
-        Conf.proc.ignore_warnings.set(True)
+        Conf.main.ignore_warnings.set(True)
         self.accept()
 
 
@@ -217,7 +217,7 @@ def show_warning_error(
         message (str | None): message. Defaults to None.
         tip (str | None): tip. Defaults to None.
     """
-    if category == "warning" and Conf.proc.ignore_warnings.get():
+    if category == "warning" and Conf.main.ignore_warnings.get():
         return
     dlg = WarningErrorMessageBox(parent, category, context, message, tip)
     exec_dialog(dlg)

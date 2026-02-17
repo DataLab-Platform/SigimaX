@@ -12,10 +12,12 @@ from __future__ import annotations
 import os
 import os.path as osp
 import sys
+from typing import Literal
 
 from guidata import configtools
 from plotpy.config import CONF as PLOTPY_CONF
 from plotpy.config import MAIN_BG_COLOR, MAIN_FG_COLOR
+from plotpy.constants import LUTAlpha
 from sigima.config import options as sigima_options
 from sigima.proc.title_formatting import (
     PlaceholderTitleFormatter,
@@ -111,6 +113,7 @@ class MainSection(conf.Section, metaclass=conf.SectionMeta):
     base_dir = conf.WorkingDirOption()
     available_memory_threshold = conf.Option()
     current_tab = conf.Option()
+    ignore_warnings = conf.Option()
 
 
 class ConsoleSection(conf.Section, metaclass=conf.SectionMeta):
@@ -165,8 +168,80 @@ class ViewSection(conf.Section, metaclass=conf.SectionMeta):
     # - "right": right
     plot_toolbar_position = conf.Option()
 
+    # String formatting for shape legends
+    sig_format = conf.Option()
+    ima_format = conf.Option()
+
     show_label = conf.Option()
-    auto_refresh = conf.Option()
+    # auto_refresh = conf.Option()
+    sig_linewidth = conf.Option()
+    sig_linewidth_perfs_threshold = conf.Option()
+    sig_autodownsampling = conf.Option()
+    sig_autodownsampling_maxpoints = conf.Option()
+
+    # Autoscale margin settings for plots (percentage values)
+    sig_autoscale_margin_percent = conf.Option()
+    ima_autoscale_margin_percent = conf.Option()
+
+    # Default visualization settings at item creation
+    # (e.g. see adapter's `make_item` methods in datalab/adapters_plotpy/*.py)
+    ima_eliminate_outliers = conf.Option()
+
+    # Default visualization settings, persisted in object metadata
+    # (e.g. see `BaseDataPanel.update_metadata_view_settings`)
+    sig_def_shade = conf.Option()
+    sig_def_curvestyle = conf.Option()
+    sig_def_baseline = conf.Option()
+    # ⚠️ Do not add "sig_def_use_dsamp" and "sig_def_dsamp_factor" options here
+    # because it would not be compatible with the auto-downsampling feature.
+
+    # Default visualization settings, persisted in object metadata
+    # (e.g. see `BaseDataPanel.update_metadata_view_settings`)
+    ima_def_colormap = conf.Option()
+    ima_def_invert_colormap = conf.Option()
+    ima_def_interpolation = conf.Option()
+    ima_def_alpha = conf.Option()
+    ima_def_alpha_function = conf.Option()
+    ima_def_keep_lut_range = conf.Option()
+
+    @classmethod
+    def get_def_dict(cls, category: Literal["ima", "sig"]) -> dict:
+        """Get default visualization settings as a dictionary
+
+        Args:
+            category: category ("ima" or "sig", respectively for image and signal)
+
+        Returns:
+            Default visualization settings as a dictionary
+        """
+        assert category in ("ima", "sig")
+        prefix = f"{category}_def_"
+        def_dict = {}
+        for attrname in dir(cls):
+            if attrname.startswith(prefix):
+                name = attrname[len(prefix) :]
+                opt = getattr(cls, attrname)
+                defval = opt.get(None)
+                if defval is not None:
+                    def_dict[name] = defval
+        return def_dict
+
+    @classmethod
+    def set_def_dict(cls, category: Literal["ima", "sig"], def_dict: dict) -> None:
+        """Set default visualization settings from a dictionary
+
+        Args:
+            category: category ("ima" or "sig", respectively for image and signal)
+            def_dict: default visualization settings as a dictionary
+        """
+        assert category in ("ima", "sig")
+        prefix = f"{category}_def_"
+        for attrname in dir(cls):
+            if attrname.startswith(prefix):
+                name = attrname[len(prefix) :]
+                opt = getattr(cls, attrname)
+                if name in def_dict:
+                    opt.set(def_dict[name])
 
 
 # Usage (example): Conf.console.console_enabled.get(True)
@@ -204,6 +279,7 @@ def initialize():
     Conf.main.traceback_log_path.get(f".{APP_NAME}_traceback.log")
     Conf.main.faulthandler_log_path.get(f".{APP_NAME}_faulthandler.log")
     Conf.main.available_memory_threshold.get(500)
+    Conf.main.ignore_warnings.get(False)
     # Console section
     Conf.console.console_enabled.get(True)
     Conf.console.show_console_on_error.get(False)
@@ -217,9 +293,26 @@ def initialize():
     iofmts = Conf.io.imageio_formats.get(())
     if len(iofmts) > 0:
         sigima_options.imageio_formats.set(iofmts)  # Sync with sigima config
+
     # View section
     tb_pos = Conf.view.plot_toolbar_position.get("left")
     assert tb_pos in ("top", "bottom", "left", "right")
+    Conf.view.sig_linewidth.get(1.0)
+    Conf.view.sig_linewidth_perfs_threshold.get(1000)
+    Conf.view.sig_autodownsampling.get(True)
+    Conf.view.sig_autodownsampling_maxpoints.get(100000)
+    Conf.view.sig_autoscale_margin_percent.get(2.0)
+    Conf.view.ima_autoscale_margin_percent.get(1.0)
+    Conf.view.ima_eliminate_outliers.get(0.1)
+    Conf.view.sig_def_shade.get(0.0)
+    Conf.view.sig_def_curvestyle.get("Lines")
+    Conf.view.sig_def_baseline.get(0.0)
+    Conf.view.ima_def_colormap.get("viridis")
+    Conf.view.ima_def_invert_colormap.get(False)
+    Conf.view.ima_def_interpolation.get(5)
+    Conf.view.ima_def_alpha.get(1.0)
+    Conf.view.ima_def_alpha_function.get(LUTAlpha.NONE.value)
+    Conf.view.ima_def_keep_lut_range.get(False)
 
     # Initialize PlotPy configuration with versioned app name
     PLOTPY_CONF.set_application(
