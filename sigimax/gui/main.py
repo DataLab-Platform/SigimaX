@@ -576,7 +576,6 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
 
     def set_modified(self, state: bool = True) -> None:
         """Set mainwindow modified state"""
-        state = state
         self.__is_modified = state
         title = APP_NAME + ("*" if state else "")
         if not sigimax.__version__.replace(".", "").isdigit():
@@ -774,7 +773,8 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
                     # TODO :H5BrowserDialog to import specific dataset(s) from file
                     # (only generic h5 files)
                     print(
-                        f"Importing dataset '{dsetname}' from file '{filename}' (reset_all={reset_all})"
+                        f"Importing dataset '{dsetname}' from file '{filename}' "
+                        f"(reset_all={reset_all})"
                     )
                     # if dsetname is None:
                     #    self.h5inputoutput.open_file(filename, import_all, reset_all)

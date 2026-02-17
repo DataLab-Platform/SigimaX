@@ -20,6 +20,7 @@ from typing import Generator
 from guidata.guitest import run_testlauncher
 from sigima.tests import helpers
 
+import sigimax
 from sigimax.gui.main import SGMXMainWindow
 from sigimax.utils import qthelpers as qth
 

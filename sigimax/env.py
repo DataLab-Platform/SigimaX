@@ -328,19 +328,6 @@ class DLExecEnv:
         """Set delay (ms) before quitting application in unattended mode"""
         os.environ[self.DELAY_ENV] = str(value)
 
-    @property
-    def xmlrpcport(self):
-        """XML-RPC port number"""
-        try:
-            return int(os.environ.get(self.XMLRPCPORT_ENV))
-        except (TypeError, ValueError):
-            return None
-
-    @xmlrpcport.setter
-    def xmlrpcport(self, value: int):
-        """Set XML-RPC port number"""
-        os.environ[self.XMLRPCPORT_ENV] = str(value)
-
     def parse_args(self):
         """Parse command line arguments"""
         # <!> WARNING <!>
@@ -398,12 +385,6 @@ class DLExecEnv:
             type=int,
             default=None,
             help="delay (ms) before quitting application in unattended mode",
-        )
-        parser.add_argument(
-            "--" + self.XMLRPCPORT_ARG,
-            type=int,
-            default=None,
-            help="XML-RPC port number",
         )
         parser.add_argument(
             "--" + self.VERBOSE_ARG,
