@@ -27,9 +27,6 @@ specific module of this package:
     * - :mod:`sigimax.gui.main`
       - SigimaX main window
 
-    * - :mod:`sigimax.gui.actionhandler`
-      - Generic application actions (menus, toolbars, context menu)
-
     * - :mod:`sigimax.gui.docks`
       - Dock widgets
 

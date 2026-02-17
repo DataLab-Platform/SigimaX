@@ -43,8 +43,6 @@ from qtpy import QtWidgets as QW
 from qtpy.compat import getopenfilenames, getsavefilename
 
 # from qtpy.compat import getopenfilenames, getsavefilename
-from sigima.objects import ImageObj, SignalObj, create_image, create_signal
-
 import sigimax
 from sigimax import __docurl__, __homeurl__, __supporturl__, env
 from sigimax.config import (
@@ -56,7 +54,6 @@ from sigimax.config import (
     _,
 )
 from sigimax.env import execenv
-from sigimax.gui.actionhandler import ActionCategory
 from sigimax.gui.docks import DockablePlotWidget
 from sigimax.utils import qthelpers as qth
 from sigimax.utils.qthelpers import (
