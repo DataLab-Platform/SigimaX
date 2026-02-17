@@ -13,6 +13,7 @@ The following subpackages are available:
 from __future__ import annotations
 
 import os
+import os.path as osp
 import sys
 from contextlib import contextmanager
 from typing import Generator
@@ -21,8 +22,15 @@ from guidata.guitest import run_testlauncher
 from sigima.tests import helpers
 
 import sigimax
+from sigimax.config import MOD_NAME
 from sigimax.gui.main import SGMXMainWindow
 from sigimax.utils import qthelpers as qth
+
+# Add test data files and folders pointed by `DATALAB_DATA` environment variable:
+helpers.add_test_path_from_env("DATALAB_DATA")
+
+# Add test data files and folders for the DataLab module:
+helpers.add_test_module_path(MOD_NAME, osp.join("data", "tests"))
 
 
 @contextmanager
