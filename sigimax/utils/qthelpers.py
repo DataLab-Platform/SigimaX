@@ -30,10 +30,10 @@ from qtpy import QtWidgets as QW
 from sigimax.config import (
     APP_NAME,
     DATETIME_FORMAT,
-    Conf,
     _,
     get_old_log_fname,
 )
+from sigimax.config import CONF as Conf
 from sigimax.env import execenv
 
 
@@ -115,8 +115,8 @@ def sigimax_app_context(
 
     if enable_logs:
         # === Create a logger for standard exceptions ----------------------------------
-        tb_log_fname = Conf.main.traceback_log_path.get()
-        Conf.main.traceback_log_available.set(initialize_log_file(tb_log_fname))
+        tb_log_fname = Conf.traceback_log_path.get()
+        Conf.traceback_log_available.set(initialize_log_file(tb_log_fname))
         logger = logging.getLogger(__name__)
         fmt = "[%(asctime)s] {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s"
         logging.basicConfig(
@@ -137,11 +137,11 @@ def sigimax_app_context(
         sys.excepthook = custom_excepthook
 
     # === Use faulthandler for other exceptions ------------------------------------
-    fh_log_fname = Conf.main.faulthandler_log_path.get()
-    Conf.main.faulthandler_log_available.set(initialize_log_file(fh_log_fname))
+    fh_log_fname = Conf.faulthandler_log_path.get()
+    Conf.faulthandler_log_available.set(initialize_log_file(fh_log_fname))
 
     with open(fh_log_fname, "w", encoding="utf-8") as fh_log_fn:
-        if enable_logs and Conf.main.faulthandler_enabled.get(True):
+        if enable_logs and Conf.faulthandler_enabled.get(True):
             faulthandler.enable(file=fh_log_fn)
         exception_occured = False
         try:
@@ -168,7 +168,7 @@ def sigimax_app_context(
         if exception_occured:
             raise  # pylint: disable=misplaced-bare-raise
 
-    if enable_logs and Conf.main.faulthandler_enabled.get():
+    if enable_logs and Conf.faulthandler_enabled.get():
         faulthandler.disable()
     remove_empty_log_file(fh_log_fname)
     if enable_logs:
@@ -196,7 +196,7 @@ def try_or_log_error(context: str) -> Generator[None, None, None]:
         traceback.print_exc()
         logger = logging.getLogger(__name__)
         logger.error("Error in %s", context, exc_info=traceback.format_exc())
-        Conf.main.traceback_log_available.set(True)
+        Conf.traceback_log_available.set(True)
     finally:
         pass
 

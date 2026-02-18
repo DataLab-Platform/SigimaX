@@ -13,7 +13,8 @@ from scipy.special import erf  # pylint: disable=no-name-in-module
 from sigima.tools.checks import check_1d_arrays
 from sigima.tools.signal import fitting, fourier, pulse
 
-from sigimax.config import Conf, _
+from sigimax.config import CONF as Conf
+from sigimax.config import _
 
 DEFAULT_FORMAT = "%g"
 
@@ -48,7 +49,7 @@ def guifit(
             ylabel=ylabel,
             curve_antialiasing=True,
             show_axes_tab=False,
-            autoscale_margin_percent=Conf.view.sig_autoscale_margin_percent.get(),
+            autoscale_margin_percent=Conf.sig_autoscale_margin_percent.get(),
         ),
         parent=parent,
         param_cols=param_cols,

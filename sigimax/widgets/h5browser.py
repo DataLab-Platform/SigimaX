@@ -33,7 +33,8 @@ from qtpy.compat import getopenfilename
 from sigima import ImageObj, SignalObj
 
 from sigimax.adapters_plotpy import CURVESTYLES, create_adapter_from_object
-from sigimax.config import Conf, _
+from sigimax.config import CONF as Conf
+from sigimax.config import _
 from sigimax.h5 import H5Importer
 from sigimax.utils.qthelpers import block_signals, qt_handle_error_message
 
@@ -466,9 +467,7 @@ class PlotPreview(QW.QStackedWidget):
                 type="curve",
                 curve_antialiasing=True,
                 show_axes_tab=False,
-                autoscale_margin_percent=Conf.view.sig_autoscale_margin_percent.get(
-                    0.2
-                ),
+                autoscale_margin_percent=Conf.sig_autoscale_margin_percent.get(0.2),
             ),
         )
         self.addWidget(self.curvewidget)
@@ -478,9 +477,7 @@ class PlotPreview(QW.QStackedWidget):
                 type="image",
                 show_contrast=True,
                 show_axes_tab=False,
-                autoscale_margin_percent=Conf.view.ima_autoscale_margin_percent.get(
-                    0.2
-                ),
+                autoscale_margin_percent=Conf.ima_autoscale_margin_percent.get(0.2),
             ),
         )
         self.addWidget(self.imagewidget)

@@ -12,7 +12,8 @@ from guidata.configtools import get_icon
 from guidata.qthelpers import exec_dialog
 from qtpy import QtWidgets as QW
 
-from sigimax.config import APP_NAME, Conf, _, get_old_log_fname
+from sigimax.config import APP_NAME, _, get_old_log_fname
+from sigimax.config import CONF as Conf
 from sigimax.env import execenv
 from sigimax.widgets.fileviewer import FileViewerWidget, get_title_contents
 
@@ -48,10 +49,10 @@ class LogViewerWindow(QW.QDialog):
 def get_log_filenames() -> list[str]:
     """Return log filenames"""
     return [
-        Conf.main.traceback_log_path.get(),
-        Conf.main.faulthandler_log_path.get(),
-        get_old_log_fname(Conf.main.traceback_log_path.get()),
-        get_old_log_fname(Conf.main.faulthandler_log_path.get()),
+        Conf.traceback_log_path.get(),
+        Conf.faulthandler_log_path.get(),
+        get_old_log_fname(Conf.traceback_log_path.get()),
+        get_old_log_fname(Conf.faulthandler_log_path.get()),
     ]
 
 

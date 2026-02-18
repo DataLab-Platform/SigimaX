@@ -50,9 +50,9 @@ from sigimax.config import (
     APP_NAME,
     DEBUG,
     TEST_SEGFAULT_ERROR,
-    Conf,
     _,
 )
+from sigimax.config import CONF as Conf
 from sigimax.env import execenv
 from sigimax.gui.docks import DockablePlotWidget
 from sigimax.utils import qthelpers as qth
@@ -139,7 +139,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
 
         # Setup actions and menus
         if console is None:
-            console = Conf.console.console_enabled.get()
+            console = Conf.console_enabled.get()
         self.setup(console)
 
         self.__restore_pos_and_size()
@@ -156,7 +156,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
             True if memory state is ok
         """
         if not env.execenv.unattended and self.__memory_warning:
-            threshold = Conf.main.available_memory_threshold.get()
+            threshold = Conf.available_memory_threshold.get()
             answer = QW.QMessageBox.critical(
                 self,
                 _("Warning"),
@@ -213,9 +213,9 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
             # If 'do_not_quit' is set, we do not show any message box to avoid blocking
             # the test suite
             return
-        elif Conf.main.faulthandler_log_available.get(
+        elif Conf.faulthandler_log_available.get(
             False
-        ) or Conf.main.traceback_log_available.get(False):
+        ) or Conf.traceback_log_available.get(False):
             txt = "<br>".join(
                 [
                     logviewer.get_log_prompt_message(),
@@ -260,11 +260,11 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
     # ------GUI setup
     def __restore_pos_and_size(self) -> None:
         """Restore main window position and size from configuration"""
-        pos = Conf.main.window_position.get(None)
+        pos = Conf.window_position.get(None)
         if pos is not None:
             posx, posy = pos
             self.move(QC.QPoint(posx, posy))
-        size = Conf.main.window_size.get(None)
+        size = Conf.window_size.get(None)
         if size is None:
             sgeo = self.screen().availableGeometry()
             sw, sh = sgeo.width(), sgeo.height()
@@ -289,7 +289,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
 
     def __restore_state(self) -> None:
         """Restore main window state from configuration"""
-        state = Conf.main.window_state.get(None)
+        state = Conf.window_state.get(None)
         if state is not None:
             state = base64.b64decode(state)
             self.restoreState(QC.QByteArray(state))
@@ -300,16 +300,16 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
     def __save_pos_size_and_state(self) -> None:
         """Save main window position, size and state to configuration"""
         is_maximized = self.windowState() == QC.Qt.WindowMaximized
-        Conf.main.window_maximized.set(is_maximized)
+        Conf.window_maximized.set(is_maximized)
         if not is_maximized:
             size = self.size()
-            Conf.main.window_size.set((size.width(), size.height()))
+            Conf.window_size.set((size.width(), size.height()))
             pos = self.pos()
-            Conf.main.window_position.set((pos.x(), pos.y()))
+            Conf.window_position.set((pos.x(), pos.y()))
         # Encoding window state into base64 string to avoid sending binary data
         # to the configuration file:
         state = base64.b64encode(self.saveState().data()).decode("ascii")
-        Conf.main.window_state.set(state)
+        Conf.window_state.set(state)
 
     def setup(self, console: bool = False) -> None:
         """Setup main window
@@ -338,7 +338,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
             self.consolestatus = status.ConsoleStatus()
             self.statusBar().addPermanentWidget(self.consolestatus)
         # Memory status
-        threshold = Conf.main.available_memory_threshold.get()
+        threshold = Conf.available_memory_threshold.get()
         self.memorystatus = status.MemoryStatus(threshold)
         self.memorystatus.SIG_MEMORY_ALARM.connect(self.__set_low_memory_state)
         self.statusBar().addPermanentWidget(self.memorystatus)
@@ -525,7 +525,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         Console show mode is whether the console is shown or not when an error occurs.
         """
         if self.console is not None:
-            state = Conf.console.show_console_on_error.get()
+            state = Conf.show_console_on_error.get()
             cdock = self.docks[self.console]
             if not state and cdock.isVisible():
                 cdock.hide()
@@ -561,7 +561,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
             "numpy as np, scipy.signal as sps, scipy.ndimage as spi"
         )
         self.console = DockableConsole(self, namespace=ns, message=msg, debug=DEBUG)
-        self.console.setMaximumBlockCount(Conf.console.max_line_count.get(5000))
+        self.console.setMaximumBlockCount(Conf.console_max_line_count.get(5000))
         self.console.go_to_error.connect(go_to_error)
         cdock = self.__add_dockwidget(self.console, _("Console"))
         self.docks[self.console] = cdock
@@ -663,7 +663,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         bname = osp.basename(filename)
         if operation == "load" and not osp.isfile(filename):
             raise IOError(f'File not found "{bname}"')
-        Conf.main.base_dir.set(filename)
+        Conf.base_dir.set(filename)
         return filename
 
     def save_to_h5_file(self, filename=None) -> None:
@@ -676,7 +676,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
             IOError: if filename is invalid or file cannot be saved.
         """
         if filename is None:
-            basedir = Conf.main.base_dir.get()
+            basedir = Conf.base_dir.get()
             with qth.save_restore_stds():
                 filename, _fl = getsavefilename(
                     self,
@@ -707,8 +707,8 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         if reset_all is None:
             # When workspace is empty, always preserve UUIDs (reset_all=True)
             # since there's no risk of conflicts
-            reset_all = Conf.io.h5_clear_workspace.get()
-            if Conf.io.h5_clear_workspace_ask.get():
+            reset_all = Conf.h5_clear_workspace.get()
+            if Conf.h5_clear_workspace_ask.get():
                 # Build message with optional note for native workspace import
                 msg = _(
                     "Do you want to clear current workspace "
@@ -740,9 +740,9 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
                 elif answer == QW.QMessageBox.No:
                     reset_all = False
                 elif answer == QW.QMessageBox.Ignore:
-                    Conf.io.h5_clear_workspace_ask.set(False)
+                    Conf.h5_clear_workspace_ask.set(False)
         if h5files is None:
-            basedir = Conf.main.base_dir.get()
+            basedir = Conf.base_dir.get()
             with qth.save_restore_stds():
                 h5files, _fl = getopenfilenames(
                     self,
@@ -843,7 +843,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
     def __about(self) -> None:  # pragma: no cover
         """About dialog box"""
         self.check_stable_release()
-        if Conf.main.process_isolation_enabled.get():
+        if Conf.process_isolation_enabled.get():
             pistate = "<font color='green'>" + _("enabled") + "</font>"
         else:
             pistate = "<font color='red'>" + _("disabled") + "</font>"
@@ -872,7 +872,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
             startup: True if method is called during application startup (in that case,
              color theme is applied only if mode != "auto")
         """
-        mode = Conf.main.color_mode.get()
+        mode = Conf.color_mode.get()
         if startup and mode == "auto":
             guidata_qth.win32_fix_title_bar_background(self)
             return
@@ -954,7 +954,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         self.__save_pos_size_and_state()
 
         # Saving current tab for next session
-        Conf.main.current_tab.set(self.tabwidget.currentIndex())
+        Conf.current_tab.set(self.tabwidget.currentIndex())
 
         execenv.log(self, "closed properly")
         return True

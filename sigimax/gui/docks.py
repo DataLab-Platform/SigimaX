@@ -56,7 +56,8 @@ from sigima.objects import create_signal
 from sigima.tools.signal import pulse
 from skimage import measure
 
-from sigimax.config import APP_NAME, Conf, _
+from sigimax.config import APP_NAME, _
+from sigimax.config import CONF as Conf
 
 if TYPE_CHECKING:
     from plotpy.items.image.base import BaseImageItem
@@ -296,12 +297,12 @@ class SigimaXPlotWidget(PlotWidget):
     def __init__(self, plot_type: PlotType) -> None:
         # Get autoscale margin from configuration based on plot type
         if plot_type == PlotType.CURVE:
-            autoscale_margin = Conf.view.sig_autoscale_margin_percent.get()
+            autoscale_margin = Conf.sig_autoscale_margin_percent.get()
         elif plot_type == PlotType.IMAGE:
-            autoscale_margin = Conf.view.ima_autoscale_margin_percent.get()
+            autoscale_margin = Conf.ima_autoscale_margin_percent.get()
         else:
             # For AUTO or MANUAL types, use signal margin as default
-            autoscale_margin = Conf.view.sig_autoscale_margin_percent.get()
+            autoscale_margin = Conf.sig_autoscale_margin_percent.get()
 
         super().__init__(
             options=PlotOptions(
@@ -407,7 +408,7 @@ class DockablePlotWidget(DockableWidget):
 
     def __get_toolbar_row_col(self) -> tuple[int, int]:
         """Return toolbar row and column"""
-        tb_pos = Conf.view.plot_toolbar_position.get()
+        tb_pos = Conf.plot_toolbar_position.get()
         tb_col, tb_row = 1, 1
         if tb_pos in ("left", "right"):
             self.toolbar.setOrientation(QC.Qt.Vertical)

@@ -4,7 +4,7 @@
 
 # guitest: show
 
-from sigimax.options import SigimaXOptions, TypedOptionField
+from sigimax.config import SigimaXOptions, TypedOptionField
 
 
 class MyAppOptions(SigimaXOptions):
