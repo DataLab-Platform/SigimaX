@@ -51,10 +51,11 @@ if TEST_SEGFAULT_ERROR:
     print('*** TEST_SEGFAULT_ERROR mode *** [Enabling test action in "?" menu]')
 DATETIME_FORMAT = "%d/%m/%Y - %H:%M:%S"
 
-# TODO : handle data data, icon and logo generically
-# configtools.add_image_module_path(MOD_NAME, osp.join("data", "logo"))
+
 configtools.add_image_module_path(MOD_NAME, osp.join("data", "icons"))
 
+# TODO : handle sigimax app derivated logo, other data and snapshots dir generically
+# configtools.add_image_module_path(MOD_NAME, osp.join("data", "logo"))
 # DATAPATH = configtools.get_module_data_path(MOD_NAME, "data")
 # SHOTPATH = osp.join(
 #    configtools.get_module_data_path(MOD_NAME), os.pardir, "doc", "images", "shots"
