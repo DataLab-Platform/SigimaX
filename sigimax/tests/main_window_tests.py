@@ -15,7 +15,7 @@ from sigimax.tests import sigimax_test_app_context
 
 def test_main_app():
     """Main window test"""
-    with sigimax_test_app_context(console=False) as win:
+    with sigimax_test_app_context(console=True) as win:
         print("Main window test")
         win.activateWindow()
 

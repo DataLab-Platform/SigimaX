@@ -589,7 +589,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.traceback_log_path = TypedOptionField(
             self,
             "traceback_log_path",
-            default="",
+            default=f".{self.app_name.get()}_traceback.log",
             expected_type=str,
             description="Path to the traceback log file (relative to config dir).",
         )
@@ -610,7 +610,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.faulthandler_log_path = TypedOptionField(
             self,
             "faulthandler_log_path",
-            default="",
+            default=f".{self.app_name.get()}_faulthandler.log",
             expected_type=str,
             description="Path to the faulthandler log file (relative to config dir).",
         )
