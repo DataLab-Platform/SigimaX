@@ -15,7 +15,6 @@ from typing import (
     TypeVar,
 )
 
-# from datalab.adapters_metadata import GeometryAdapter
 from guidata.dataset import update_dataset
 from plotpy.items import (
     AnnotatedShape,

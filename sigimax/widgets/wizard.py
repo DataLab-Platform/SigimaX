@@ -22,11 +22,13 @@ This module is strongly inspired from Qt's `QWizard` and `QWizardPage` classes.
 
 from __future__ import annotations
 
+from guidata.configtools import get_icon
 from qtpy import QtCore as QC
 from qtpy import QtWidgets as QW
 from qtpy.compat import getopenfilename
 from qtpy.QtWidgets import QWidget
 
+from sigimax.config import CONF as Conf
 from sigimax.config import _
 
 
@@ -46,6 +48,8 @@ class WizardPage(QW.QWidget):
 
     def __init__(self, parent: QW.QWidget | None = None) -> None:
         super().__init__(parent)
+        if parent is None:
+            self.setWindowIcon(get_icon(Conf.app_logo_path.get()))
         self.__is_valid: bool = True
         self.wizard: Wizard | None = None
         self._main_layout = QW.QVBoxLayout()

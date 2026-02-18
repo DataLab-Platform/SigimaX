@@ -14,6 +14,7 @@ from plotpy.builder import make
 from plotpy.plot import PlotDialog, PlotOptions
 
 from sigimax.adapters_plotpy import create_adapter_from_object
+from sigimax.config import CONF as Conf
 from sigimax.config import _
 from sigimax.utils.qthelpers import resize_widget_to_parent
 
@@ -51,7 +52,7 @@ class ImageBackgroundDialog(PlotDialog):
         )
         self.setObjectName("backgroundselection")
         if parent is None:
-            self.setWindowIcon(get_icon("DataLab.svg"))
+            self.setWindowIcon(get_icon(Conf.app_logo_path.get()))
         else:
             resize_widget_to_parent(self, aspect_ratio=1.0)
         self.__image = image.copy()

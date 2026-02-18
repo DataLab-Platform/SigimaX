@@ -26,10 +26,7 @@ from sigimax.config import MOD_NAME
 from sigimax.gui.main import SGMXMainWindow
 from sigimax.utils import qthelpers as qth
 
-# Add test data files and folders pointed by `DATALAB_DATA` environment variable:
-helpers.add_test_path_from_env("DATALAB_DATA")
-
-# Add test data files and folders for the DataLab module:
+# Add test data files and folders for the SigimaX module:
 helpers.add_test_module_path(MOD_NAME, osp.join("data", "tests"))
 
 

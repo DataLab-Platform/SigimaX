@@ -41,7 +41,7 @@ def plotitem_to_singleroi(
     | AnnotatedPolygon,
     obj: SignalObj | ImageObj | None = None,
 ) -> SegmentROI | RectangularROI | CircularROI | PolygonalROI:
-    """Create a single ROI from the given PlotPy item to integrate with DataLab
+    """Create a single ROI from the given PlotPy item to integrate with SigimaX
 
     Args:
         plot_item: The PlotPy item for which to create a single ROI
@@ -75,7 +75,7 @@ def singleroi_to_plotitem(
     roi: SegmentROI | RectangularROI | CircularROI | PolygonalROI,
     obj: SignalObj | ImageObj,
 ) -> AnnotatedXRange | AnnotatedRectangle | AnnotatedCircle | AnnotatedPolygon:
-    """Create a PlotPy item from the given single ROI to integrate with DataLab
+    """Create a PlotPy item from the given single ROI to integrate with SigimaX
 
     Args:
         roi: The single ROI for which to create a PlotPy item

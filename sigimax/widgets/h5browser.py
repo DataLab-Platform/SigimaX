@@ -739,6 +739,8 @@ class H5Browser(QW.QSplitter):
 
     def __init__(self, parent: QW.QWidget | None = None) -> None:
         super().__init__(parent)
+        if parent is None:
+            self.setWindowIcon(get_icon(Conf.app_logo_path.get()))
         self.selector = H5FileSelector(self)
         self.selector.SIG_ADD_FILENAME.connect(self.__add_new_file)
         self.selector.SIG_REMOVE_FILENAME.connect(self.__remove_file)

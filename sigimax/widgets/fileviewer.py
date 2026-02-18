@@ -8,9 +8,11 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from guidata.configtools import get_icon
 from guidata.widgets.codeeditor import CodeEditor
 from qtpy import QtWidgets as QW
 
+from sigimax.config import CONF as Conf
 from sigimax.config import _
 
 
@@ -64,6 +66,8 @@ class FileViewerWidget(QW.QWidget):
 
     def __init__(self, language: str | None = None, parent: QW.QWidget = None) -> None:
         super().__init__(parent)
+        if parent is None:
+            self.setWindowIcon(get_icon(Conf.app_logo_path.get()))
         self.editor = CodeEditor(language=language)
         self.editor.setReadOnly(True)
         layout = QW.QVBoxLayout()

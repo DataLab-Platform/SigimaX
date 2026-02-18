@@ -44,15 +44,15 @@ from qtpy.compat import getopenfilenames, getsavefilename
 
 # from qtpy.compat import getopenfilenames, getsavefilename
 import sigimax
-from sigimax import __docurl__, __homeurl__, __supporturl__, env
+from sigimax import __homeurl__, env
+from sigimax.config import CONF as Conf
 from sigimax.config import (
-    APP_DESC,
-    APP_NAME,
     DEBUG,
+    MOD_DESC,
+    MOD_TITLE,
     TEST_SEGFAULT_ERROR,
     _,
 )
-from sigimax.config import CONF as Conf
 from sigimax.env import execenv
 from sigimax.gui.docks import DockablePlotWidget
 from sigimax.utils import qthelpers as qth
@@ -98,9 +98,8 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         """Initialize main window"""
         SGMXMainWindow.__instance = self
         super().__init__()
-        self.setObjectName(APP_NAME)
-        # TODO by config option -> set AppIcon (generic) + set default
-        # self.setWindowIcon(get_icon("DataLab.svg"))
+        self.setObjectName(Conf.app_name.get())
+        self.setWindowIcon(get_icon(Conf.app_logo_path.get()))
 
         execenv.log(self, "Starting initialization")
 
@@ -192,7 +191,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
                 "by the developer before it is released."
             )
         txtlist = [
-            f"<b>{APP_NAME}</b> v{sigimax.__version__}:",
+            f"<b>{Conf.app_name.get()}</b> v{Conf.app_version.get()}:",
             "",
             _("<i>This is not a stable release.</i>"),
             "",
@@ -200,7 +199,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         ]
         if not env.execenv.unattended:
             QW.QMessageBox.warning(
-                self, APP_NAME, "<br>".join(txtlist), QW.QMessageBox.Ok
+                self, Conf.app_name.get(), "<br>".join(txtlist), QW.QMessageBox.Ok
             )
 
     def check_for_previous_crash(self) -> None:  # pragma: no cover
@@ -224,7 +223,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
                 ]
             )
             btns = QW.QMessageBox.StandardButton.Yes | QW.QMessageBox.StandardButton.No
-            choice = QW.QMessageBox.warning(self, APP_NAME, txt, btns)
+            choice = QW.QMessageBox.warning(self, Conf.app_name.get(), txt, btns)
             if choice == QW.QMessageBox.StandardButton.Yes:
                 self.__show_logviewer()
 
@@ -332,7 +331,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         Args:
             console: True if console is enabled
         """
-        self.statusBar().showMessage(_("Welcome to %s!") % APP_NAME, 5000)
+        self.statusBar().showMessage(_("Welcome to %s!") % Conf.app_name.get(), 5000)
         if console:
             # Console status
             self.consolestatus = status.ConsoleStatus()
@@ -468,7 +467,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
                 self,
                 _("Online documentation"),
                 icon=get_icon("libre-gui-help.svg"),
-                triggered=lambda: webbrowser.open(__docurl__),
+                triggered=lambda: webbrowser.open(Conf.app_docurl.get()),
             ),
         ]
         # TODO : setup generic doc path
@@ -502,13 +501,13 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
                 self,
                 _("Project home page"),
                 icon=get_icon("libre-gui-globe.svg"),
-                triggered=lambda: webbrowser.open(__homeurl__),
+                triggered=lambda: webbrowser.open(Conf.app_homeurl.get()),
             ),
             create_action(
                 self,
                 _("Bug report or feature request"),
                 icon=get_icon("libre-gui-globe.svg"),
-                triggered=lambda: webbrowser.open(__supporturl__),
+                triggered=lambda: webbrowser.open(Conf.app_supporturl.get()),
             ),
             create_action(
                 self,
@@ -577,9 +576,9 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
     def set_modified(self, state: bool = True) -> None:
         """Set mainwindow modified state"""
         self.__is_modified = state
-        title = APP_NAME + ("*" if state else "")
-        if not sigimax.__version__.replace(".", "").isdigit():
-            title += f" [{sigimax.__version__}]"
+        title = Conf.app_name.get() + ("*" if state else "")
+        if not Conf.app_version.get().replace(".", "").isdigit():
+            title += f" [{Conf.app_version.get()}]"
         self.setWindowTitle(title)
 
     def is_modified(self) -> bool:
@@ -640,7 +639,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
 
             answer = QW.QMessageBox.question(
                 self,
-                APP_NAME,
+                Conf.app_name.get(),
                 "<br>".join(txtlist),
                 QW.QMessageBox.Yes | QW.QMessageBox.No,
                 QW.QMessageBox.No,
@@ -854,14 +853,16 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
             ]
         )
         # TODO implement "about" configuration in SigimaX
-        created_by = _("Created by")
-        dev_by = _("Developed and maintained by %s open-source project team") % APP_NAME
+        dev_by = _("Developed and maintained by DataLab open-source project team")
         cprght = "2023 DataLab Platform Developers"
         QW.QMessageBox.about(
             self,
-            _("About") + " " + APP_NAME,
-            f"""<b>{APP_NAME}</b> v{sigimax.__version__}<br>{APP_DESC}
-              <p>{created_by} Pierre Raybaut<br>{dev_by}<br>Copyright &copy; {cprght}
+            _("About") + " " + Conf.app_name.get(),
+            f"""<b>{Conf.app_name.get()}</b> v{Conf.app_version.get()}
+              <br>{Conf.app_desc.get()}
+              <p>Based on <a href="{__homeurl__}">{MOD_TITLE}</a>
+              <br>{MOD_DESC}
+              <p>{dev_by}<br>Copyright &copy; {cprght}
               <p>{adv_conf}""",
         )
 

@@ -10,7 +10,7 @@ import subprocess
 import traceback
 
 from guidata.config import CONF
-from guidata.configtools import get_font
+from guidata.configtools import get_font, get_icon
 from guidata.qthelpers import exec_dialog, get_std_icon
 from guidata.widgets.console.shell import PythonShellWidget
 from qtpy import QtCore as QC
@@ -100,7 +100,8 @@ class WarningErrorMessageBox(QW.QDialog):
         super().__init__(parent)
         assert category in ("error", "warning")
         self.setWindowTitle(parent.window().objectName())
-
+        if parent is None:
+            self.setWindowIcon(get_icon(Conf.app_logo_path.get()))
         self.shell = PythonShellWidget(self, read_only=True)
         self.shell.go_to_error.connect(go_to_error)
         font = get_font(CONF, "console")

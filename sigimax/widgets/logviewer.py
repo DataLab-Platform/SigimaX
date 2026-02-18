@@ -12,8 +12,8 @@ from guidata.configtools import get_icon
 from guidata.qthelpers import exec_dialog
 from qtpy import QtWidgets as QW
 
-from sigimax.config import APP_NAME, _, get_old_log_fname
 from sigimax.config import CONF as Conf
+from sigimax.config import _, get_old_log_fname
 from sigimax.env import execenv
 from sigimax.widgets.fileviewer import FileViewerWidget, get_title_contents
 
@@ -24,8 +24,8 @@ class LogViewerWindow(QW.QDialog):
     def __init__(self, fnames: list[str], parent: QW.QWidget | None = None) -> None:
         super().__init__(parent)
         self.setObjectName("logviewer")
-        self.setWindowTitle(APP_NAME + " - " + _("Log files"))
-        self.setWindowIcon(get_icon("DataLab.svg"))
+        self.setWindowTitle(Conf.app_name.get() + " - " + _("Log files"))
+        self.setWindowIcon(get_icon(Conf.app_logo_path.get()))
         self.tabs = QW.QTabWidget(self)
         for fname in fnames:
             if osp.isfile(fname):
@@ -74,7 +74,7 @@ def exec_sigimax_logviewer_dialog(parent: QW.QWidget | None = None) -> None:
     if dlg.is_empty:
         if not execenv.unattended:
             QW.QMessageBox.information(
-                dlg, APP_NAME, _("Log files are currently empty.")
+                dlg, Conf.app_name.get(), _("Log files are currently empty.")
             )
         dlg.close()
     else:

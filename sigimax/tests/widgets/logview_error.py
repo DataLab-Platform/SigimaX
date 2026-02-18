@@ -1,7 +1,7 @@
 # Copyright (c) DataLab Platform Developers, BSD 3-Clause license, see LICENSE file.
 
 """
-Log viewer test: raise an exception and create a seg fault in DataLab
+Log viewer test: raise an exception and create a seg fault in derivated SigimaX App
 """
 
 # guitest: skip
@@ -13,7 +13,7 @@ from sigimax.gui.main import SGMXMainWindow
 
 
 def error():
-    """Raise an exception and create a seg fault in DataLab"""
+    """Raise an exception and create a seg fault in derivated SigimaX App"""
     with execenv.context(unattended=True):
         with qt_app_context(exec_loop=True):
             win = SGMXMainWindow()

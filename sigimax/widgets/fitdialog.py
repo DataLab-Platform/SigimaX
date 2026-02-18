@@ -62,7 +62,7 @@ def guifit(
     except ValueError:
         pass
     if parent is None:
-        win.setWindowIcon(get_icon("DataLab.svg"))
+        win.setWindowIcon(get_icon(Conf.app_logo_path.get()))
     if winsize is not None:
         win.resize(*winsize)
     if winpos is not None:

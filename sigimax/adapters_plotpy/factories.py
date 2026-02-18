@@ -20,8 +20,6 @@ def create_adapter_from_object(object_to_adapt):
         An adapter instance
     """
     # pylint: disable=import-outside-toplevel
-    # Import adapters as needed to avoid circular imports
-    # from datalab.adapters_metadata import GeometryAdapter, TableAdapter
     from sigima.objects import (
         CircularROI,
         ImageObj,

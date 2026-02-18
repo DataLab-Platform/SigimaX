@@ -4,8 +4,8 @@
 Adapters for PlotPy
 ===================
 
-The :mod:`datalab.adapters_plotpy` package provides adapters for
-PlotPy to integrate with DataLab's data model and GUI.
+The :mod:`sigimax.adapters_plotpy` package provides adapters for
+PlotPy to integrate with SigimaX's data model and GUI.
 """
 
 __all__ = [

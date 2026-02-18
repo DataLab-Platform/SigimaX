@@ -15,6 +15,7 @@ from qtpy import QtCore as QC
 from qtpy import QtGui as QG
 from qtpy import QtWidgets as QW
 
+from sigimax.config import CONF as Conf
 from sigimax.config import DEBUG, _
 from sigimax.env import execenv
 
@@ -31,6 +32,8 @@ class BaseStatus(QW.QWidget):
         self, delay: int | None = None, parent: QW.QWidget | None = None
     ) -> None:
         super().__init__(parent)
+        if parent is None:
+            self.setWindowIcon(get_icon(Conf.app_logo_path.get()))
         layout = QW.QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(layout)

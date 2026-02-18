@@ -27,13 +27,11 @@ from qtpy import QtCore as QC
 from qtpy import QtGui as QG
 from qtpy import QtWidgets as QW
 
+from sigimax.config import CONF as Conf
 from sigimax.config import (
-    APP_NAME,
-    DATETIME_FORMAT,
     _,
     get_old_log_fname,
 )
-from sigimax.config import CONF as Conf
 from sigimax.env import execenv
 
 
@@ -107,11 +105,9 @@ def sigimax_app_context(
 
     # === Set application name and version ---------------------------------------------
     # pylint: disable=import-outside-toplevel
-    import sigimax
-
-    QAPP_INSTANCE.setApplicationName(APP_NAME)
-    QAPP_INSTANCE.setApplicationVersion(sigimax.__version__)
-    QAPP_INSTANCE.setOrganizationName(APP_NAME + " project")
+    QAPP_INSTANCE.setApplicationName(Conf.app_name.get())
+    QAPP_INSTANCE.setApplicationVersion(Conf.app_version.get())
+    QAPP_INSTANCE.setOrganizationName(Conf.app_name.get() + " project")
 
     if enable_logs:
         # === Create a logger for standard exceptions ----------------------------------
@@ -124,7 +120,7 @@ def sigimax_app_context(
             filemode="w",
             level=logging.ERROR,
             format=fmt,
-            datefmt=DATETIME_FORMAT,
+            datefmt=Conf.datetime_format.get(),
         )
 
         def custom_excepthook(exc_type, exc_value, exc_traceback):
@@ -421,7 +417,9 @@ def qt_try_loadsave_file(
             f"<span style='font-weight:bold;color:#555555;'>{osp.basename(filename)}"
             f"</span> (<a href='file:///{url}'>{in_folder}</a>)"
         )
-        QW.QMessageBox.critical(parent, APP_NAME, f"{message}<br><br>{str(msg)}")
+        QW.QMessageBox.critical(
+            parent, Conf.app_name.get(), f"{message}<br><br>{str(msg)}"
+        )
     finally:
         pass
 

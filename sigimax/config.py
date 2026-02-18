@@ -88,11 +88,12 @@ from sigima.proc.title_formatting import (
     set_default_title_formatter,
 )
 
+from sigimax import __docurl__, __homeurl__, __supporturl__
 from sigimax.utils import conf as _conf_module  # For config dir resolution
 
 # Module-level constants
+MOD_TITLE = "SigimaX"
 MOD_NAME = "sigimax"
-APP_NAME = "SigimaX"
 
 # Configure Sigima to use placeholder title formatting
 set_default_title_formatter(PlaceholderTitleFormatter())
@@ -102,10 +103,9 @@ _ = configtools.get_translation(MOD_NAME)
 configtools.add_image_module_path(MOD_NAME, osp.join("data", "icons"))
 
 # Other Module-level constants
-APP_DESC = _("""SigimaX is a GUI library working with Sigima and PlotPyStack.
+MOD_DESC = _("""SigimaX is a GUI library working with Sigima and PlotPyStack.
              It provides a App configuration system, a generic MainWindow class and a
              set of widgets to build applications on top of Sigima and PlotPyStack.""")
-APP_PATH = osp.dirname(__file__)
 
 DEBUG = os.environ.get("DEBUG", "").lower() in ("1", "true")
 if DEBUG:
@@ -114,7 +114,7 @@ if DEBUG:
 TEST_SEGFAULT_ERROR = len(os.environ.get("TEST_SEGFAULT_ERROR", "")) > 0
 if TEST_SEGFAULT_ERROR:
     print('*** TEST_SEGFAULT_ERROR mode *** [Enabling test action in "?" menu]')
-DATETIME_FORMAT = "%d/%m/%Y - %H:%M:%S"
+# DATETIME_FORMAT = "%d/%m/%Y - %H:%M:%S"
 
 
 def get_old_log_fname(fname):
@@ -513,13 +513,68 @@ class SigimaXOptions(AppOptionsContainer):
         # ===================================================================
         # Main options — Application-level settings
         # ===================================================================
-
+        self.app_name = TypedOptionField(
+            self,
+            "app_name",
+            default="SigimaX",
+            expected_type=str,
+            description="Application name.",
+        )
+        self.app_version = TypedOptionField(
+            self,
+            "app_version",
+            default="0.1.0",
+            expected_type=str,
+            description="Application version.",
+        )
+        self.app_logo_path = TypedOptionField(
+            self,
+            "app_logo_path",
+            default="",
+            expected_type=str,
+            description="Path to the application logo.",
+        )
+        self.app_desc = TypedOptionField(
+            self,
+            "app_desc",
+            default="",
+            expected_type=str,
+            description="Application description.",
+        )
+        self.app_docurl = TypedOptionField(
+            self,
+            "app_docurl",
+            default=__docurl__,
+            expected_type=str,
+            description="URL to the application documentation.",
+        )
+        self.app_homeurl = TypedOptionField(
+            self,
+            "app_homeurl",
+            default=__homeurl__,
+            expected_type=str,
+            description="URL to the application homepage.",
+        )
+        self.app_supporturl = TypedOptionField(
+            self,
+            "app_supporturl",
+            default=__supporturl__,
+            expected_type=str,
+            description="URL to the application support/contact page.",
+        )
         self.color_mode = EnumOptionField(
             self,
             "color_mode",
             default="auto",
             choices=["auto", "dark", "light"],
             description="Application color mode (auto, dark, or light).",
+        )
+        self.datetime_format = TypedOptionField(
+            self,
+            "datetime_format",
+            default="%d/%m/%Y - %H:%M:%S",
+            expected_type=str,
+            description="Application datetime format.",
         )
         self.process_isolation_enabled = TypedOptionField(
             self,
