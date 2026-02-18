@@ -4,7 +4,7 @@
 name = "sigimax"
 authors = [{ name = "Pierre Raybaut", email = "p.raybaut@codra.fr" }]
 maintainers = [
-    { name = "DataLab Platform Developers", email = "p.raybaut@codra.fr" },
+    { name = "DataLab Platform Developers", email = "datalab@codra.fr" },
 ]
 description = "Reusable GUI components and application utilities, part of the DataLab platform for signal and image processing"
 readme = "README.md"
