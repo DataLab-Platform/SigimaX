@@ -18,6 +18,7 @@ from guidata import configtools
 from plotpy.config import CONF as PLOTPY_CONF
 from plotpy.config import MAIN_BG_COLOR, MAIN_FG_COLOR
 from plotpy.constants import LUTAlpha
+from sigima.config import OptionField, TypedOptionField
 from sigima.config import options as sigima_options
 from sigima.proc.title_formatting import (
     PlaceholderTitleFormatter,
@@ -276,7 +277,7 @@ def initialize():
     #
     # Main section
     Conf.main.color_mode.get("auto")
-    Conf.main.process_isolation_enabled.get(True)
+    Conf.main.process_isolation_enabled.get(True)  # TODO: keep ?
     Conf.main.traceback_log_path.get(f".{APP_NAME}_traceback.log")
     Conf.main.faulthandler_log_path.get(f".{APP_NAME}_faulthandler.log")
     Conf.main.available_memory_threshold.get(500)
@@ -287,8 +288,8 @@ def initialize():
     Conf.console.external_editor_path.get("code")
     Conf.console.external_editor_args.get("-g {path}:{line_number}")
     # IO section
-    Conf.io.h5_clear_workspace.get(True)  # Default to avoid objects UUID reset
-    Conf.io.h5_clear_workspace_ask.get(True)
+    Conf.io.h5_clear_workspace.get(True)  # TODO: keep ?
+    Conf.io.h5_clear_workspace_ask.get(True)  # TODO: keep ?
     Conf.io.h5_fullpath_in_title.get(False)
     Conf.io.h5_fname_in_title.get(True)
     iofmts = Conf.io.imageio_formats.get(())
@@ -296,8 +297,11 @@ def initialize():
         sigima_options.imageio_formats.set(iofmts)  # Sync with sigima config
 
     # View section
-    tb_pos = Conf.view.plot_toolbar_position.get("left")
+    tb_pos = Conf.view.plot_toolbar_position.get(
+        "left"
+    )  # TODO : keep ? edit settings futur feature
     assert tb_pos in ("top", "bottom", "left", "right")
+
     Conf.view.sig_linewidth.get(1.0)
     Conf.view.sig_linewidth_perfs_threshold.get(1000)
     Conf.view.sig_autodownsampling.get(True)
