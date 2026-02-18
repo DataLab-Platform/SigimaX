@@ -8,6 +8,10 @@ from sigimax.options import SigimaXOptions, TypedOptionField
 
 
 class MyAppOptions(SigimaXOptions):
+    """
+    Docstring for MyAppOptions
+    """
+
     ENV_VAR = "MYAPP_JSON"
     APP_NAME = "MyApp"
 

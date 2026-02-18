@@ -62,12 +62,6 @@ def pytest_report_header(config):  # pylint: disable=unused-argument
         f"  NumPy {numpy.__version__}, SciPy {scipy.__version__}, "
         f"h5py {h5py.__version__}, scikit-image {skimage.__version__}",
     ]
-    try:
-        import cv2  # pylint: disable=import-outside-toplevel
-
-        infolist[-1] += f", OpenCV {cv2.__version__}"
-    except ImportError:
-        pass
     envlist = []
     for vname in ("PYTHONPATH", "DEBUG", "QT_API", "QT_QPA_PLATFORM"):
         value = os.environ.get(vname, "")

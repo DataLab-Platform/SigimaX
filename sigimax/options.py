@@ -68,9 +68,11 @@ from __future__ import annotations
 
 import json
 import os
+import os.path as osp
 from pathlib import Path
 from typing import Any
 
+from guidata import configtools
 from plotpy.config import CONF as PLOTPY_CONF
 from plotpy.config import MAIN_BG_COLOR, MAIN_FG_COLOR
 from sigima.config import (
@@ -79,8 +81,21 @@ from sigima.config import (
     OptionsContainer,
     TypedOptionField,
 )
+from sigima.config import options as sigima_options
+from sigima.proc.title_formatting import (
+    PlaceholderTitleFormatter,
+    set_default_title_formatter,
+)
 
 from sigimax.utils import conf as _conf_module  # For config dir resolution
+
+# Configure Sigima to use placeholder title formatting
+set_default_title_formatter(PlaceholderTitleFormatter())
+
+# Configure guidata translation and icons paths for SigimaX
+MOD_NAME = "sigimax"
+_ = configtools.get_translation(MOD_NAME)
+configtools.add_image_module_path(MOD_NAME, osp.join("data", "icons"))
 
 # ---------------------------------------------------------------------------
 # Custom OptionField subclasses for GUI application options
@@ -384,11 +399,6 @@ class AppOptionsContainer(OptionsContainer):
         return sorted(
             name for name in vars(self) if isinstance(getattr(self, name), OptionField)
         )
-
-
-# ---------------------------------------------------------------------------
-# SigimaX generic options
-# ---------------------------------------------------------------------------
 
 
 # ---------------------------------------------------------------------------
@@ -1320,8 +1330,6 @@ class SigimaXOptions(AppOptionsContainer):
         Call this after loading or modifying options that have Sigima counterparts
         (``fft_shift_enabled``, ``auto_normalize_kernel``, ``imageio_formats``).
         """
-        from sigima.config import options as sigima_options
-
         sigima_options.fft_shift_enabled.set(self.fft_shift_enabled.get())
         sigima_options.auto_normalize_kernel.set(self.auto_normalize_kernel.get())
         sigima_options.imageio_formats.set(self.imageio_formats.get())

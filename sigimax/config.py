@@ -18,7 +18,6 @@ from guidata import configtools
 from plotpy.config import CONF as PLOTPY_CONF
 from plotpy.config import MAIN_BG_COLOR, MAIN_FG_COLOR
 from plotpy.constants import LUTAlpha
-from sigima.config import OptionField, TypedOptionField
 from sigima.config import options as sigima_options
 from sigima.proc.title_formatting import (
     PlaceholderTitleFormatter,
