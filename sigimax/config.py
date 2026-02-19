@@ -1058,6 +1058,14 @@ class SigimaXOptions(AppOptionsContainer):
         # ===================================================================
         self.sync_with_sigima()
 
+    def reset_to_defaults(self) -> None:
+        """Reset all options to their default values."""
+        for name in vars(self):
+            opt = getattr(self, name)
+            if isinstance(opt, OptionField):
+                opt.set(opt.default, sync_env=False)
+        self.sync_env()
+
     # -- PlotPy INI-based configuration integration --
 
     def get_plotpy_defaults(self) -> dict[str, dict[str, Any]]:

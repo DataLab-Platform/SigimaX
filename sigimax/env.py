@@ -399,16 +399,24 @@ class DLExecEnv:
         if args.h5browser:
             self.h5browser_file = args.h5browser
         if args.version:
-            version = os.environ["SIGIMAX_VERSION"]
-            print(f"SigimaX {version} on {platform.system()}")
-            sys.exit()
-        if args.reset:  # Remove ".SigimaX" configuration directory
             # pylint: disable=import-outside-toplevel
-            from sigimax.config import Conf
+            from sigimax import __version__
+            from sigimax.config import CONF as Conf
+
+            print(
+                (
+                    f"{Conf.app_name} {Conf.app_version},"
+                    f" derivated from SigimaX {__version__} on {platform.system()}"
+                )
+            )
+            sys.exit()
+        if args.reset:
+            # pylint: disable=import-outside-toplevel
+            from sigimax.config import CONF as Conf
 
             print("Resetting SigimaX configuration...", end=" ")
             try:
-                Conf.reset()
+                Conf.reset_to_defaults()
             except Exception:  # pylint: disable=broad-except
                 print("Failed.")
                 traceback.print_exc()
