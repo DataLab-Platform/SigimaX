@@ -31,7 +31,7 @@ from sigimax.adapters_plotpy.base import (
 )
 
 # from sigimax.adapters_plotpy.objects.scalar import GeometryPlotPyAdapter
-from sigimax.config import Conf
+from sigimax.config import CONF as Conf
 
 if TYPE_CHECKING:
     from plotpy.items import CurveItem, MaskedXYImageItem
@@ -43,7 +43,7 @@ class BaseObjPlotPyAdapter(Generic[TypeObj, TypePlotItem]):
     """Object (signal/image) plot item adapter class"""
 
     DEFAULT_FMT = "s"  # This is overriden in children classes
-    CONF_FMT = Conf.view.sig_format  # This is overriden in children classes
+    CONF_FMT = Conf.sig_format  # This is overriden in children classes
 
     def __init__(self, obj: TypeObj) -> None:
         """Initialize the adapter with the object.
@@ -54,7 +54,7 @@ class BaseObjPlotPyAdapter(Generic[TypeObj, TypePlotItem]):
         self.obj = obj
         self.__default_options = {
             "format": "%" + self.CONF_FMT.get(self.DEFAULT_FMT),
-            "showlabel": Conf.view.show_label.get(False),
+            "showlabel": Conf.show_label.get(False),
         }
         self.annotation_adapter = PlotPyAnnotationAdapter(obj)
 
@@ -171,7 +171,7 @@ class BaseObjPlotPyAdapter(Generic[TypeObj, TypePlotItem]):
         Args:
             item: plot item
         """
-        def_dict = Conf.view.get_def_dict(self.__class__.__name__[:3].lower())
+        def_dict = Conf.get_sigima_defaults(self.__class__.__name__[:3].lower())
         self.obj.set_metadata_options_defaults(def_dict, overwrite=False)
 
         # Subclasses have to override this method to update plot item parameters,
@@ -193,7 +193,7 @@ class BaseObjPlotPyAdapter(Generic[TypeObj, TypePlotItem]):
         Args:
             item: plot item
         """
-        def_dict = Conf.view.get_def_dict(self.__class__.__name__[:3].lower())
+        def_dict = Conf.get_sigima_defaults(self.__class__.__name__[:3].lower())
         for key in def_dict:
             if hasattr(item.param, key):  # In case the PlotPy version is not up-to-date
                 self.obj.set_metadata_option(key, getattr(item.param, key))

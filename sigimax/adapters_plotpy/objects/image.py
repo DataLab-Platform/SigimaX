@@ -18,7 +18,7 @@ from sigima.objects import ImageObj
 from sigimax.adapters_plotpy.objects.base import (
     BaseObjPlotPyAdapter,
 )
-from sigimax.config import Conf
+from sigimax.config import CONF as Conf
 
 
 def get_obj_coords(obj: ImageObj) -> tuple[np.ndarray, np.ndarray]:
@@ -44,7 +44,7 @@ def get_obj_coords(obj: ImageObj) -> tuple[np.ndarray, np.ndarray]:
 class ImageObjPlotPyAdapter(BaseObjPlotPyAdapter[ImageObj, MaskedXYImageItem]):
     """Image object plot item adapter class"""
 
-    CONF_FMT = Conf.view.ima_format
+    CONF_FMT = Conf.ima_format
     DEFAULT_FMT = ".1f"
 
     def update_plot_item_parameters(self, item: MaskedXYImageItem) -> None:
@@ -116,7 +116,7 @@ class ImageObjPlotPyAdapter(BaseObjPlotPyAdapter[ImageObj, MaskedXYImageItem]):
             self.obj.maskdata,
             title=self.obj.title,
             colormap="viridis",
-            eliminate_outliers=Conf.view.ima_eliminate_outliers.get(),
+            eliminate_outliers=Conf.ima_eliminate_outliers.get(),
             interpolation="nearest",
             show_mask=True,
         )

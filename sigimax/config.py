@@ -1482,8 +1482,8 @@ class SigimaXOptions(AppOptionsContainer):
         sigima_options.auto_normalize_kernel.set(self.auto_normalize_kernel.get())
         sigima_options.imageio_formats.set(self.imageio_formats.get())
 
-    def get_view_defaults(self, category: str) -> dict:
-        """Get default visualization settings as a dictionary.
+    def get_sigima_defaults(self, category: str) -> dict:
+        """Get default Sigima visualization settings as a dictionary.
 
         Collects all options named ``{category}_def_*`` and returns them
         as a dictionary with the ``{category}_def_`` prefix stripped.
@@ -1495,7 +1495,7 @@ class SigimaXOptions(AppOptionsContainer):
             Dictionary of default visualization settings.
 
         Example:
-            >>> options.get_view_defaults("ima")
+            >>> options.get_sigima_defaults("ima")
             {'colormap': 'viridis', 'alpha': 1.0, ...}
         """
         assert category in ("ima", "sig"), f"Expected 'ima' or 'sig', got {category!r}"
@@ -1510,15 +1510,15 @@ class SigimaXOptions(AppOptionsContainer):
                         result[name[len(prefix) :]] = value
         return result
 
-    def set_view_defaults(self, category: str, defaults: dict) -> None:
-        """Set default visualization settings from a dictionary.
+    def set_sigima_defaults(self, category: str, defaults: dict) -> None:
+        """Set default Sigima visualization settings from a dictionary.
 
         Args:
             category: 'sig' for signal defaults, 'ima' for image defaults.
             defaults: Dictionary of setting names (without prefix) to values.
 
         Example:
-            >>> options.set_view_defaults("ima", {"colormap": "gray"})
+            >>> options.set_sigima_defaults("ima", {"colormap": "gray"})
         """
         assert category in ("ima", "sig"), f"Expected 'ima' or 'sig', got {category!r}"
         prefix = f"{category}_def_"
