@@ -321,7 +321,7 @@ class DockablePlotWidget(DockableWidget):
     """
 
     # TODO use as init arg or in CONF ?
-    LOCATION = QC.Qt.RightDockWidgetArea
+    # LOCATION = QC.Qt.RightDockWidgetArea
 
     def __init__(
         self,
