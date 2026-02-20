@@ -1078,9 +1078,12 @@ class SigimaXOptions(AppOptionsContainer):
         # normalization)
         # ===================================================================
         self.sync_with_sigima()
+
         # ===================================================================
         # Capture default values for reset_to_defaults()
         # (Sigima's OptionField does not expose a .default attribute)
+        # # TODO: [P3] Refactor OptionField to store the default value explicitly,
+        # so we can simplify this logic in the future.
         # ===================================================================
         self._defaults = {
             name: getattr(self, name).get(sync_env=False)
