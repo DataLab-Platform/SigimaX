@@ -15,7 +15,7 @@ from sigimax.tests import sigimax_test_app_context
 
 def memory_alarm(threshold):
     """Memory alarm test"""
-    config.Conf.available_memory_threshold.set(threshold)
+    config.CONF.available_memory_threshold.set(threshold)
     with sigimax_test_app_context() as win:
         win.memorystatus.update_status()  # Force memory status update
         # TODO : Add large data allocation to trigger the alarm
@@ -28,7 +28,7 @@ def test_mem_status():
     for index, threshold in enumerate((mem_available * 2, mem_available - 100)):
         execenv.print(f"    Threshold {index}: {threshold} MB")
         memory_alarm(threshold)
-    config.reset()
+    config.CONF.reset_to_defaults()
 
 
 if __name__ == "__main__":

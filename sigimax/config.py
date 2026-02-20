@@ -511,8 +511,9 @@ class SigimaXOptions(AppOptionsContainer):
         super().__init__()
 
         # ===================================================================
-        # Main options — Application-level settings
+        # Derivated application info — Name, version, description, URLs
         # ===================================================================
+
         self.app_name = TypedOptionField(
             self,
             "app_name",
@@ -562,6 +563,11 @@ class SigimaXOptions(AppOptionsContainer):
             expected_type=str,
             description="URL to the application support/contact page.",
         )
+
+        # ===================================================================
+        # Main options — Application-level settings
+        # ===================================================================
+
         self.color_mode = EnumOptionField(
             self,
             "color_mode",
@@ -576,6 +582,11 @@ class SigimaXOptions(AppOptionsContainer):
             expected_type=str,
             description="Application datetime format.",
         )
+
+        # ===================================================================
+        # TODO : keep ?
+        # ===================================================================
+
         self.process_isolation_enabled = TypedOptionField(
             self,
             "process_isolation_enabled",
@@ -585,7 +596,12 @@ class SigimaXOptions(AppOptionsContainer):
                 "If True, computations run in a separate process to avoid "
                 "GUI freezes and protect against crashes."
             ),
-        )  # TODO: keep ?
+        )
+
+        # ===================================================================
+        # Log and Console state
+        # ===================================================================
+
         self.traceback_log_path = TypedOptionField(
             self,
             "traceback_log_path",
@@ -621,6 +637,11 @@ class SigimaXOptions(AppOptionsContainer):
             expected_type=bool,
             description="Whether a faulthandler log file is currently available.",
         )
+
+        # ===================================================================
+        # Other Application options
+        # ===================================================================
+
         self.available_memory_threshold = TypedOptionField(
             self,
             "available_memory_threshold",
@@ -1057,13 +1078,20 @@ class SigimaXOptions(AppOptionsContainer):
         # normalization)
         # ===================================================================
         self.sync_with_sigima()
+        # ===================================================================
+        # Capture default values for reset_to_defaults()
+        # (Sigima's OptionField does not expose a .default attribute)
+        # ===================================================================
+        self._defaults = {
+            name: getattr(self, name).get(sync_env=False)
+            for name in vars(self)
+            if isinstance(getattr(self, name), OptionField)
+        }
 
     def reset_to_defaults(self) -> None:
         """Reset all options to their default values."""
-        for name in vars(self):
-            opt = getattr(self, name)
-            if isinstance(opt, OptionField):
-                opt.set(opt.default, sync_env=False)
+        for name, default in self._defaults.items():
+            getattr(self, name).set(default, sync_env=False)
         self.sync_env()
 
     # -- PlotPy INI-based configuration integration --
