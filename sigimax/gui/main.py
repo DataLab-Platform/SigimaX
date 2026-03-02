@@ -438,16 +438,31 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
                 icon_size = int(tab_bar.height() * 0.8)
                 self.tabwidget.setIconSize(QC.QSize(icon_size, icon_size))
 
-    # TODO: handle doc path if exist generically
-    # @staticmethod
-    # def __get_local_doc_path() -> str | None:
-    #    """Return local documentation path, if it exists"""
-    #    locale = QC.QLocale.system().name()
-    #    for suffix in ("_" + locale[:2], "_en"):
-    #        path = osp.join(DATAPATH, "doc", f"{APP_NAME}{suffix}.pdf")
-    #        if osp.isfile(path):
-    #            return path
-    #    return None
+    @staticmethod
+    def __get_local_doc_path() -> str | None:
+        """Return local documentation path, if it exists.
+
+        Uses the ``app_local_doc_path`` config field. When the path pattern
+        contains ``{lang}``, the system locale prefix is tried first (e.g.
+        ``fr``), then ``en`` as fallback. If the pattern does not contain
+        ``{lang}``, it is used as-is.
+
+        Returns:
+            Resolved file path, or None if not configured / not found.
+        """
+        pattern = Conf.app_local_doc_path.get()
+        if not pattern:
+            return None
+        if "{lang}" in pattern:
+            locale = QC.QLocale.system().name()
+            for lang in (locale[:2], "en"):
+                path = pattern.format(lang=lang)
+                if osp.isfile(path):
+                    return path
+        else:
+            if osp.isfile(pattern):
+                return pattern
+        return None
 
     def __add_menus(self) -> None:
         """Adding menus"""
@@ -464,8 +479,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
                 triggered=lambda: webbrowser.open(Conf.app_docurl.get()),
             ),
         ]
-        # TODO : setup generic doc path
-        localdocpath = None  # self.__get_local_doc_path()
+        localdocpath = self.__get_local_doc_path()
         if localdocpath is not None:
             help_menu_actions += [
                 create_action(

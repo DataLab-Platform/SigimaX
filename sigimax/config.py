@@ -558,6 +558,16 @@ class SigimaXOptions(AppOptionsContainer):
             expected_type=str,
             description="Application description.",
         )
+        self.app_local_doc_path = TypedOptionField(
+            self,
+            "app_local_doc_path",
+            default="",
+            expected_type=str,
+            description="Path pattern to a local PDF documentation file. "
+            "Use '{lang}' as a placeholder for the locale prefix "
+            "(e.g. 'data/doc/MyApp_{lang}.pdf'). "
+            "If empty, no local PDF menu item is shown.",
+        )
         self.app_docurl = TypedOptionField(
             self,
             "app_docurl",
