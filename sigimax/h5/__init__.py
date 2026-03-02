@@ -5,6 +5,10 @@
 SigimaX HDF5 I/O module
 """
 
+__all__ = [
+    "H5Importer",
+]
+
 # pylint: disable=unused-import
 
 # Registering dynamic I/O features:

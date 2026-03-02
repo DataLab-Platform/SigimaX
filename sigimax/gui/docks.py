@@ -20,6 +20,12 @@ Dockable plot widget
 
 from __future__ import annotations
 
+__all__ = [
+    "CurveStatsToolFunctions",
+    "DockablePlotWidget",
+    "SigimaXPlotWidget",
+]
+
 import warnings
 from typing import TYPE_CHECKING
 

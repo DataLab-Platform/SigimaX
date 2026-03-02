@@ -99,7 +99,12 @@ include = ["sigimax*"]
 version = { attr = "sigimax.__version__" }
 
 [tool.pytest.ini_options]
-addopts = "sigimax"
+addopts = "sigimax --import-mode=importlib"
+filterwarnings = [
+    "ignore::DeprecationWarning:pandas.*",
+    "ignore::DeprecationWarning:scipy.*",
+    "ignore::DeprecationWarning:skimage.*",
+]
 
 [tool.ruff]
 exclude = [".git", ".vscode", "build", "dist", "*.ipynb"]
@@ -109,7 +114,7 @@ target-version = "py39"                        # Assume Python 3.9.
 
 [tool.ruff.lint]
 # all rules can be found here: https://beta.ruff.rs/docs/rules/
-select = ["E", "F", "W", "I", "NPY201"]
+select = ["D202", "D403", "E", "F", "I", "NPY201", "RUF022", "W"]
 ignore = [
     "E203", # space before : (needed for how black formats slicing)
 ]
@@ -119,6 +124,9 @@ quote-style = "double"            # Like Black, use double quotes for strings.
 indent-style = "space"            # Like Black, indent with spaces, rather than tabs.
 skip-magic-trailing-comma = false # Like Black, respect magic trailing commas.
 line-ending = "auto"              # Like Black, automatically detect the appropriate line ending.
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
 
 [tool.ruff.lint.per-file-ignores]
 "doc/*" = ["E402"]

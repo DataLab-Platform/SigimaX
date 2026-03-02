@@ -40,10 +40,10 @@ from sigimax.utils.qthelpers import block_signals, qt_handle_error_message
 
 __all__ = [
     "AbstractTreeWidget",
-    "H5TreeWidget",
-    "H5FileSelector",
     "H5Browser",
     "H5BrowserDialog",
+    "H5FileSelector",
+    "H5TreeWidget",
 ]
 
 if TYPE_CHECKING:

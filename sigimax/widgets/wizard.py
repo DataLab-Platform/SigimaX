@@ -32,8 +32,8 @@ from sigimax.config import CONF as Conf
 from sigimax.config import _
 
 __all__ = [
-    "WizardPage",
     "Wizard",
+    "WizardPage",
 ]
 
 

@@ -1523,7 +1523,6 @@ class SigimaXOptions(AppOptionsContainer):
              (e.g., ``"MyApp_v1"``). If empty, PlotPy uses its own default.
             load: If True, load existing user settings from the INI file.
         """
-
         defaults = self.get_plotpy_defaults()
         PLOTPY_CONF.update_defaults(defaults)
         PLOTPY_CONF.set_application(

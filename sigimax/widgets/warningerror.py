@@ -20,8 +20,8 @@ from sigimax.config import CONF as Conf
 from sigimax.config import _, get_mod_source_dir
 
 __all__ = [
-    "go_to_error",
     "WarningErrorMessageBox",
+    "go_to_error",
     "show_warning_error",
 ]
 

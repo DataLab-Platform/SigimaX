@@ -31,3 +31,5 @@ specific module of this package:
       - Dock widgets
 
 """
+
+__all__: list[str] = []

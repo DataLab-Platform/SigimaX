@@ -6,6 +6,12 @@ SigimaX environment utilities
 
 from __future__ import annotations
 
+__all__ = [
+    "SGMXExecEnv",
+    "VerbosityLevels",
+    "execenv",
+]
+
 import argparse
 import enum
 import os
@@ -129,7 +135,7 @@ class VerbosityLevels(enum.Enum):
 #
 
 
-class DLExecEnv:
+class SGMXExecEnv:
     """Object representing SigimaX test environment"""
 
     UNATTENDED_ARG = "unattended"
@@ -525,4 +531,4 @@ class DLExecEnv:
                 setattr(self, key, value)
 
 
-execenv = DLExecEnv()
+execenv = SGMXExecEnv()

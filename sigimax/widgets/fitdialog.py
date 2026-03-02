@@ -17,20 +17,20 @@ from sigimax.config import CONF as Conf
 from sigimax.config import _
 
 __all__ = [
-    "guifit",
-    "polynomial_fit",
-    "linear_fit",
+    "cdf_fit",
+    "exponential_fit",
     "gaussian_fit",
+    "guifit",
+    "linear_fit",
     "lorentzian_fit",
-    "voigt_fit",
     "multigaussian_fit",
     "multilorentzian_fit",
-    "exponential_fit",
-    "sinusoidal_fit",
-    "cdf_fit",
-    "planckian_fit",
-    "twohalfgaussian_fit",
     "piecewiseexponential_fit",
+    "planckian_fit",
+    "polynomial_fit",
+    "sinusoidal_fit",
+    "twohalfgaussian_fit",
+    "voigt_fit",
 ]
 
 DEFAULT_FORMAT = "%g"

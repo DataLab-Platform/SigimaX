@@ -52,8 +52,8 @@ if TYPE_CHECKING:
     pass
 
 __all__ = [
-    "SplashScreenConfig",
     "SigimaXSplashScreen",
+    "SplashScreenConfig",
 ]
 
 

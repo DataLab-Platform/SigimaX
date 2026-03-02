@@ -12,6 +12,11 @@ The following subpackages are available:
 
 from __future__ import annotations
 
+__all__ = [
+    "run",
+    "sigimax_test_app_context",
+]
+
 import os
 import os.path as osp
 import sys

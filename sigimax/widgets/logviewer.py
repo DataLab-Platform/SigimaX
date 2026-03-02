@@ -19,9 +19,9 @@ from sigimax.widgets.fileviewer import FileViewerWidget, get_title_contents
 
 __all__ = [
     "LogViewerWindow",
+    "exec_sigimax_logviewer_dialog",
     "get_log_filenames",
     "get_log_prompt_message",
-    "exec_sigimax_logviewer_dialog",
 ]
 
 

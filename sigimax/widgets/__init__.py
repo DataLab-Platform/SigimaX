@@ -48,22 +48,16 @@ from sigimax.widgets.warningerror import WarningErrorMessageBox, show_warning_er
 from sigimax.widgets.wizard import Wizard, WizardPage
 
 __all__ = [
-    # Splash screen
-    "SplashScreenConfig",
-    "SigimaXSplashScreen",
-    # HDF5 browser
-    "H5Browser",
-    "H5BrowserDialog",
-    # Log viewer
-    "LogViewerWindow",
-    # Status bar
     "BaseStatus",
     "ConsoleStatus",
+    "H5Browser",
+    "H5BrowserDialog",
+    "LogViewerWindow",
     "MemoryStatus",
-    # Warning/error dialog
+    "SigimaXSplashScreen",
+    "SplashScreenConfig",
     "WarningErrorMessageBox",
-    "show_warning_error",
-    # Wizard
     "Wizard",
     "WizardPage",
+    "show_warning_error",
 ]

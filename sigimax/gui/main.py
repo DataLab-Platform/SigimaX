@@ -17,6 +17,10 @@ It also provides a set of signals to communicate with other parts of the applica
 
 from __future__ import annotations
 
+__all__ = [
+    "SGMXMainWindow",
+]
+
 import abc
 import base64
 import os
@@ -26,7 +30,6 @@ import time
 import webbrowser
 from typing import TYPE_CHECKING
 
-# import guidata.dataset as gds
 import numpy as np
 import scipy.ndimage as spi
 import scipy.signal as sps
@@ -35,16 +38,13 @@ from guidata.configtools import get_icon
 from guidata.qthelpers import add_actions, create_action, exec_dialog
 from guidata.widgets.console import DockableConsole
 from plotpy import config as plotpy_config
-
-# from plotpy.builder import make
 from qtpy import QtCore as QC
 from qtpy import QtGui as QG
 from qtpy import QtWidgets as QW
 from qtpy.compat import getopenfilenames, getsavefilename
 
-# from qtpy.compat import getopenfilenames, getsavefilename
 import sigimax
-from sigimax import __homeurl__, env
+from sigimax import __homeurl__
 from sigimax.config import CONF as Conf
 from sigimax.config import (
     DEBUG,
@@ -156,7 +156,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         Returns:
             True if memory state is ok
         """
-        if not env.execenv.unattended and self.__memory_warning:
+        if not execenv.unattended and self.__memory_warning:
             threshold = Conf.available_memory_threshold.get()
             answer = QW.QMessageBox.critical(
                 self,
@@ -199,7 +199,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
             "",
             rel,
         ]
-        if not env.execenv.unattended:
+        if not execenv.unattended:
             QW.QMessageBox.warning(
                 self, Conf.app_name.get(), "<br>".join(txtlist), QW.QMessageBox.Ok
             )
@@ -996,7 +996,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         Returns:
             True if closed properly, False otherwise
         """
-        if not env.execenv.unattended and self.is_modified():
+        if not execenv.unattended and self.is_modified():
             answer = QW.QMessageBox.warning(
                 self,
                 _("Quit"),

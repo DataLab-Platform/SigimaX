@@ -16,9 +16,9 @@ from sigimax.config import CONF as Conf
 from sigimax.config import _
 
 __all__ = [
-    "read_text_file",
-    "get_title_contents",
     "FileViewerWidget",
+    "get_title_contents",
+    "read_text_file",
 ]
 
 
