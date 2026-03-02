@@ -24,6 +24,7 @@ from __future__ import annotations
 import os.path as osp
 import tempfile
 
+import h5py
 import numpy as np
 from guidata.io import HDF5Reader, HDF5Writer
 from plotpy.constants import PlotType
@@ -242,6 +243,59 @@ class DerivedAppWindow(SGMXMainWindow):
             f"Workspace loaded from '{filename}' ({self.object_store.count} object(s))"
         )
 
+    def import_dataset_from_file(
+        self,
+        filename: str,
+        dsetname: str | None,
+        import_all: bool | None,
+        reset_all: bool,
+    ) -> None:
+        """Import a specific dataset from a generic HDF5 file.
+
+        Reads a raw HDF5 dataset by name and wraps it as a
+        :class:`SignalObj` (1-D) or :class:`ImageObj` (2-D).
+
+        Args:
+            filename: Path to the HDF5 file (already validated)
+            dsetname: Dataset name to import, or ``None`` to import all
+            import_all: If ``True``, import all datasets without browsing
+            reset_all: If ``True``, clear workspace before importing
+        """
+        if reset_all:
+            self.object_store.clear()
+
+        objects: list[SignalObj | ImageObj] = []
+        with h5py.File(filename, "r") as h5:
+            if dsetname is not None:
+                names = [dsetname]
+            else:
+                names = [k for k in h5.keys() if isinstance(h5[k], h5py.Dataset)]
+            for name in names:
+                if name not in h5:
+                    execenv.print(f"Dataset '{name}' not found in '{filename}'")
+                    continue
+                node = h5[name]
+                if not isinstance(node, h5py.Dataset):
+                    continue
+                data = node[()]
+                if data.ndim == 1:
+                    obj = SignalObj()
+                    obj.set_xydata(
+                        np.arange(len(data), dtype=float), data.astype(float)
+                    )
+                    obj.title = name
+                    objects.append(obj)
+                elif data.ndim == 2:
+                    obj = ImageObj()
+                    obj.data = data
+                    obj.title = name
+                    objects.append(obj)
+
+        if objects:
+            self.SIG_SEND_OBJECTLIST.emit(objects)
+            self.set_modified(True)
+            execenv.print(f"Imported {len(objects)} dataset(s) from '{filename}'")
+
 
 # =============================================================================
 # Test helpers
@@ -265,6 +319,25 @@ def _create_test_image(index: int) -> ImageObj:
     obj.data = data
     obj.title = f"Test image #{index}"
     return obj
+
+
+def _create_h5_with_datasets(path: str) -> None:
+    """Create an HDF5 file with raw named datasets for dataset-import tests.
+
+    Layout::
+
+        /sine       (1-D float64, 200 points)
+        /cosine     (1-D float64, 200 points)
+        /checkerboard (2-D uint8, 64×64)
+    """
+    x = np.linspace(0, 2 * np.pi, 200)
+    with h5py.File(path, "w") as h5:
+        h5.create_dataset("sine", data=np.sin(x))
+        h5.create_dataset("cosine", data=np.cos(x))
+        h5.create_dataset(
+            "checkerboard",
+            data=np.indices((64, 64)).sum(axis=0).astype(np.uint8) % 2 * 255,
+        )
 
 
 # =============================================================================
@@ -429,6 +502,90 @@ def test_derived_app_import_and_save() -> None:
     execenv.print("Import-and-save test passed.")
 
 
+def test_import_specific_dataset_and_save() -> None:
+    """Test importing a specific dataset by name and save/load round-trip.
+
+    Exercises :meth:`DerivedAppWindow.import_dataset_from_file` via the
+    ``open_h5_files`` comma-separated syntax (``"file.h5,dataset_name"``).
+    """
+    with tempfile.TemporaryDirectory() as tmpdir:
+        # -- Create an HDF5 file with raw named datasets --
+        src_path = osp.join(tmpdir, "raw_datasets.h5")
+        _create_h5_with_datasets(src_path)
+
+        with qth.sigimax_app_context(exec_loop=False):
+            win = DerivedAppWindow(console=False)
+            win.resize(1200, 700)
+            win.show()
+
+            # -- 1. Import a single dataset by name --
+            win.open_h5_files(
+                h5files=[f"{src_path},sine"],
+                import_all=False,
+                reset_all=False,
+            )
+            assert win.object_store.count == 1, (
+                f"Expected 1 object, got {win.object_store.count}"
+            )
+            assert len(win.object_store.signals) == 1
+            assert win.object_store.signals[0].title == "sine"
+
+            # -- 2. Import another dataset (no reset) --
+            win.open_h5_files(
+                h5files=[f"{src_path},checkerboard"],
+                import_all=False,
+                reset_all=False,
+            )
+            assert win.object_store.count == 2
+            assert len(win.object_store.images) == 1
+            assert win.object_store.images[0].title == "checkerboard"
+
+            # -- 3. Import all datasets at once (with reset) --
+            win.open_h5_files(
+                h5files=[src_path],
+                import_all=True,
+                reset_all=True,
+            )
+            # import_all=True triggers import_dataset_from_file with dsetname=None
+            assert win.object_store.count == 3, (
+                f"Expected 3 objects, got {win.object_store.count}"
+            )
+            assert len(win.object_store.signals) == 2  # sine + cosine
+            assert len(win.object_store.images) == 1  # checkerboard
+
+            # -- 4. Save workspace and reload --
+            ws_path = osp.join(tmpdir, "workspace_specific.h5")
+            win.save_h5_workspace(ws_path)
+            assert osp.isfile(ws_path)
+
+            win2 = DerivedAppWindow(console=False)
+            win2.resize(1200, 700)
+            win2.show()
+
+            win2.load_h5_workspace(ws_path)
+            assert win2.object_store.count == 3
+            assert len(win2.object_store.signals) == 2
+            assert len(win2.object_store.images) == 1
+
+            # Verify data integrity for the sine signal
+            np.testing.assert_array_almost_equal(
+                win.object_store.signals[0].y,
+                win2.object_store.signals[0].y,
+            )
+            # Verify image data integrity
+            np.testing.assert_array_equal(
+                win.object_store.images[0].data,
+                win2.object_store.images[0].data,
+            )
+
+            win2.set_modified(False)
+            win2.close()
+            win.set_modified(False)
+            win.close()
+
+    execenv.print("Import-specific-dataset and save/load test passed.")
+
+
 def show_derivated_app() -> None:
     """Show the derived application window."""
     with qth.sigimax_app_context(exec_loop=True):
@@ -440,4 +597,5 @@ if __name__ == "__main__":
     test_object_store_serialize_roundtrip()
     test_derived_app_h5_workspace()
     test_derived_app_import_and_save()
+    test_import_specific_dataset_and_save()
     # show_derivated_app()

@@ -718,17 +718,30 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
             else:
                 with qth.qt_try_loadsave_file(self, filename, "load"):
                     filename = self.__check_h5file(filename, "load")
-                    # TODO :H5BrowserDialog to import specific dataset(s) from file
-                    # (only generic h5 files)
-                    print(
-                        f"Importing dataset '{dsetname}' from file '{filename}' "
-                        f"(reset_all={reset_all})"
+                    self.import_dataset_from_file(
+                        filename, dsetname, import_all, reset_all
                     )
-                    # if dsetname is None:
-                    #    self.h5inputoutput.open_file(filename, import_all, reset_all)
-                    # else:
-                    #    self.h5inputoutput.import_dataset_from_file(filename, dsetname)
             reset_all = False
+
+    def import_dataset_from_file(
+        self,
+        filename: str,
+        dsetname: str | None,
+        import_all: bool | None,
+        reset_all: bool,
+    ) -> None:
+        """Import a specific dataset from an HDF5 file.
+
+        This is a hook for derived applications to handle dataset-specific
+        import logic. The base implementation is a no-op; subclasses should
+        override this method to implement their own import strategy.
+
+        Args:
+            filename: Path to the HDF5 file (already validated)
+            dsetname: Dataset name to import, or ``None`` to import all
+            import_all: If ``True``, import all datasets without browsing
+            reset_all: If ``True``, clear workspace before importing
+        """
 
     def browse_h5_files(self, filenames: list[str], reset_all: bool) -> None:
         """Browse HDF5 files
