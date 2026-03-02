@@ -563,6 +563,21 @@ class SigimaXOptions(AppOptionsContainer):
             expected_type=str,
             description="URL to the application support/contact page.",
         )
+        self.app_developer = TypedOptionField(
+            self,
+            "app_developer",
+            default="",
+            expected_type=str,
+            description="Developer or organization name shown in the About dialog.",
+        )
+        self.app_copyright = TypedOptionField(
+            self,
+            "app_copyright",
+            default="",
+            expected_type=str,
+            description="Copyright notice shown in the About dialog "
+            "(e.g. '2023 My Organization').",
+        )
 
         # ===================================================================
         # Main options — Application-level settings

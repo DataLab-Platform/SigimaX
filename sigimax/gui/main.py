@@ -798,18 +798,54 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
                 "• " + _("Process isolation:") + " " + pistate,
             ]
         )
-        # TODO implement "about" configuration in SigimaX
-        dev_by = _("Developed and maintained by DataLab open-source project team")
-        cprght = "2023 DataLab Platform Developers"
+        app_name = Conf.app_name.get()
+        app_version = Conf.app_version.get()
+        app_desc = Conf.app_desc.get()
+        app_homeurl = Conf.app_homeurl.get()
+        app_docurl = Conf.app_docurl.get()
+        app_supporturl = Conf.app_supporturl.get()
+        dev_by = Conf.app_developer.get()
+        cprght = Conf.app_copyright.get()
+
+        # -- Application header
+        about_parts = [f"<b>{app_name}</b> v{app_version}"]
+        if app_desc:
+            about_parts.append(f"<br>{app_desc}")
+        if dev_by:
+            about_parts.append(f"<p>{dev_by}")
+        if cprght:
+            about_parts.append(f"<br>Copyright &copy; {cprght}")
+
+        # -- Application links
+        links = []
+        if app_homeurl:
+            links.append(f'<a href="{app_homeurl}">{_("Home page")}</a>')
+        if app_docurl:
+            links.append(f'<a href="{app_docurl}">{_("Documentation")}</a>')
+        if app_supporturl:
+            links.append(f'<a href="{app_supporturl}">{_("Support")}</a>')
+        if links:
+            about_parts.append("<p>" + " | ".join(links))
+
+        # -- SigimaX credits
+        sgmx_dev_by = _("Developed and maintained by DataLab open-source project team")
+        sgmx_cprght = "2023 DataLab Platform Developers"
+        about_parts.extend(
+            [
+                f'<p>Based on <a href="{__homeurl__}">{MOD_TITLE}</a>'
+                f" v{sigimax.__version__}",
+                f"<br>{MOD_DESC}",
+                f"<br>{sgmx_dev_by}",
+                f"<br>Copyright &copy; {sgmx_cprght}",
+            ]
+        )
+
+        # -- Advanced configuration
+        about_parts.append(f"<p>{adv_conf}")
         QW.QMessageBox.about(
             self,
-            _("About") + " " + Conf.app_name.get(),
-            f"""<b>{Conf.app_name.get()}</b> v{Conf.app_version.get()}
-              <br>{Conf.app_desc.get()}
-              <p>Based on <a href="{__homeurl__}">{MOD_TITLE}</a>
-              <br>{MOD_DESC}
-              <p>{dev_by}<br>Copyright &copy; {cprght}
-              <p>{adv_conf}""",
+            _("About") + " " + app_name,
+            "".join(about_parts),
         )
 
     def __update_color_mode(self, startup: bool = False) -> None:
