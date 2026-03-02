@@ -22,6 +22,10 @@ from sigimax.config import CONF as Conf
 from sigimax.config import _
 from sigimax.utils.qthelpers import block_signals, resize_widget_to_parent
 
+__all__ = [
+    "SignalCursorDialog",
+]
+
 if TYPE_CHECKING:
     from plotpy.items import CurveItem, Marker
     from qtpy.QtWidgets import QWidget

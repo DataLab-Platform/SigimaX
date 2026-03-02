@@ -38,6 +38,14 @@ from sigimax.config import _
 from sigimax.h5 import H5Importer
 from sigimax.utils.qthelpers import block_signals, qt_handle_error_message
 
+__all__ = [
+    "AbstractTreeWidget",
+    "H5TreeWidget",
+    "H5FileSelector",
+    "H5Browser",
+    "H5BrowserDialog",
+]
+
 if TYPE_CHECKING:
     from plotpy.plot import BasePlot
 

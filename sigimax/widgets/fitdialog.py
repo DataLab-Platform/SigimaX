@@ -16,6 +16,23 @@ from sigima.tools.signal import fitting, fourier, pulse
 from sigimax.config import CONF as Conf
 from sigimax.config import _
 
+__all__ = [
+    "guifit",
+    "polynomial_fit",
+    "linear_fit",
+    "gaussian_fit",
+    "lorentzian_fit",
+    "voigt_fit",
+    "multigaussian_fit",
+    "multilorentzian_fit",
+    "exponential_fit",
+    "sinusoidal_fit",
+    "cdf_fit",
+    "planckian_fit",
+    "twohalfgaussian_fit",
+    "piecewiseexponential_fit",
+]
+
 DEFAULT_FORMAT = "%g"
 
 

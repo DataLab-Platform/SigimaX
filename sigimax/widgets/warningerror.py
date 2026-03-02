@@ -19,6 +19,12 @@ from qtpy import QtWidgets as QW
 from sigimax.config import CONF as Conf
 from sigimax.config import _, get_mod_source_dir
 
+__all__ = [
+    "go_to_error",
+    "WarningErrorMessageBox",
+    "show_warning_error",
+]
+
 
 def go_to_error(text: str) -> None:
     """Go to error: open file with external editor, and go to line number

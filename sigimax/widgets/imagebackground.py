@@ -18,6 +18,10 @@ from sigimax.config import CONF as Conf
 from sigimax.config import _
 from sigimax.utils.qthelpers import resize_widget_to_parent
 
+__all__ = [
+    "ImageBackgroundDialog",
+]
+
 if TYPE_CHECKING:
     from plotpy.items import MaskedXYImageItem, RangeComputation2d, RectangleShape
     from qtpy.QtWidgets import QWidget

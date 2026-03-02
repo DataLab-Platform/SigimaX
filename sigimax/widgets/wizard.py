@@ -31,6 +31,11 @@ from qtpy.QtWidgets import QWidget
 from sigimax.config import CONF as Conf
 from sigimax.config import _
 
+__all__ = [
+    "WizardPage",
+    "Wizard",
+]
+
 
 class WizardPage(QW.QWidget):
     """Wizard page base class

@@ -19,6 +19,12 @@ from sigimax.config import CONF as Conf
 from sigimax.config import DEBUG, _
 from sigimax.env import execenv
 
+__all__ = [
+    "BaseStatus",
+    "ConsoleStatus",
+    "MemoryStatus",
+]
+
 
 class BaseStatus(QW.QWidget):
     """Base status widget.

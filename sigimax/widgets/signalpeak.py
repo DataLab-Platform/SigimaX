@@ -21,6 +21,10 @@ from sigimax.config import CONF as Conf
 from sigimax.config import _
 from sigimax.utils.qthelpers import resize_widget_to_parent
 
+__all__ = [
+    "SignalPeakDetectionDialog",
+]
+
 if TYPE_CHECKING:
     from plotpy.items import Marker
     from qtpy.QtWidgets import QWidget

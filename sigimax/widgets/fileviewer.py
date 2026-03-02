@@ -15,6 +15,12 @@ from qtpy import QtWidgets as QW
 from sigimax.config import CONF as Conf
 from sigimax.config import _
 
+__all__ = [
+    "read_text_file",
+    "get_title_contents",
+    "FileViewerWidget",
+]
+
 
 def read_text_file(path: str) -> str:
     """Read text file using multiple encodings

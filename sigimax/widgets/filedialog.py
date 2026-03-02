@@ -15,6 +15,10 @@ from guidata.qthelpers import qt_app_context
 from qtpy.QtCore import QItemSelectionModel
 from qtpy.QtWidgets import QAbstractItemView, QFileDialog, QListView, QWidget
 
+__all__ = [
+    "get_open_file_names",
+]
+
 
 def get_open_file_names(
     parent: QWidget | None = None,

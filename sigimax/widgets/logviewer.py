@@ -17,6 +17,13 @@ from sigimax.config import _, get_old_log_fname
 from sigimax.env import execenv
 from sigimax.widgets.fileviewer import FileViewerWidget, get_title_contents
 
+__all__ = [
+    "LogViewerWindow",
+    "get_log_filenames",
+    "get_log_prompt_message",
+    "exec_sigimax_logviewer_dialog",
+]
+
 
 class LogViewerWindow(QW.QDialog):
     """Log viewer window"""
