@@ -123,7 +123,6 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         self.browseh5_action: QW.QAction | None = None
         self.settings_action: QW.QAction | None = None
         self.quit_action: QW.QAction | None = None
-        self.autorefresh_action: QW.QAction | None = None
         self.showfirstonly_action: QW.QAction | None = None
         self.showlabel_action: QW.QAction | None = None
 
@@ -412,14 +411,6 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
                 tip=quit_tip,
                 triggered=self.close,
             )
-        # View menu actions
-        self.autorefresh_action = create_action(
-            self,
-            _("Auto-refresh"),
-            icon=get_icon("refresh-auto.svg"),
-            tip=_("Auto-refresh plot when object is modified, added or removed"),
-            toggled=self.handle_autorefresh_action,
-        )
 
     def __setup_central_widget(self) -> None:
         """Setup central widget (main panel)"""
@@ -565,9 +556,6 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         cdock = self.__add_dockwidget(self.console, _("Console"))
         self.docks[self.console] = cdock
         cdock.hide()
-        self.console.interpreter.widget_proxy.sig_new_prompt.connect(
-            lambda txt: self.repopulate_panel_trees()
-        )
         self.__update_console_show_mode()
         self.console.exception_occurred.connect(self.consolestatus.exception_occurred)
         cdock.visibilityChanged.connect(self.consolestatus.console_visibility_changed)
@@ -612,48 +600,6 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
     def __update_view_menu(self) -> None:
         """Update view menu before showing up"""
         add_actions(self.view_menu, [None] + self.createPopupMenu().actions())
-
-    def handle_autorefresh_action(self, state: bool) -> None:
-        """Handle auto-refresh action from UI (with confirmation dialog)
-
-        Args:
-            state: desired state
-        """
-        # If disabling auto-refresh, show confirmation dialog
-        if not state:
-            txtlist = [
-                "<b>" + _("Disable auto-refresh?") + "</b>",
-                "",
-                _(
-                    "When auto-refresh is disabled, the plot view will not "
-                    "automatically update when objects are modified, added or removed."
-                ),
-                "",
-                _(
-                    "You will need to manually click the refresh button to update "
-                    "the view."
-                ),
-                "",
-                _("Are you sure you want to disable auto-refresh?"),
-            ]
-
-            answer = QW.QMessageBox.question(
-                self,
-                Conf.app_name.get(),
-                "<br>".join(txtlist),
-                QW.QMessageBox.Yes | QW.QMessageBox.No,
-                QW.QMessageBox.No,
-            )
-
-            if answer == QW.QMessageBox.No:
-                # User cancelled, restore the action's checked state
-                self.autorefresh_action.blockSignals(True)
-                self.autorefresh_action.setChecked(True)
-                self.autorefresh_action.blockSignals(False)
-                return
-
-        # Apply the change
-        self.toggle_auto_refresh(state)
 
     @staticmethod
     def __check_h5file(filename: str, operation: str) -> str:
