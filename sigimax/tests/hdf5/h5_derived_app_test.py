@@ -269,7 +269,7 @@ class DerivedAppWindow(SGMXMainWindow):
             if dsetname is not None:
                 names = [dsetname]
             else:
-                names = [k for k in h5.keys() if isinstance(h5[k], h5py.Dataset)]
+                names = [k for k, v in h5.items() if isinstance(v, h5py.Dataset)]
             for name in names:
                 if name not in h5:
                     execenv.print(f"Dataset '{name}' not found in '{filename}'")

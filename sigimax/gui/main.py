@@ -743,7 +743,9 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
             reset_all: If ``True``, clear workspace before importing
         """
 
-    def browse_h5_files(self, filenames: list[str], reset_all: bool) -> None:
+    def browse_h5_files(
+        self, filenames: list[str], _reset_all: bool | None = None
+    ) -> None:
         """Browse HDF5 files
 
         Opens an :class:`H5BrowserDialog <sigimax.widgets.h5browser.H5BrowserDialog>`
@@ -755,7 +757,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
 
         Args:
             filenames: HDF5 filenames
-            reset_all: Reset all application data before importing
+            _reset_all: Reset all application data before importing (unused)
         """
         for filename in filenames:
             self.__check_h5file(filename, "load")
@@ -774,7 +776,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
                     obj = node.get_native_object()
                     if obj is not None:
                         objects.append(obj)
-                except Exception as exc:
+                except (OSError, ValueError) as exc:
                     qt_handle_error_message(self, exc)
             dialog.cleanup()
             if objects:
@@ -808,7 +810,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         )
         self.set_modified(False)
 
-    def import_h5_file(self, filename: str, reset_all: bool | None = None) -> None:
+    def import_h5_file(self, filename: str, _reset_all: bool | None = None) -> None:
         """Import all supported datasets from an HDF5 file (no dialog).
 
         Uses :class:`H5Importer <sigimax.h5.H5Importer>` to scan the file,
@@ -819,7 +821,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
 
         Args:
             filename: HDF5 filename
-            reset_all: Reserved for future use (workspace reset before import)
+            _reset_all: Reserved for future use (workspace reset before import) (unused)
         """
         with qth.qt_try_loadsave_file(self, filename, "load"):
             filename = self.__check_h5file(filename, "load")

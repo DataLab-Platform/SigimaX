@@ -25,7 +25,6 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 import scipy.integrate as spt
-
 from guidata.qthelpers import is_dark_theme
 from guidata.widgets.dockable import DockableWidget
 from plotpy.constants import PlotType
