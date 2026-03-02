@@ -26,8 +26,6 @@ from typing import TYPE_CHECKING
 import numpy as np
 import scipy.integrate as spt
 
-# TODO : keep watermark ? if yes, import get_image_file_path
-# from guidata.configtools import get_image_file_path
 from guidata.qthelpers import is_dark_theme
 from guidata.widgets.dockable import DockableWidget
 from plotpy.constants import PlotType
@@ -312,6 +310,15 @@ class SigimaXPlotWidget(PlotWidget):
         self.__register_other_tools()
 
 
+# Mapping from config string to Qt dock area constant
+_DOCK_LOCATION_MAP: dict[str, QC.Qt.DockWidgetArea] = {
+    "top": QC.Qt.TopDockWidgetArea,
+    "bottom": QC.Qt.BottomDockWidgetArea,
+    "left": QC.Qt.LeftDockWidgetArea,
+    "right": QC.Qt.RightDockWidgetArea,
+}
+
+
 class DockablePlotWidget(DockableWidget):
     """Docked plotting widget
 
@@ -320,8 +327,7 @@ class DockablePlotWidget(DockableWidget):
         plot_type: Plot type
     """
 
-    # TODO use as init arg or in CONF ?
-    # LOCATION = QC.Qt.RightDockWidgetArea
+    LOCATION = QC.Qt.RightDockWidgetArea
 
     def __init__(
         self,
@@ -329,14 +335,32 @@ class DockablePlotWidget(DockableWidget):
         plot_type: PlotType,
     ) -> None:
         super().__init__(parent)
+        self._apply_dock_location()
         self.plotwidget = SigimaXPlotWidget(plot_type)
         self.toolbar = self.plotwidget.get_toolbar()
-        self.watermark = QW.QLabel()
-        # TODO : keep watermark ?
-        original_image = QG.QPixmap("")
-        self.watermark.setPixmap(original_image)
+        self.watermark: QW.QLabel | None = None
+        self._setup_watermark()
         self.setup_layout()
         self.setup_plotwidget()
+
+    def _apply_dock_location(self) -> None:
+        """Set dock location from config."""
+        location_str = Conf.plot_dock_location.get()
+        location = _DOCK_LOCATION_MAP.get(location_str, QC.Qt.RightDockWidgetArea)
+        self.setup_dockwidget(location=location)
+
+    def _setup_watermark(self) -> None:
+        """Create the watermark label from the configured image path.
+
+        If ``Conf.watermark_image_path`` is empty, no watermark is created.
+        """
+        path = Conf.watermark_image_path.get()
+        if path:
+            self.watermark = QW.QLabel()
+            pixmap = QG.QPixmap(path)
+            self.watermark.setPixmap(pixmap)
+        else:
+            self.watermark = None
 
     def __get_toolbar_row_col(self) -> tuple[int, int]:
         """Return toolbar row and column"""
@@ -356,7 +380,8 @@ class DockablePlotWidget(DockableWidget):
         layout = QW.QGridLayout()
         layout.addWidget(self.toolbar, tb_row, tb_col)
         layout.addWidget(self.plotwidget, 1, 1)
-        layout.addWidget(self.watermark, 1, 1, QC.Qt.AlignCenter)
+        if self.watermark is not None:
+            layout.addWidget(self.watermark, 1, 1, QC.Qt.AlignCenter)
         self.setLayout(layout)
 
     def update_toolbar_position(self) -> None:
@@ -375,7 +400,8 @@ class DockablePlotWidget(DockableWidget):
         plot = self.plotwidget.get_plot()
         canvas = plot.canvas()
         canvas.setFrameStyle(canvas.Plain | canvas.NoFrame)
-        plot.SIG_ITEMS_CHANGED.connect(self.update_watermark)
+        if self.watermark is not None:
+            plot.SIG_ITEMS_CHANGED.connect(self.update_watermark)
 
     def update_color_mode(self) -> None:
         """Update plot widget styles according to application color mode"""
@@ -394,6 +420,8 @@ class DockablePlotWidget(DockableWidget):
 
     def update_watermark(self, plot: BasePlot) -> None:
         """Update watermark visibility"""
+        if self.watermark is None:
+            return
         items = plot.get_items()
         if self.plotwidget.options.type == PlotType.IMAGE:
             enabled = len(items) <= 1

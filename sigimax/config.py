@@ -845,6 +845,22 @@ class SigimaXOptions(AppOptionsContainer):
             choices=["top", "bottom", "left", "right"],
             description="Position of the plot toolbar.",
         )  # TODO : keep ? edit settings futur feature
+        self.plot_dock_location = EnumOptionField(
+            self,
+            "plot_dock_location",
+            default="right",
+            choices=["top", "bottom", "left", "right"],
+            description="Default dock area for plot widgets "
+            "(top, bottom, left, or right).",
+        )
+        self.watermark_image_path = TypedOptionField(
+            self,
+            "watermark_image_path",
+            default="",
+            expected_type=str,
+            description="Path to the watermark image displayed on empty plots. "
+            "If empty, no watermark is shown.",
+        )
 
         self.sig_format = TypedOptionField(
             self,
