@@ -32,7 +32,7 @@ import scipy.ndimage as spi
 import scipy.signal as sps
 from guidata import qthelpers as guidata_qth
 from guidata.configtools import get_icon
-from guidata.qthelpers import add_actions, create_action
+from guidata.qthelpers import add_actions, create_action, exec_dialog
 from guidata.widgets.console import DockableConsole
 from plotpy import config as plotpy_config
 
@@ -55,13 +55,16 @@ from sigimax.config import (
 )
 from sigimax.env import execenv
 from sigimax.gui.docks import DockablePlotWidget
+from sigimax.h5 import H5Importer
 from sigimax.utils import qthelpers as qth
 from sigimax.utils.qthelpers import (
     add_corner_menu,
     bring_to_front,
     configure_menu_about_to_show,
+    qt_handle_error_message,
 )
 from sigimax.widgets import logviewer, status
+from sigimax.widgets.h5browser import H5BrowserDialog
 from sigimax.widgets.warningerror import go_to_error
 
 if TYPE_CHECKING:
@@ -730,43 +733,102 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
     def browse_h5_files(self, filenames: list[str], reset_all: bool) -> None:
         """Browse HDF5 files
 
+        Opens an :class:`H5BrowserDialog <sigimax.widgets.h5browser.H5BrowserDialog>`
+        pre-loaded with the given *filenames*, lets the user check datasets to
+        import, converts the checked nodes into native objects
+        (:class:`SignalObj <sigima.objects.SignalObj>` /
+        :class:`ImageObj <sigima.objects.ImageObj>`), and emits them via
+        :data:`SIG_SEND_OBJECTLIST`.
+
         Args:
             filenames: HDF5 filenames
             reset_all: Reset all application data before importing
         """
         for filename in filenames:
             self.__check_h5file(filename, "load")
-        # TODO : implement generic HDF5 browser in SigimaX
-        print("Browse HDF5 files:", filenames, "reset_all:", reset_all)
-        # self.h5inputoutput.import_files(filenames, False, reset_all)
+
+        dialog = H5BrowserDialog(self)
+        dialog.open_files(filenames)
+
+        if exec_dialog(dialog) == QW.QDialog.Accepted:
+            nodes = dialog.get_nodes()
+            if not nodes:
+                dialog.cleanup()
+                return
+            objects = []
+            for node in nodes:
+                try:
+                    obj = node.get_native_object()
+                    if obj is not None:
+                        objects.append(obj)
+                except Exception as exc:
+                    qt_handle_error_message(self, exc)
+            dialog.cleanup()
+            if objects:
+                self.SIG_SEND_OBJECTLIST.emit(objects)
+                self.set_modified(True)
+                self.statusBar().showMessage(
+                    _("%d object(s) imported successfully") % len(objects),
+                    5000,
+                )
+        else:
+            dialog.cleanup()
 
     def save_h5_workspace(self, filename: str) -> None:
-        """Save current workspace to a HDF5 file without GUI elements.
+        """Save current workspace to an HDF5 file.
+
+        The base implementation is a **no-op**: it validates the filename and
+        clears the modified flag but does not write any data.  Subclasses that
+        manage a data model should override this method to perform the actual
+        serialization (e.g. using :class:`guidata.io.HDF5Writer`).
+
         Args:
             filename: HDF5 filename to save to
 
         Raises:
-            IOError: If file cannot be saved
+            IOError: If *filename* is invalid
         """
         filename = self.__check_h5file(filename, "save")
-        # TODO : implement generic HDF5 saving in SigimaX (without GUI elements)
-        # self.h5inputoutput.save_file(filename)
-        print(f"Saving workspace to file '{filename}'")
+        execenv.log(
+            self,
+            "save_h5_workspace: no-op — override in subclass to serialize data",
+        )
         self.set_modified(False)
 
     def import_h5_file(self, filename: str, reset_all: bool | None = None) -> None:
-        """Import HDF5 file into SigimaX (with optional reset of current workspace)
+        """Import all supported datasets from an HDF5 file (no dialog).
+
+        Uses :class:`H5Importer <sigimax.h5.H5Importer>` to scan the file,
+        converts every supported node into a native object
+        (:class:`SignalObj <sigima.objects.SignalObj>` /
+        :class:`ImageObj <sigima.objects.ImageObj>`), and emits the list via
+        :data:`SIG_SEND_OBJECTLIST`.
 
         Args:
-            filename: HDF5 filename (optionally with dataset name,
-            separated by ":")
-            reset_all: Delete all SigimaX project data
+            filename: HDF5 filename
+            reset_all: Reserved for future use (workspace reset before import)
         """
         with qth.qt_try_loadsave_file(self, filename, "load"):
             filename = self.__check_h5file(filename, "load")
-            # TODO : implement generic HDF5 importing in SigimaX (without GUI elements)
-            print(f"Importing file '{filename}' (reset_all={reset_all})")
-            # self.h5inputoutput.import_files([filename], False, reset_all)
+            importer = H5Importer(filename)
+            objects = []
+            for node in importer.nodes:
+                if not node.is_supported():
+                    continue
+                try:
+                    obj = node.get_native_object()
+                    if obj is not None:
+                        objects.append(obj)
+                except Exception as exc:  # pylint: disable=broad-except
+                    qt_handle_error_message(self, exc)
+            importer.close()
+            if objects:
+                self.SIG_SEND_OBJECTLIST.emit(objects)
+                self.set_modified(True)
+                self.statusBar().showMessage(
+                    _("%d object(s) imported successfully") % len(objects),
+                    5000,
+                )
 
     def get_version(self) -> str:
         """Return SigimaX public version.
