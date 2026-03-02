@@ -504,7 +504,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
                 self,
                 _("About..."),
                 icon=get_icon("libre-gui-about.svg"),
-                triggered=self.__about,
+                triggered=self._about,
             ),
         ]
         add_actions(self.help_menu, help_menu_actions)
@@ -785,8 +785,11 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         """Raise SigimaX main window"""
         bring_to_front(self)
 
-    def __about(self) -> None:  # pragma: no cover
-        """About dialog box"""
+    def _about(self) -> None:  # pragma: no cover
+        """About dialog box.
+
+        Override this method in subclasses to fully customize the About dialog.
+        """
         self.check_stable_release()
         if Conf.process_isolation_enabled.get():
             pistate = "<font color='green'>" + _("enabled") + "</font>"
