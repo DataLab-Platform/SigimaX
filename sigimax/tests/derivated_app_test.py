@@ -26,11 +26,13 @@ from qtpy import QtCore as QC
 from qtpy import QtWidgets as QW
 from sigima.config import TypedOptionField
 
+from sigimax.app import create as sigimax_create
 from sigimax.config import CONF as Conf
 from sigimax.config import EnumOptionField, SigimaXOptions, _
 from sigimax.gui.docks import DockablePlotWidget
 from sigimax.gui.main import SGMXMainWindow
 from sigimax.utils import qthelpers as qth
+from sigimax.widgets.splashscreen import SigimaXSplashScreen, SplashScreenConfig
 
 # =============================================================================
 # 1. Derived configuration: MyAppOptions
@@ -304,6 +306,49 @@ def test_derived_app():
     print("All custom option tests passed.")
 
 
+def test_splash_screen():
+    """Test that the splash screen can be created and shown."""
+    with qth.sigimax_app_context(exec_loop=False):
+        # Test 1: Splash screen from explicit config (fallback pixmap, no image)
+        config = SplashScreenConfig(
+            app_name="MyApp",
+            app_version="0.1.0",
+            tagline="A demo application",
+            show_progress=True,
+        )
+        assert not config.is_enabled  # No image_path => disabled
+
+        # Test 2: Splash screen with a non-existent image (fallback)
+        config_with_path = SplashScreenConfig(
+            image_path="nonexistent.png",
+            app_name="MyApp",
+            app_version="0.1.0",
+        )
+        assert config_with_path.is_enabled
+
+        splash = SigimaXSplashScreen(config_with_path)
+        splash.show()
+        splash.show_message("Loading test...")
+        splash.close()
+
+        # Test 3: from_conf returns None when no splash image is configured
+        splash_from_conf = SigimaXSplashScreen.from_conf()
+        assert splash_from_conf is None  # Default config has no splash image
+
+        # Test 4: create() launcher works without splash
+        win = sigimax_create(
+            window_class=MyAppMainWindow,
+            splash=False,
+            console=False,
+            size=(800, 600),
+        )
+        assert win is not None
+        win.set_modified(False)
+        win.close()
+
+    print("Splash screen tests passed.")
+
+
 def test_derived_app_window():
     # pylint: disable=protected-access
     # pylint: disable=redefined-outer-name
@@ -343,7 +388,18 @@ def test_derived_app_window():
 
 
 if __name__ == "__main__":
-    with qth.sigimax_app_context(exec_loop=True):
-        win = MyAppMainWindow(console=True)
-        win.resize(1200, 700)
-        win.show()
+    from sigimax.app import run as sigimax_run
+
+    # Launch with splash screen (fallback pixmap since no image is provided)
+    splash_config = SplashScreenConfig(
+        image_path="nonexistent_demo.png",  # Will use fallback pixmap
+        app_name="MyApp",
+        app_version="0.1.0",
+        tagline="A demo application built on SigimaX",
+    )
+    sigimax_run(
+        window_class=MyAppMainWindow,
+        splash_config=splash_config,
+        console=True,
+        size=(1200, 700),
+    )

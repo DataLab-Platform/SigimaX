@@ -535,6 +535,22 @@ class SigimaXOptions(AppOptionsContainer):
             expected_type=str,
             description="Path to the application logo.",
         )
+        self.splash_image_path = TypedOptionField(
+            self,
+            "splash_image_path",
+            default="",
+            expected_type=str,
+            description="Path to the splash screen image (PNG, SVG, etc.). "
+            "If empty, no splash screen is shown.",
+        )
+        self.splash_show_progress = TypedOptionField(
+            self,
+            "splash_show_progress",
+            default=True,
+            expected_type=bool,
+            description="If True, display progress messages on the splash screen "
+            "during application startup.",
+        )
         self.app_desc = TypedOptionField(
             self,
             "app_desc",
