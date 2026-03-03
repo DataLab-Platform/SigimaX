@@ -360,7 +360,19 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
 
     def __setup_global_actions(self) -> None:
         """Setup global actions"""
-        # TODO : setup H5 actions generically (check if we keep them in SigimaX)
+        self._create_global_actions()
+        self.main_toolbar = self.__add_toolbar(
+            _("Main Toolbar"), "left", "main_toolbar"
+        )
+        add_actions(self.main_toolbar, self._get_main_toolbar_actions())
+
+    def _create_global_actions(self) -> None:
+        """Create global actions (H5, quit, etc.).
+
+        Override in subclasses to create additional actions or replace
+        defaults.  Call ``super()._create_global_actions()`` first to
+        create the standard H5 and quit actions.
+        """
         self.openh5_action = create_action(
             self,
             _("Open HDF5 files..."),
@@ -382,17 +394,6 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
             tip=_("Browse an HDF5 file"),
             triggered=lambda checked=False: self.open_h5_files(import_all=None),
         )
-        self.main_toolbar = self.__add_toolbar(
-            _("Main Toolbar"), "left", "main_toolbar"
-        )
-        add_actions(
-            self.main_toolbar,
-            [
-                self.openh5_action,
-                self.saveh5_action,
-                self.browseh5_action,
-            ],
-        )
         # Quit action for "File menu" (added when populating menu on demand)
         if self.hide_on_close:
             quit_text = _("Hide window")
@@ -410,6 +411,22 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
                 tip=quit_tip,
                 triggered=self.close,
             )
+
+    def _get_main_toolbar_actions(self) -> list[QW.QAction | None]:
+        """Return the list of actions for the main toolbar.
+
+        Override in subclasses to customize which actions appear in the
+        main toolbar and their order.  Return a list of :class:`QAction`
+        instances (or ``None`` for separators).
+
+        Returns:
+            List of actions and separators
+        """
+        return [
+            self.openh5_action,
+            self.saveh5_action,
+            self.browseh5_action,
+        ]
 
     def __setup_central_widget(self) -> None:
         """Setup central widget (main panel)"""
@@ -567,8 +584,6 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
             self.openh5_action,
             self.saveh5_action,
             self.browseh5_action,
-            None,
-            self.settings_action,
         ]
 
     def _update_file_menu(self) -> None:
