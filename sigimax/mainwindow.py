@@ -123,7 +123,6 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         self.openh5_action: QW.QAction | None = None
         self.saveh5_action: QW.QAction | None = None
         self.browseh5_action: QW.QAction | None = None
-        self.settings_action: QW.QAction | None = None
         self.quit_action: QW.QAction | None = None
         self.showfirstonly_action: QW.QAction | None = None
         self.showlabel_action: QW.QAction | None = None
@@ -392,8 +391,6 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
                 self.openh5_action,
                 self.saveh5_action,
                 self.browseh5_action,
-                None,
-                self.settings_action,
             ],
         )
         # Quit action for "File menu" (added when populating menu on demand)

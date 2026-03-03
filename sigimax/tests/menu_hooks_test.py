@@ -115,8 +115,6 @@ class CustomMenuWindow(SGMXMainWindow):
             self.browseh5_action,
             None,
             self.import_csv_action,
-            None,
-            self.settings_action,
         ]
 
     def _update_file_menu(self) -> None:
