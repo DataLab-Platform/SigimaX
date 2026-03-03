@@ -7,7 +7,6 @@ SigimaX Qt utilities
 from __future__ import annotations
 
 import faulthandler
-import functools
 import inspect
 import logging
 import os
@@ -22,9 +21,9 @@ from typing import Any
 
 import guidata
 from guidata.configtools import get_icon
+from guidata.qthelpers import grab_save_window as guidata_grab_save_window
 from guidata.utils.misc import to_string
 from qtpy import QtCore as QC
-from qtpy import QtGui as QG
 from qtpy import QtWidgets as QW
 
 from sigimax.config import CONF as Conf
@@ -35,7 +34,7 @@ from sigimax.config import (
 from sigimax.env import execenv
 
 
-# TODO : use internaly in sigimax_app_context
+# Used internally by sigimax_app_context
 def close_widgets_and_quit(screenshot=False) -> None:
     """Close Qt top level widgets and quit Qt event loop"""
     for widget in QW.QApplication.instance().topLevelWidgets():
@@ -53,7 +52,7 @@ def close_widgets_and_quit(screenshot=False) -> None:
 QAPP_INSTANCE = None
 
 
-# TODO : use internaly in initialize_log_file and remove_empty_log_file
+# Used internally by initialize_log_file and remove_empty_log_file
 def get_log_contents(fname: str) -> str | None:
     """Return True if file exists and something was logged in it"""
     if osp.exists(fname):
@@ -62,7 +61,7 @@ def get_log_contents(fname: str) -> str | None:
     return None
 
 
-# TODO : use internaly in sigimax_app_context
+# Used internally by sigimax_app_context
 def initialize_log_file(fname: str) -> bool:
     """Eventually keep the previous log file
     Returns True if there was a previous log file"""
@@ -76,7 +75,7 @@ def initialize_log_file(fname: str) -> bool:
     return False
 
 
-# TODO : use internaly in sigimax_app_context
+# Used internally by sigimax_app_context
 def remove_empty_log_file(fname: str) -> None:
     """Eventually remove empty log files"""
     if not get_log_contents(fname):
@@ -86,7 +85,7 @@ def remove_empty_log_file(fname: str) -> None:
             pass
 
 
-# TODO : use for tests run and datalab specific launcher
+# Used in SigimaX tests and app launcher
 @contextmanager
 def sigimax_app_context(
     exec_loop=False, enable_logs=True
@@ -172,14 +171,13 @@ def sigimax_app_context(
         remove_empty_log_file(tb_log_fname)
 
 
-# TODO : use internaly in this module check implement
+# Used internally by qt_try_loadsave_file and qt_handle_error_message
 def is_running_tests() -> bool:
     """Check if code is running during test execution"""
     return "pytest" in sys.modules
 
 
-# TODO : check if datalab specific (check implement generic MainWindow
-# -> use for plugins only ?)
+# NOT used in SigimaX — kept for derived apps (e.g. plugin error handling)
 @contextmanager
 def try_or_log_error(context: str) -> Generator[None, None, None]:
     """Try to execute a function and log an error message if it fails"""
@@ -197,7 +195,7 @@ def try_or_log_error(context: str) -> Generator[None, None, None]:
         pass
 
 
-# TODO : check if datalab specific (seems to be)
+# NOT used in SigimaX — kept for derived apps (progress dialog utility)
 @contextmanager
 def create_progress_bar(
     parent: QW.QWidget, label: str, max_: int, show_after: int = 1000
@@ -220,7 +218,7 @@ def create_progress_bar(
         prog.deleteLater()
 
 
-# TODO : check if datalab specific (seems to be)
+# NOT used in SigimaX — kept for derived apps (threaded computation worker)
 class CallbackWorker(QC.QThread):
     """Worker for executing long operations in a separate thread.
 
@@ -283,7 +281,7 @@ class CallbackWorker(QC.QThread):
         return self.result
 
 
-# TODO : check if datalab specific (seems to be)
+# NOT used in SigimaX — kept for derived apps (long callback with progress)
 def qt_long_callback(
     parent: QW.QWidget,
     label: str,
@@ -342,7 +340,7 @@ def qt_long_callback(
     return result
 
 
-# TODO : check if datalab specific (check widget/h5browser)
+# Used in SigimaX: mainwindow.py, widgets/h5browser.py
 def qt_handle_error_message(widget: QW.QWidget, message: str, context: str = None):
     """Handles application (QWidget) error message"""
     traceback.print_exc()
@@ -356,43 +354,7 @@ def qt_handle_error_message(widget: QW.QWidget, message: str, context: str = Non
     QW.QMessageBox.critical(widget, title, os.linesep.join(msglines))
 
 
-# TODO : check if datalab specific (seems to be)
-def qt_try_except(message=None, context=None):
-    """Try...except Qt widget method decorator"""
-
-    def qt_try_except_decorator(func):
-        """Try...except Qt widget method decorator"""
-
-        @functools.wraps(func)
-        def method_wrapper(*args, **kwargs):
-            """Decorator wrapper function"""
-            self = args[0]  # extracting 'self' from method arguments
-            #  If "self" is a BaseProcessor, then we need to get the panel instance
-            panel = getattr(self, "panel", self)
-            if message is not None:
-                panel.SIG_STATUS_MESSAGE.emit(message, 0)
-                QW.QApplication.setOverrideCursor(QG.QCursor(QC.Qt.WaitCursor))
-                panel.repaint()
-            output = None
-            try:
-                output = func(*args, **kwargs)
-            except Exception as msg:  # pylint: disable=broad-except
-                if is_running_tests():
-                    # If we are running tests, we want to raise the exception
-                    raise
-                qt_handle_error_message(panel.parentWidget(), msg, context)
-            finally:
-                if message is not None:
-                    panel.SIG_STATUS_MESSAGE.emit("", 0)
-                    QW.QApplication.restoreOverrideCursor()
-            return output
-
-        return method_wrapper
-
-    return qt_try_except_decorator
-
-
-# TODO : check if datalab specific (check implement generic MainWindow)
+# Used in SigimaX: mainwindow.py (HDF5 load/save)
 @contextmanager
 def qt_try_loadsave_file(
     parent: QW.QWidget, filename: str, operation: str
@@ -424,38 +386,41 @@ def qt_try_loadsave_file(
         pass
 
 
-# TODO : check if datalab specific (check implement generic MainWindow)
+# Used in SigimaX: mainwindow.py (screenshot capture)
 def grab_save_window(
     widget: QW.QWidget, name: str | None = None, add_timestamp: bool = True
 ) -> None:  # pragma: no cover
     """Grab window screenshot and save it.
 
+    Delegates to guidata's ``grab_save_window``, using
+    ``execenv.screenshot_path`` as the save directory (falls back to the
+    current working directory if not set).
+
+    The screenshot path can be configured by derived apps::
+
+        # Programmatically (e.g. in tests/__init__.py or app startup)
+        execenv.screenshot_path = "/path/to/screenshots"
+
+        # Or via environment variable
+        os.environ["GUIDATA_SCREENSHOT_PATH"] = "/path/to/screenshots"
+
+        # Or via CLI argument (parsed by SGMXExecEnv)
+        # --screenshot_path /path/to/screenshots
+
     Args:
         widget: Widget to grab
         name: Screenshot name (if None, uses widget.objectName())
-        add_timestamp: Whether to add a timestamp to the screenshot name (default: True)
+        add_timestamp: Whether to add a timestamp to the screenshot name
     """
-    if name is None:
-        name = widget.objectName()
-
-    # DataLab-specific logic: determine if timestamp should be added
-    # based on name patterns and DataLab conventions
-    if name.endswith("_"):
-        # Name ending with underscore always gets timestamp
-        add_timestamp = True
-    elif name[-1].isdigit() or name.startswith(("s_", "i_")):
-        # DataLab screenshot names or numbered items don't get timestamp
-        add_timestamp = False
-
-    # TODO : handle sreenshot path from config generically
-    print(f"Grabbing screenshot for widget '{name}' (add_timestamp={add_timestamp})")
-    # Use guidata's grab_save_window with configuration
-    # guidata_grab_save_window(
-    #    widget=widget, name=name, save_dir=SHOTPATH, add_timestamp=add_timestamp
-    # )
+    guidata_grab_save_window(
+        widget=widget,
+        name=name,
+        save_dir=execenv.screenshot_path or None,
+        add_timestamp=add_timestamp,
+    )
 
 
-# TODO : check if datalab specific (check implement generic MainWindow)
+# Used in SigimaX: mainwindow.py (file dialogs)
 @contextmanager
 def save_restore_stds() -> Generator[None, None, None]:
     """Save/restore standard I/O before/after doing some things
@@ -468,7 +433,7 @@ def save_restore_stds() -> Generator[None, None, None]:
         sys.stdin, sys.stdout, sys.stderr = saved_in, saved_out, saved_err
 
 
-# TODO : check if datalab specific (use in widgets/h5browser, widget/signalcursor)
+# Used in SigimaX: widgets/h5browser.py, widgets/signalcursor.py
 @contextmanager
 def block_signals(
     widget: QW.QWidget, enable: bool = True, children: bool = False
@@ -501,27 +466,7 @@ def block_signals(
                     child.blockSignals(False)
 
 
-# TODO : check if datalab specific (seems to be)
-def create_menu_button(
-    parent: QW.QWidget | None = None, menu: QW.QMenu | None = None
-) -> QW.QPushButton:
-    """Create a menu button
-
-    Args:
-        parent (QWidget): Parent widget
-        menu (QMenu): Menu to attach to the button
-
-    Returns:
-        QW.QPushButton: Menu button
-    """
-    button = QW.QPushButton(get_icon("libre-gui-menu.svg"), "", parent)
-    button.setFlat(True)
-    if menu is not None:
-        button.setMenu(menu)
-    return button
-
-
-# TODO : check if datalab specific (seems to be -> remote only ?)
+# Used in SigimaX: mainwindow.py (window management)
 def bring_to_front(window: QW.QWidget) -> None:
     """Bring window to front
 
@@ -539,7 +484,7 @@ def bring_to_front(window: QW.QWidget) -> None:
         window.showNormal()
 
 
-# TODO : check if datalab specific (check implement generic MainWindow)
+# Used in SigimaX: mainwindow.py (file/view menus)
 def configure_menu_about_to_show(menu: QW.QMenu, slot: Callable) -> None:
     """Configure menu about to show.
     This method is only used to connect the "aboutToShow" signal of menus,
@@ -558,7 +503,8 @@ def configure_menu_about_to_show(menu: QW.QMenu, slot: Callable) -> None:
     menu.aboutToShow.connect(slot)
 
 
-# TODO : check if datalab specific (use in widgets)
+# Used in SigimaX: widgets/signalpeak, signaldeltax, signalcursor,
+# signalbaseline, imagebackground
 def resize_widget_to_parent(
     widget: QW.QWidget,
     parent: QW.QWidget | None = None,
@@ -626,8 +572,7 @@ def resize_widget_to_parent(
         widget.resize(min_size, min_size)
 
 
-# TODO : check if datalab specific (seems to be : check implement generic MainWindow
-# -> image_panels)
+# Used in SigimaX: mainwindow.py (tab widget corner menu)
 def add_corner_menu(
     tabwidget: QW.QTabWidget, corner: QC.Qt.Corner | None = None
 ) -> QW.QMenu:

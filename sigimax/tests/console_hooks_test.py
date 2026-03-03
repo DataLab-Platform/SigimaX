@@ -20,7 +20,6 @@ from __future__ import annotations
 import numpy as np
 
 from sigimax.config import CONF as Conf
-from sigimax.config import _
 from sigimax.mainwindow import SGMXMainWindow
 from sigimax.utils import qthelpers as qth
 
