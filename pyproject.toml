@@ -96,7 +96,7 @@ include = ["sigimax*"]
 ]
 
 [tool.setuptools.dynamic]
-version = { attr = "sigimax.__version__" }
+version = { attr = "sigimax._metadata.__version__" }
 
 [tool.pytest.ini_options]
 addopts = "sigimax --import-mode=importlib"

@@ -19,13 +19,14 @@ __all__ = [
     "run",
 ]
 
+from sigimax._metadata import (  # noqa: F401
+    __docurl__,
+    __homeurl__,
+    __supporturl__,
+    __version__,
+)
 from sigimax.app import create, run
 from sigimax.gui.main import SGMXMainWindow
-
-__version__ = "0.0.1.dev0"
-__docurl__ = "https://sigimax.readthedocs.io/"
-__homeurl__ = "https://github.com/DataLab-Platform/SigimaX"
-__supporturl__ = "https://github.com/DataLab-Platform/SigimaX/issues/new/choose"
 
 # --- Important note: DATAPATH and LOCALEPATH are used by guidata.configtools
 # ---                 to retrieve data and translation files paths

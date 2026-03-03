@@ -24,6 +24,8 @@ from typing import Any, Generator
 
 from guidata.env import ExecEnv as GuiDataExecEnv
 
+from sigimax._metadata import __version__
+
 # We could import DEBUG from sigimax.config, but is it really worth it?
 DEBUG = os.environ.get("DEBUG", "").lower() in ("1", "true")
 
@@ -406,7 +408,6 @@ class SGMXExecEnv:
             self.h5browser_file = args.h5browser
         if args.version:
             # pylint: disable=import-outside-toplevel
-            from sigimax import __version__
             from sigimax.config import CONF as Conf
 
             print(

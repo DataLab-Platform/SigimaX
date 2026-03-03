@@ -43,8 +43,7 @@ from qtpy import QtGui as QG
 from qtpy import QtWidgets as QW
 from qtpy.compat import getopenfilenames, getsavefilename
 
-import sigimax
-from sigimax import __homeurl__
+from sigimax._metadata import __homeurl__, __version__
 from sigimax.config import CONF as Conf
 from sigimax.config import (
     DEBUG,
@@ -170,10 +169,10 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
 
     def check_stable_release(self) -> None:  # pragma: no cover
         """Check if this is a stable release"""
-        if sigimax.__version__.replace(".", "").isdigit():
+        if __version__.replace(".", "").isdigit():
             # This is a stable release
             return
-        if "b" in sigimax.__version__:
+        if "b" in __version__:
             # This is a beta release
             rel = _(
                 "This software is in the <b>beta stage</b> of its release cycle. "
@@ -859,15 +858,6 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
                     5000,
                 )
 
-    def get_version(self) -> str:
-        """Return SigimaX public version.
-
-        Returns:
-            SigimaX version
-        """
-        # TODO generic app version (the one which implements sigimax )
-        return sigimax.__version__
-
     def close_application(self) -> None:
         """Close SigimaX application"""
         self.close()
@@ -926,8 +916,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         sgmx_cprght = "2023 DataLab Platform Developers"
         about_parts.extend(
             [
-                f'<p>Based on <a href="{__homeurl__}">{MOD_TITLE}</a>'
-                f" v{sigimax.__version__}",
+                f'<p>Based on <a href="{__homeurl__}">{MOD_TITLE}</a> v{__version__}',
                 f"<br>{MOD_DESC}",
                 f"<br>{sgmx_dev_by}",
                 f"<br>Copyright &copy; {sgmx_cprght}",
