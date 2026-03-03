@@ -625,21 +625,6 @@ class SigimaXOptions(AppOptionsContainer):
         )
 
         # ===================================================================
-        # TODO : keep ?
-        # ===================================================================
-
-        self.process_isolation_enabled = TypedOptionField(
-            self,
-            "process_isolation_enabled",
-            default=True,
-            expected_type=bool,
-            description=(
-                "If True, computations run in a separate process to avoid "
-                "GUI freezes and protect against crashes."
-            ),
-        )
-
-        # ===================================================================
         # Log and Console state
         # ===================================================================
 
@@ -809,7 +794,7 @@ class SigimaXOptions(AppOptionsContainer):
                 "If True, clear the workspace before loading an HDF5 file "
                 "(avoids UUID conflicts)."
             ),
-        )  # TODO: keep ?
+        )
         self.h5_clear_workspace_ask = TypedOptionField(
             self,
             "h5_clear_workspace_ask",
@@ -819,7 +804,7 @@ class SigimaXOptions(AppOptionsContainer):
                 "If True, ask user for confirmation before clearing workspace "
                 "when loading an HDF5 file."
             ),
-        )  # TODO: keep ?
+        )
         self.h5_fullpath_in_title = TypedOptionField(
             self,
             "h5_fullpath_in_title",
@@ -854,7 +839,7 @@ class SigimaXOptions(AppOptionsContainer):
             default="left",
             choices=["top", "bottom", "left", "right"],
             description="Position of the plot toolbar.",
-        )  # TODO : keep ? edit settings futur feature
+        )
         self.plot_dock_location = EnumOptionField(
             self,
             "plot_dock_location",

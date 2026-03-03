@@ -965,16 +965,6 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         Override this method in subclasses to fully customize the About dialog.
         """
         self.check_stable_release()
-        if Conf.process_isolation_enabled.get():
-            pistate = "<font color='green'>" + _("enabled") + "</font>"
-        else:
-            pistate = "<font color='red'>" + _("disabled") + "</font>"
-        adv_conf = "<br>".join(
-            [
-                "<i>" + _("Advanced configuration:") + "</i>",
-                "• " + _("Process isolation:") + " " + pistate,
-            ]
-        )
         app_name = Conf.app_name.get()
         app_version = Conf.app_version.get()
         app_desc = Conf.app_desc.get()
@@ -1016,8 +1006,6 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
             ]
         )
 
-        # -- Advanced configuration
-        about_parts.append(f"<p>{adv_conf}")
         QW.QMessageBox.about(
             self,
             _("About") + " " + app_name,
