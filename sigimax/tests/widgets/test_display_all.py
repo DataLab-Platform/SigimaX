@@ -28,7 +28,7 @@ from sigima.tools.signal.peakdetection import peak_indices
 
 from sigimax.env import execenv
 from sigimax.tests import helpers, sigimax_test_app_context
-from sigimax.tests.hdf5.h5browser_app_test import create_h5browser_dialog
+from sigimax.tests.hdf5.test_h5browser_app import create_h5browser_dialog
 from sigimax.widgets import fitdialog as fdlg
 from sigimax.widgets.imagebackground import ImageBackgroundDialog
 from sigimax.widgets.logviewer import exec_sigimax_logviewer_dialog

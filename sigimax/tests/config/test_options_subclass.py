@@ -4,6 +4,8 @@
 
 # guitest: show
 
+import pytest
+
 from sigimax.config import SigimaXOptions, TypedOptionField
 
 
@@ -29,9 +31,16 @@ class MyAppOptions(SigimaXOptions):
         )
 
 
-o = MyAppOptions()
-print(f"Total options: {len(o.list_options())}")
-print(f"rpc_enabled = {o.rpc_enabled.get(sync_env=False)}")
-print(f"rpc_port = {o.rpc_port.get(sync_env=False)}")
-print(f"color_mode = {o.color_mode.get(sync_env=False)}")
-print("Subclass OK")
+@pytest.mark.unit
+def test_options_subclass():
+    """Test that SigimaXOptions can be subclassed with custom options."""
+    o = MyAppOptions()
+    assert len(o.list_options()) > 0
+    assert o.rpc_enabled.get(sync_env=False) is True
+    assert o.rpc_port.get(sync_env=False) == 8080
+    # Inherited option from SigimaXOptions must be accessible
+    assert o.color_mode.get(sync_env=False) is not None
+
+
+if __name__ == "__main__":
+    test_options_subclass()

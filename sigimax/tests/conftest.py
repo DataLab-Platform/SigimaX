@@ -103,6 +103,18 @@ def pytest_configure(config):
         "markers",
         "validation: mark a test as a validation test (ground truth or analytical)",
     )
+    config.addinivalue_line(
+        "markers",
+        "unit: pure logic test, no Qt application context needed",
+    )
+    config.addinivalue_line(
+        "markers",
+        "app: requires full application context (SGMXMainWindow)",
+    )
+    config.addinivalue_line(
+        "markers",
+        "gui: requires visible Qt window (use --show-windows)",
+    )
     if not config.getoption("--show-windows"):
         os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 

@@ -726,13 +726,6 @@ class SigimaXOptions(AppOptionsContainer):
             expected_type=str,
             description="Base working directory for file dialogs.",
         )
-        self.current_tab = TypedOptionField(
-            self,
-            "current_tab",
-            default=0,
-            expected_type=int,
-            description="Index of the currently selected tab/panel.",
-        )
 
         # ===================================================================
         # Console options — Embedded console settings

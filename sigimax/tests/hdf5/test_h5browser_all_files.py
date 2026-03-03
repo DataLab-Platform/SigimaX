@@ -14,7 +14,7 @@ from __future__ import annotations
 from guidata.qthelpers import exec_dialog, qt_app_context
 
 from sigimax.tests import helpers
-from sigimax.tests.hdf5.h5browser_app_test import create_h5browser_dialog
+from sigimax.tests.hdf5.test_h5browser_app import create_h5browser_dialog
 
 
 def test_h5browser_all_files(pattern=None):

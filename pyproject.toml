@@ -105,6 +105,12 @@ filterwarnings = [
     "ignore::DeprecationWarning:scipy.*",
     "ignore::DeprecationWarning:skimage.*",
 ]
+markers = [
+    "validation: mark a test as a validation test (ground truth or analytical)",
+    "unit: pure logic test, no Qt application context needed",
+    "app: requires full application context (SGMXMainWindow)",
+    "gui: requires visible Qt window (use --show-windows)",
+]
 
 [tool.ruff]
 exclude = [".git", ".vscode", "build", "dist", "*.ipynb"]

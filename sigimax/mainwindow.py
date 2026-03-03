@@ -1099,9 +1099,6 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         self.reset_all()
         self.__save_pos_size_and_state()
 
-        # Saving current tab for next session
-        Conf.current_tab.set(self.tabwidget.currentIndex())
-
         execenv.log(self, "closed properly")
         return True
 
