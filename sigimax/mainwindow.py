@@ -501,11 +501,18 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
             else:
                 self.console.exception_occurred.disconnect(self.console.show_console)
 
-    def __setup_console(self) -> None:
-        """Add an internal console"""
-        # TODO "dl" command in console ? Check if we keep it in SigimaX
-        ns = {
-            "dl": self,
+    def _get_console_namespace(self) -> dict[str, object]:
+        """Return the namespace dict exposed in the internal console.
+
+        The default namespace provides ``win`` (the main window) and commonly
+        used scientific modules.  Override in subclasses to add
+        application-specific variables.
+
+        Returns:
+            Namespace dictionary
+        """
+        return {
+            "win": self,
             "np": np,
             "sps": sps,
             "spi": spi,
@@ -514,19 +521,31 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
             "osp": osp,
             "time": time,
         }
-        msg = _(
-            "Welcome to SigimaX console!\n"
-            "---------------------------\n"
-            "You can access the main window with the 'dl' variable.\n"
-            "Example:\n"
-            "  o = dl.get_object()  # returns currently selected object\n"
-            "  o = dl[1]  # returns object number 1\n"
-            "  o = dl['My image']  # returns object which title is 'My image'\n"
-            "  o.data  # returns object data\n"
-            "Modules imported at startup: "
-            "os, sys, os.path as osp, time, "
-            "numpy as np, scipy.signal as sps, scipy.ndimage as spi"
+
+    def _get_console_message(self) -> str:
+        """Return the welcome message displayed in the internal console.
+
+        Override in subclasses to provide application-specific examples.
+
+        Returns:
+            Welcome message string
+        """
+        app = Conf.app_name.get()
+        return (
+            _(
+                "Welcome to %s console!\n"
+                "You can access the main window with the 'win' variable.\n"
+                "Modules imported at startup: "
+                "os, sys, os.path as osp, time, "
+                "numpy as np, scipy.signal as sps, scipy.ndimage as spi"
+            )
+            % app
         )
+
+    def __setup_console(self) -> None:
+        """Add an internal console"""
+        ns = self._get_console_namespace()
+        msg = self._get_console_message()
         self.console = DockableConsole(self, namespace=ns, message=msg, debug=DEBUG)
         self.console.setMaximumBlockCount(Conf.console_max_line_count.get(5000))
         self.console.go_to_error.connect(go_to_error)
