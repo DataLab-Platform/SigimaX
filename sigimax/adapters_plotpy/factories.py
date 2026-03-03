@@ -31,17 +31,6 @@ def create_adapter_from_object(object_to_adapt):
         SignalROI,
     )
 
-    # TODO : extract back in datalab ?
-    # if isinstance(object_to_adapt, GeometryAdapter):
-    #    from sigimax.adapters_plotpy.objects.scalar import GeometryPlotPyAdapter
-    #
-    #    adapter = GeometryPlotPyAdapter(object_to_adapt)
-    # TODO : extract back in datalab ?
-    # elif isinstance(object_to_adapt, TableAdapter):
-    #    from sigimax.adapters_plotpy.objects.scalar import TablePlotPyAdapter
-    #
-    #    adapter = TablePlotPyAdapter(object_to_adapt)
-
     if isinstance(object_to_adapt, SignalObj):
         from sigimax.adapters_plotpy.objects.signal import SignalObjPlotPyAdapter
 

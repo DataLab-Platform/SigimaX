@@ -29,8 +29,6 @@ from sigimax.adapters_plotpy.base import (
     config_annotated_shape,
     set_plot_item_editable,
 )
-
-# from sigimax.adapters_plotpy.objects.scalar import GeometryPlotPyAdapter
 from sigimax.config import CONF as Conf
 
 if TYPE_CHECKING:
@@ -115,8 +113,27 @@ class BaseObjPlotPyAdapter(Generic[TypeObj, TypePlotItem]):
             title: title (if None, use object title)
         """
 
-    # TODO : check if make it abstract and implement in children classes in Datalab to
-    # handle metadata options (format, showlabel)
+    def iterate_metadata_shape_items(
+        self, _key: str, _value: Any, _fmt: str, _lbl: bool
+    ):
+        """Hook: yield additional plot items for custom metadata entries.
+
+        Override in subclasses to handle application-specific metadata
+        (e.g., geometry results, table results). Called once for each metadata
+        entry whose key is not ``ROI_KEY``.
+
+        Args:
+            key: metadata key
+            value: metadata value
+            fmt: numeric format string (e.g. "%.3f")
+            lbl: whether to show labels
+
+        Yields:
+            Plot items for this metadata entry
+        """
+        return
+        yield  # noqa: RET504 -- make this a generator
+
     def iterate_shape_items(self, editable: bool = False):
         """Iterate over shape items encoded in metadata (if any).
 
@@ -128,7 +145,7 @@ class BaseObjPlotPyAdapter(Generic[TypeObj, TypePlotItem]):
         """
         fmt = self.get_obj_option("format")
         lbl = self.get_obj_option("showlabel")
-        for key, _value in self.obj.metadata.items():
+        for key, value in self.obj.metadata.items():
             if key == ROI_KEY:
                 roi = self.obj.roi
                 if roi is not None:
@@ -140,17 +157,8 @@ class BaseObjPlotPyAdapter(Generic[TypeObj, TypePlotItem]):
                     yield from adapter.iterate_roi_items(
                         self.obj, fmt=fmt, lbl=lbl, editable=False
                     )
-            # Process geometry results from metadata (using GeometryAdapter)
-            # elif GeometryAdapter.match(key, _value):
-            #    try:
-            #        geomadapter = GeometryAdapter.from_metadata_entry(self.obj, key)
-            #        plot_adapter = GeometryPlotPyAdapter(geomadapter)
-            #        yield from plot_adapter.iterate_shape_items(
-            #            fmt, lbl, self.obj.PREFIX
-            #        )
-            #    except (ValueError, TypeError):
-            #        # Skip invalid entries
-            #        pass
+            else:
+                yield from self.iterate_metadata_shape_items(key, value, fmt, lbl)
         # Use the new annotation adapter to get items
         if self.obj.has_annotations():
             for item in self.annotation_adapter.get_items():
