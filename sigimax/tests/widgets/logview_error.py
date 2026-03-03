@@ -9,7 +9,7 @@ Log viewer test: raise an exception and create a seg fault in derivated SigimaX 
 from guidata.qthelpers import qt_app_context
 
 from sigimax.env import execenv
-from sigimax.gui.main import SGMXMainWindow
+from sigimax.mainwindow import SGMXMainWindow
 
 
 def error():

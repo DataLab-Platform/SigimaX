@@ -4,7 +4,7 @@
 Main window
 ===========
 
-The :mod:`sigimax.gui.main` module provides a generic main window for derived
+The :mod:`sigimax.mainwindow` module provides a generic main window for derived
 applications.
 It is designed to be flexible and extensible, allowing to easily add
 new panels, actions, menus and toolbars.
@@ -53,7 +53,6 @@ from sigimax.config import (
     _,
 )
 from sigimax.env import execenv
-from sigimax.gui.docks import DockablePlotWidget
 from sigimax.h5 import H5Importer
 from sigimax.utils import qthelpers as qth
 from sigimax.utils.qthelpers import (
@@ -64,6 +63,7 @@ from sigimax.utils.qthelpers import (
 )
 from sigimax.widgets import logviewer, status
 from sigimax.widgets.h5browser import H5BrowserDialog
+from sigimax.widgets.plotdock import DockablePlotWidget
 from sigimax.widgets.warningerror import go_to_error
 
 if TYPE_CHECKING:

@@ -12,11 +12,11 @@ Why a separate module?
 
 SigimaX is a framework library whose ``__init__.py`` re-exports key symbols
 (``SGMXMainWindow``, ``create``, ``run``) for convenience.  Those re-exports
-pull in heavy submodules (``sigimax.app``, ``sigimax.gui.main``) which
+pull in heavy submodules (``sigimax.app``, ``sigimax.mainwindow``) which
 eventually import ``sigimax.config``.  If ``sigimax.config`` were to import
 metadata back from ``sigimax.__init__``, a circular import chain would form::
 
-    sigimax → sigimax.gui.main → sigimax.widgets.* → sigimax.config → sigimax
+    sigimax → sigimax.mainwindow → sigimax.widgets.* → sigimax.config → sigimax
 
 By placing the metadata here, both ``__init__.py`` and ``config.py`` can
 import it without triggering the cycle.  This is the same pattern used by

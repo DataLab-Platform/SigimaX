@@ -28,7 +28,7 @@ from sigima.tests import helpers
 
 import sigimax
 from sigimax.config import MOD_NAME
-from sigimax.gui.main import SGMXMainWindow
+from sigimax.mainwindow import SGMXMainWindow
 from sigimax.utils import qthelpers as qth
 
 # Add test data files and folders for the SigimaX module:

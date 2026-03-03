@@ -31,10 +31,9 @@ sigimax/
 ├── app.py              # Application launcher (create / run)
 ├── config.py           # Configuration system (SigimaXOptions, CONF singleton)
 ├── env.py              # ExecEnv runtime environment (verbosity, unattended)
-├── gui/
-│   ├── main.py         # SGMXMainWindow (generic main window)
-│   └── docks.py        # DockablePlotWidget
+├── mainwindow.py        # SGMXMainWindow (generic main window)
 ├── widgets/            # Reusable Qt widgets
+│   ├── plotdock.py     # DockablePlotWidget
 │   ├── splashscreen.py # Configurable splash screen
 │   ├── h5browser.py    # HDF5 file browser
 │   ├── logviewer.py    # Log viewer dialog
@@ -150,7 +149,7 @@ class MyAppOptions(SigimaXOptions):
 **Step 2 — Subclass `SGMXMainWindow`** for custom UI:
 
 ```python
-from sigimax.gui.main import SGMXMainWindow
+from sigimax.mainwindow import SGMXMainWindow
 from sigimax.config import CONF as Conf
 
 class MyAppMainWindow(SGMXMainWindow):
@@ -222,7 +221,7 @@ from sigimax.widgets.signalpeak import SignalPeakDetectionDialog
 Embeds PlotPy plots in dock widgets:
 
 ```python
-from sigimax.gui.docks import DockablePlotWidget
+from sigimax.widgets.plotdock import DockablePlotWidget
 
 dock = DockablePlotWidget(self, plot_type=PlotType.CURVE, title="My Plot")
 self.addDockWidget(Qt.RightDockWidgetArea, dock)
@@ -252,8 +251,8 @@ run(window_class=MyWindow, splash_config=config)
 | **In SigimaX** | **Stays in DataLab** |
 |---|---|
 | Configuration system (`config.py`) | Signal/Image panels, processors |
-| Generic main window (`gui/main.py`) | Action handler, plugin system |
-| Dockable plot widgets (`gui/docks.py`) | Remote control (XML-RPC, Web API) |
+| Generic main window (`mainwindow.py`) | Action handler, plugin system |
+| Dockable plot widgets (`widgets/plotdock.py`) | Remote control (XML-RPC, Web API) |
 | HDF5 I/O + browser (`h5/`, `widgets/h5browser.py`) | Macro editor, new-object dialogs |
 | Scientific dialogs (fit, baseline, peak, cursor…) | DataLab-specific UI and processing |
 | Log viewer, status bar, splash screen, wizard | Object model, plot handler |
@@ -295,7 +294,7 @@ from guidata.qthelpers import create_action
 
 from sigimax.config import CONF as Conf
 from sigimax.config import _
-from sigimax.gui.main import SGMXMainWindow
+from sigimax.mainwindow import SGMXMainWindow
 
 if TYPE_CHECKING:
     from sigima.objects import SignalObj
@@ -360,8 +359,8 @@ action_text = _("Open HDF5 files")
 | `sigimax/app.py` | Application launcher (`create()`, `run()`) |
 | `sigimax/config.py` | Configuration system (`SigimaXOptions`, `CONF`) |
 | `sigimax/env.py` | Runtime environment (`ExecEnv`, `execenv` singleton) |
-| `sigimax/gui/main.py` | `SGMXMainWindow` — generic main window |
-| `sigimax/gui/docks.py` | `DockablePlotWidget` — embeddable plot docks |
+| `sigimax/mainwindow.py` | `SGMXMainWindow` — generic main window |
+| `sigimax/widgets/plotdock.py` | `DockablePlotWidget` — embeddable plot docks |
 | `sigimax/widgets/__init__.py` | Convenience re-exports of common widgets |
 | `sigimax/widgets/splashscreen.py` | `SplashScreenConfig`, `SigimaXSplashScreen` |
 | `sigimax/widgets/h5browser.py` | HDF5 browser widget and dialog |

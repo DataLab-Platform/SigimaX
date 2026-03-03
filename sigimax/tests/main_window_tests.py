@@ -12,9 +12,9 @@ covered by other tests.
 
 from plotpy.constants import PlotType
 
-from sigimax.gui.docks import DockablePlotWidget
 from sigimax.tests import sigimax_test_app_context
 from sigimax.widgets.h5browser import H5Browser
+from sigimax.widgets.plotdock import DockablePlotWidget
 
 
 def test_main_app():

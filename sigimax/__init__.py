@@ -26,7 +26,7 @@ from sigimax._metadata import (  # noqa: F401
     __version__,
 )
 from sigimax.app import create, run
-from sigimax.gui.main import SGMXMainWindow
+from sigimax.mainwindow import SGMXMainWindow
 
 # --- Important note: DATAPATH and LOCALEPATH are used by guidata.configtools
 # ---                 to retrieve data and translation files paths

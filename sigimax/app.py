@@ -8,7 +8,7 @@ The :mod:`sigimax.app` module provides helper functions to create and run
 SigimaX-derived applications with optional splash screen support.
 
 Derived applications typically call :func:`create` (or :func:`run`) with
-their own :class:`~sigimax.gui.main.SGMXMainWindow` subclass and an
+their own :class:`~sigimax.mainwindow.SGMXMainWindow` subclass and an
 optional :class:`~sigimax.widgets.splashscreen.SplashScreenConfig`.
 
 Basic usage::
@@ -37,7 +37,7 @@ from typing import TYPE_CHECKING
 from qtpy import QtWidgets as QW
 
 from sigimax.config import CONF as Conf
-from sigimax.gui.main import SGMXMainWindow
+from sigimax.mainwindow import SGMXMainWindow
 from sigimax.utils.qthelpers import sigimax_app_context
 from sigimax.widgets.splashscreen import SigimaXSplashScreen, SplashScreenConfig
 
@@ -61,7 +61,7 @@ def create(
 
     Args:
         window_class: The main window class to instantiate. Defaults to
-         :class:`~sigimax.gui.main.SGMXMainWindow`.
+         :class:`~sigimax.mainwindow.SGMXMainWindow`.
         splash: If ``True``, show a splash screen during initialization.
         splash_config: Explicit splash screen configuration. If ``None`` and
          *splash* is ``True``, the configuration is built from

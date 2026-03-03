@@ -16,7 +16,7 @@ import pytest
 from qtpy import QtCore as QC
 
 from sigimax.config import CONF as Conf
-from sigimax.gui.main import SGMXMainWindow
+from sigimax.mainwindow import SGMXMainWindow
 
 # Access the name-mangled static method without instantiating a window
 _get_local_doc_path = (

@@ -29,9 +29,9 @@ from sigima.config import TypedOptionField
 from sigimax.app import create as sigimax_create
 from sigimax.config import CONF as Conf
 from sigimax.config import EnumOptionField, SigimaXOptions, _
-from sigimax.gui.docks import DockablePlotWidget
-from sigimax.gui.main import SGMXMainWindow
+from sigimax.mainwindow import SGMXMainWindow
 from sigimax.utils import qthelpers as qth
+from sigimax.widgets.plotdock import DockablePlotWidget
 from sigimax.widgets.splashscreen import SigimaXSplashScreen, SplashScreenConfig
 
 # =============================================================================

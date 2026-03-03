@@ -32,10 +32,10 @@ from sigima import ImageObj, SignalObj
 
 from sigimax.config import CONF as Conf
 from sigimax.env import execenv
-from sigimax.gui.docks import DockablePlotWidget
-from sigimax.gui.main import SGMXMainWindow
+from sigimax.mainwindow import SGMXMainWindow
 from sigimax.tests import helpers
 from sigimax.utils import qthelpers as qth
+from sigimax.widgets.plotdock import DockablePlotWidget
 
 # Workspace HDF5 key used to store the application version
 _VERSION_ATTR = "app_version"

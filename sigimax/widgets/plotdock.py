@@ -4,8 +4,8 @@
 Docks
 =====
 
-The :mod:`sigimax.gui.docks` module provides the dockable widgets for the
-SigimaX main window.
+The :mod:`sigimax.widgets.plotdock` module provides the dockable plot widgets
+for the SigimaX main window.
 
 Plot widget
 -----------
