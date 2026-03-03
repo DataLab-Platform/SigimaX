@@ -88,7 +88,6 @@ from sigima.proc.title_formatting import (
     set_default_title_formatter,
 )
 
-from sigimax import __docurl__, __homeurl__, __supporturl__
 from sigimax.utils import conf as _conf_module  # For config dir resolution
 
 # Module-level constants
@@ -101,6 +100,7 @@ set_default_title_formatter(PlaceholderTitleFormatter())
 # Configure guidata translation and icons paths for SigimaX
 _ = configtools.get_translation(MOD_NAME)
 configtools.add_image_module_path(MOD_NAME, osp.join("data", "icons"))
+DATAPATH = configtools.get_module_data_path(MOD_NAME, "data")
 
 # Other Module-level constants
 MOD_DESC = _("""SigimaX is a GUI library working with Sigima and PlotPyStack.
@@ -535,22 +535,6 @@ class SigimaXOptions(AppOptionsContainer):
             expected_type=str,
             description="Path to the application logo.",
         )
-        self.splash_image_path = TypedOptionField(
-            self,
-            "splash_image_path",
-            default="",
-            expected_type=str,
-            description="Path to the splash screen image (PNG, SVG, etc.). "
-            "If empty, no splash screen is shown.",
-        )
-        self.splash_show_progress = TypedOptionField(
-            self,
-            "splash_show_progress",
-            default=True,
-            expected_type=bool,
-            description="If True, display progress messages on the splash screen "
-            "during application startup.",
-        )
         self.app_desc = TypedOptionField(
             self,
             "app_desc",
@@ -571,21 +555,21 @@ class SigimaXOptions(AppOptionsContainer):
         self.app_docurl = TypedOptionField(
             self,
             "app_docurl",
-            default=__docurl__,
+            default="",
             expected_type=str,
             description="URL to the application documentation.",
         )
         self.app_homeurl = TypedOptionField(
             self,
             "app_homeurl",
-            default=__homeurl__,
+            default="",
             expected_type=str,
             description="URL to the application homepage.",
         )
         self.app_supporturl = TypedOptionField(
             self,
             "app_supporturl",
-            default=__supporturl__,
+            default="",
             expected_type=str,
             description="URL to the application support/contact page.",
         )
@@ -603,6 +587,22 @@ class SigimaXOptions(AppOptionsContainer):
             expected_type=str,
             description="Copyright notice shown in the About dialog "
             "(e.g. '2023 My Organization').",
+        )
+        self.splash_image_path = TypedOptionField(
+            self,
+            "splash_image_path",
+            default="",
+            expected_type=str,
+            description="Path to the splash screen image (PNG, SVG, etc.). "
+            "If empty, no splash screen is shown.",
+        )
+        self.splash_show_progress = TypedOptionField(
+            self,
+            "splash_show_progress",
+            default=True,
+            expected_type=bool,
+            description="If True, display progress messages on the splash screen "
+            "during application startup.",
         )
 
         # ===================================================================
