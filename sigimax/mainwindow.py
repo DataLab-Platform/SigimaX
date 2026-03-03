@@ -466,64 +466,11 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
     def __add_menus(self) -> None:
         """Adding menus"""
         self.file_menu = self.menuBar().addMenu(_("&File"))
-        configure_menu_about_to_show(self.file_menu, self.__update_file_menu)
+        configure_menu_about_to_show(self.file_menu, self._update_file_menu)
         self.view_menu = self.menuBar().addMenu(_("&View"))
-        configure_menu_about_to_show(self.view_menu, self.__update_view_menu)
+        configure_menu_about_to_show(self.view_menu, self._update_view_menu)
         self.help_menu = self.menuBar().addMenu("?")
-        help_menu_actions = [
-            create_action(
-                self,
-                _("Online documentation"),
-                icon=get_icon("libre-gui-help.svg"),
-                triggered=lambda: webbrowser.open(Conf.app_docurl.get()),
-            ),
-        ]
-        localdocpath = self.__get_local_doc_path()
-        if localdocpath is not None:
-            help_menu_actions += [
-                create_action(
-                    self,
-                    _("PDF documentation"),
-                    icon=get_icon("help_pdf.svg"),
-                    triggered=lambda: webbrowser.open(localdocpath),
-                ),
-            ]
-        if TEST_SEGFAULT_ERROR:
-            help_menu_actions += [
-                create_action(
-                    self,
-                    _("Test segfault/Python error"),
-                    triggered=self.test_segfault_error,
-                )
-            ]
-        help_menu_actions += [
-            create_action(
-                self,
-                _("Log files") + "...",
-                icon=get_icon("logs.svg"),
-                triggered=self.__show_logviewer,
-            ),
-            None,
-            create_action(
-                self,
-                _("Project home page"),
-                icon=get_icon("libre-gui-globe.svg"),
-                triggered=lambda: webbrowser.open(Conf.app_homeurl.get()),
-            ),
-            create_action(
-                self,
-                _("Bug report or feature request"),
-                icon=get_icon("libre-gui-globe.svg"),
-                triggered=lambda: webbrowser.open(Conf.app_supporturl.get()),
-            ),
-            create_action(
-                self,
-                _("About..."),
-                icon=get_icon("libre-gui-about.svg"),
-                triggered=self._about,
-            ),
-        ]
-        add_actions(self.help_menu, help_menu_actions)
+        add_actions(self.help_menu, self._get_help_menu_actions())
 
     def __update_console_show_mode(self) -> None:
         """Update console show mode from configuration option
@@ -596,26 +543,133 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         self.addDockWidget(location, dockwidget)
         return dockwidget
 
-    def __update_file_menu(self) -> None:
-        """Update file menu before showing up"""
-        self.saveh5_action.setEnabled(
-            True
-        )  # TODO enable/disable based on workspace state
-        add_actions(
-            self.file_menu,
-            [
-                None,
-                self.openh5_action,
-                self.saveh5_action,
-                self.browseh5_action,
-                None,
-                self.settings_action,
-            ],
-        )
+    def _is_save_enabled(self) -> bool:
+        """Return whether the 'Save' action should be enabled.
 
-    def __update_view_menu(self) -> None:
-        """Update view menu before showing up"""
-        add_actions(self.view_menu, [None] + self.createPopupMenu().actions())
+        The base implementation returns ``True`` when the workspace has been
+        modified.  Override in subclasses to check domain-specific conditions
+        (e.g., whether the workspace contains any objects).
+
+        Returns:
+            True if save action should be enabled
+        """
+        return self.is_modified()
+
+    def _get_file_menu_actions(self) -> list[QW.QAction | None]:
+        """Return the list of actions for the file menu.
+
+        Override in subclasses to fully customize which actions appear and
+        their order.  Return a list of :class:`QAction` instances (or
+        ``None`` for separators).
+
+        Returns:
+            List of actions and separators
+        """
+        return [
+            None,
+            self.openh5_action,
+            self.saveh5_action,
+            self.browseh5_action,
+            None,
+            self.settings_action,
+        ]
+
+    def _update_file_menu(self) -> None:
+        """Update file menu before showing up.
+
+        Updates action states (via :meth:`_is_save_enabled`) and populates
+        the menu with actions returned by :meth:`_get_file_menu_actions`.
+
+        Override in subclasses to add extra logic (e.g., appending a
+        submenu).  Call ``super()._update_file_menu()`` first to populate
+        the default actions.
+        """
+        self.saveh5_action.setEnabled(self._is_save_enabled())
+        add_actions(self.file_menu, self._get_file_menu_actions())
+        if self.quit_action is not None:
+            add_actions(self.file_menu, [self.quit_action])
+
+    def _get_view_menu_actions(self) -> list[QW.QAction | None]:
+        """Return the list of actions for the view menu.
+
+        Override in subclasses to customize which actions appear.
+
+        Returns:
+            List of actions and separators
+        """
+        return [None] + self.createPopupMenu().actions()
+
+    def _update_view_menu(self) -> None:
+        """Update view menu before showing up.
+
+        Override in subclasses to add extra logic.  Call
+        ``super()._update_view_menu()`` first to populate the default
+        actions.
+        """
+        add_actions(self.view_menu, self._get_view_menu_actions())
+
+    def _get_help_menu_actions(self) -> list[QW.QAction | None]:
+        """Return the list of actions for the help menu.
+
+        Override in subclasses to add, remove, or reorder help actions.
+
+        Returns:
+            List of actions and separators
+        """
+        actions: list[QW.QAction | None] = [
+            create_action(
+                self,
+                _("Online documentation"),
+                icon=get_icon("libre-gui-help.svg"),
+                triggered=lambda: webbrowser.open(Conf.app_docurl.get()),
+            ),
+        ]
+        localdocpath = self.__get_local_doc_path()
+        if localdocpath is not None:
+            actions.append(
+                create_action(
+                    self,
+                    _("PDF documentation"),
+                    icon=get_icon("help_pdf.svg"),
+                    triggered=lambda: webbrowser.open(localdocpath),
+                ),
+            )
+        if TEST_SEGFAULT_ERROR:
+            actions.append(
+                create_action(
+                    self,
+                    _("Test segfault/Python error"),
+                    triggered=self.test_segfault_error,
+                )
+            )
+        actions += [
+            create_action(
+                self,
+                _("Log files") + "...",
+                icon=get_icon("logs.svg"),
+                triggered=self.__show_logviewer,
+            ),
+            None,
+            create_action(
+                self,
+                _("Project home page"),
+                icon=get_icon("libre-gui-globe.svg"),
+                triggered=lambda: webbrowser.open(Conf.app_homeurl.get()),
+            ),
+            create_action(
+                self,
+                _("Bug report or feature request"),
+                icon=get_icon("libre-gui-globe.svg"),
+                triggered=lambda: webbrowser.open(Conf.app_supporturl.get()),
+            ),
+            create_action(
+                self,
+                _("About..."),
+                icon=get_icon("libre-gui-about.svg"),
+                triggered=self._about,
+            ),
+        ]
+        return actions
 
     @staticmethod
     def __check_h5file(filename: str, operation: str) -> str:
@@ -858,6 +912,14 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
                     5000,
                 )
 
+    def reset_all(self) -> None:
+        """Reset all application data.
+
+        The base implementation is a **no-op**.  Subclasses should override
+        this method to clear their data model (e.g. remove all objects
+        from panels).
+        """
+
     def close_application(self) -> None:
         """Close SigimaX application"""
         self.close()
@@ -1015,8 +1077,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
                 # it would represent too much effort for an error occuring in test
                 # configurations only.
                 pass
-        # TODO check extract BasePanel and AbstractPanel
-        # self.reset_all()
+        self.reset_all()
         self.__save_pos_size_and_state()
 
         # Saving current tab for next session
