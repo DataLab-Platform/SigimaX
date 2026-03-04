@@ -1,0 +1,156 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2025, DataLab Platform Developers
+# This file is distributed under the same license as the SigimaX package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: SigimaX \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Language: fr\n"
+"Language-Team: fr <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+msgid "Getting Started"
+msgstr "Premiers pas"
+
+msgid "This page provides a quick introduction to building applications with SigimaX."
+msgstr "Cette page fournit une introduction rapide à la construction d'applications avec SigimaX."
+
+msgid "SigimaX follows a **three-step derivation pattern**: subclass the configuration, subclass the main window, and launch with ``run()``. This pattern is proven in production \u2014 `DataLab <https://datalab-platform.com/>`_ is built entirely on it."
+msgstr "SigimaX suit un **patron de d\u00e9rivation en trois \u00e9tapes** : h\u00e9riter de la configuration, h\u00e9riter de la fen\u00eatre principale, et lancer avec ``run()``. Ce patron est \u00e9prouv\u00e9 en production \u2014 `DataLab <https://datalab-platform.com/>`_ est enti\u00e8rement construit dessus."
+
+msgid "The Derivation Pattern"
+msgstr "Le patron de dérivation"
+
+msgid "**Step 1 — Subclass** :class:`~sigimax.config.SigimaXOptions` to add application-specific configuration fields:"
+msgstr "**Étape 1 — Hériter de** :class:`~sigimax.config.SigimaXOptions` pour ajouter des champs de configuration spécifiques à l'application :"
+
+msgid "**Step 2 — Subclass** :class:`~sigimax.mainwindow.SGMXMainWindow` to customize the user interface:"
+msgstr "**Étape 2 — Hériter de** :class:`~sigimax.mainwindow.SGMXMainWindow` pour personnaliser l'interface utilisateur :"
+
+msgid "**Step 3 — Launch** the application:"
+msgstr "**Étape 3 — Lancer** l'application :"
+
+msgid "That's it. Three classes, three steps — and you have a full-featured scientific desktop application with menus, toolbars, console, HDF5 workspace, and status bar."
+msgstr "C'est tout. Trois classes, trois étapes — et vous avez une application scientifique de bureau complète avec menus, barres d'outils, console, espace de travail HDF5 et barre d'état."
+
+msgid "Key Concepts"
+msgstr "Concepts clés"
+
+msgid "**Configuration system**: Options are typed fields (``TypedOptionField``, ``EnumOptionField``, ``TupleOptionField``) that support ``get()``/``set()``/ ``context()`` API, JSON persistence, and environment variable sync."
+msgstr "**Système de configuration** : les options sont des champs typés (``TypedOptionField``, ``EnumOptionField``, ``TupleOptionField``) qui supportent l'API ``get()``/``set()``/ ``context()``, la persistance JSON et la synchronisation avec les variables d'environnement."
+
+msgid "**Overridable hooks**: The main window provides hooks that derived apps can override: ``reset_all()``, ``_is_save_enabled()``, ``_update_file_menu()``, ``_update_view_menu()``, ``_about()``."
+msgstr "**Hooks redéfinissables** : la fenêtre principale fournit des hooks que les applications dérivées peuvent redéfinir : ``reset_all()``, ``_is_save_enabled()``, ``_update_file_menu()``, ``_update_view_menu()``, ``_about()``."
+
+msgid "**Built-in features**: HDF5 workspace (open/save/browse), embedded Python console, status bar with memory monitoring, splash screen support."
+msgstr "**Fonctionnalités intégrées** : espace de travail HDF5 (ouvrir/enregistrer/parcourir), console Python intégrée, barre d'état avec surveillance mémoire, support d'écran de démarrage."
+
+msgid "What's Included"
+msgstr "Contenu inclus"
+
+msgid "SigimaX provides 15+ ready-to-use scientific widgets:"
+msgstr "SigimaX fournit plus de 15 widgets scientifiques prêts à l'emploi :"
+
+msgid "Widget"
+msgstr "Widget"
+
+msgid "Purpose"
+msgstr "Objectif"
+
+msgid ":class:`~sigimax.widgets.plotdock.DockablePlotWidget`"
+msgstr ""
+
+msgid "Embeddable PlotPy plot in dock widgets"
+msgstr "Tracé PlotPy intégrable dans des widgets ancrables"
+
+msgid ":class:`~sigimax.widgets.h5browser.H5BrowserDialog`"
+msgstr ""
+
+msgid "Interactive HDF5 file browser"
+msgstr "Explorateur interactif de fichiers HDF5"
+
+msgid ":class:`~sigimax.widgets.fitdialog`"
+msgstr ""
+
+msgid "Curve fitting dialogs (Gaussian, polynomial, etc.)"
+msgstr "Dialogues d'ajustement de courbe (gaussien, polynomial, etc.)"
+
+msgid ":class:`~sigimax.widgets.signalpeak`"
+msgstr ""
+
+msgid "Signal peak detection dialog"
+msgstr "Dialogue de détection de pics de signal"
+
+msgid ":class:`~sigimax.widgets.signalbaseline`"
+msgstr ""
+
+msgid "Signal baseline selection dialog"
+msgstr "Dialogue de sélection de ligne de base"
+
+msgid ":class:`~sigimax.widgets.signalcursor`"
+msgstr ""
+
+msgid "Signal cursor selection dialog"
+msgstr "Dialogue de sélection par curseur"
+
+msgid ":class:`~sigimax.widgets.signaldeltax`"
+msgstr ""
+
+msgid "Signal delta-X measurement dialog"
+msgstr "Dialogue de mesure de delta-X"
+
+msgid ":class:`~sigimax.widgets.imagebackground`"
+msgstr ""
+
+msgid "Image background selection dialog"
+msgstr "Dialogue de sélection du fond d'image"
+
+msgid ":class:`~sigimax.widgets.logviewer.LogViewerWindow`"
+msgstr ""
+
+msgid "Log viewer dialog"
+msgstr "Dialogue de visualisation des journaux"
+
+msgid ":class:`~sigimax.widgets.wizard.Wizard`"
+msgstr ""
+
+msgid "Multi-page wizard dialog"
+msgstr "Dialogue assistant multi-pages"
+
+msgid ":class:`~sigimax.widgets.splashscreen.SigimaXSplashScreen`"
+msgstr ""
+
+msgid "Configurable splash screen"
+msgstr "Écran de démarrage configurable"
+
+msgid ":class:`~sigimax.widgets.status.MemoryStatus`"
+msgstr ""
+
+msgid "Status bar memory usage widget"
+msgstr "Widget de barre d'état d'utilisation mémoire"
+
+msgid ":class:`~sigimax.widgets.warningerror.WarningErrorMessageBox`"
+msgstr ""
+
+msgid "Warning/error display dialog"
+msgstr "Dialogue d'affichage des avertissements et erreurs"
+
+msgid "Next Steps"
+msgstr "Étapes suivantes"
+
+msgid "Browse the :doc:`../auto_examples/index` to see SigimaX in action"
+msgstr "Parcourez les :doc:`../auto_examples/index` pour voir SigimaX en action"
+
+msgid "Read the :doc:`overview` for architecture details"
+msgstr "Lisez la :doc:`overview` pour les détails de l'architecture"
+
+msgid "Dive into the :doc:`/api/index` for complete reference documentation"
+msgstr "Plongez dans la :doc:`/api/index` pour la documentation de référence complète"

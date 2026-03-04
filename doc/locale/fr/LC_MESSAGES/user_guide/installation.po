@@ -1,0 +1,243 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2025, DataLab Platform Developers
+# This file is distributed under the same license as the SigimaX package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: SigimaX \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Language: fr\n"
+"Language-Team: fr <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+msgid "Installation"
+msgstr "Installation"
+
+msgid "This section provides instructions on how to install and set up SigimaX, including dependencies and environment configuration."
+msgstr "Cette section fournit les instructions pour installer et configurer SigimaX, y compris les dépendances et la configuration de l'environnement."
+
+msgid "How to install"
+msgstr "Modes d'installation"
+
+msgid "SigimaX is available in several forms:"
+msgstr "SigimaX est disponible sous plusieurs formes :"
+
+msgid "As a Python package, which can be installed using the :ref:`install_pip`."
+msgstr "En tant que paquet Python, qui peut être installé en utilisant le :ref:`install_pip`."
+
+msgid "As a precompiled :ref:`install_wheel`, which can be installed using ``pip``."
+msgstr "En tant que :ref:`install_wheel` précompilé, qui peut être installé en utilisant ``pip``."
+
+msgid "As a :ref:`install_source`, which can be installed from the Git repository."
+msgstr "En tant que :ref:`install_source`, qui peut être installé depuis le dépôt Git."
+
+msgid "Impatient to try the next version of SigimaX? You can also install the latest development version from the main branch of the Git repository. See :ref:`install_development` for more information."
+msgstr "Impatient d'essayer la prochaine version de SigimaX ? Vous pouvez également installer la dernière version de développement depuis la branche principale du dépôt Git. Voir :ref:`install_development` pour plus d'informations."
+
+msgid "Package manager ``pip``"
+msgstr "Gestionnaire de paquets ``pip``"
+
+msgid ":octicon:`info;1em;sd-text-info` :bdg-info-line:`GNU/Linux` :bdg-info-line:`Windows` :bdg-info-line:`macOS`"
+msgstr ""
+
+msgid "SigimaX's package ``sigimax`` is available on the Python Package Index (PyPI) at: https://pypi.python.org/pypi/sigimax."
+msgstr "Le paquet ``sigimax`` de SigimaX est disponible sur le Python Package Index (PyPI) à l'adresse : https://pypi.python.org/pypi/sigimax."
+
+msgid "Install SigimaX by running:"
+msgstr "Installez SigimaX en exécutant :"
+
+msgid "If you already have a previous version of SigimaX installed, you can upgrade it by running the same command with the ``--upgrade`` option:"
+msgstr "Si vous avez déjà une version précédente de SigimaX installée, vous pouvez la mettre à jour en exécutant la même commande avec l'option ``--upgrade`` :"
+
+msgid "Wheel package"
+msgstr "Paquet Wheel"
+
+msgid "On any operating system, using pip and the Wheel package is the easiest way to install SigimaX on an existing Python distribution:"
+msgstr "Sur tout système d'exploitation, utiliser pip et le paquet Wheel est le moyen le plus simple d'installer SigimaX sur une distribution Python existante :"
+
+msgid "Source package"
+msgstr "Paquet source"
+
+msgid "Installing SigimaX directly from the source package may be done using ``pip``:"
+msgstr "L'installation de SigimaX directement depuis le paquet source peut être effectuée en utilisant ``pip`` :"
+
+msgid "Or, if you prefer, you can install it in editable mode from the root directory of the source package:"
+msgstr "Ou, si vous préférez, vous pouvez l'installer en mode éditable depuis le répertoire racine du paquet source :"
+
+msgid "Development version"
+msgstr "Version de développement"
+
+msgid "If you want to try the latest development version of SigimaX, you can install it directly from the main branch of the Git repository."
+msgstr "Si vous souhaitez essayer la dernière version de développement de SigimaX, vous pouvez l'installer directement depuis la branche principale du dépôt Git."
+
+msgid "The first time you install SigimaX from the Git repository, enter the following command:"
+msgstr "La première fois que vous installez SigimaX depuis le dépôt Git, entrez la commande suivante :"
+
+msgid "Then, if at some point you want to upgrade to the latest version, run:"
+msgstr "Ensuite, si à un moment donné vous souhaitez mettre à jour vers la dernière version, exécutez :"
+
+msgid "If dependencies have changed, you may need to execute the same command without the ``--no-deps`` option."
+msgstr "Si les dépendances ont changé, vous pourriez avoir besoin d'exécuter la même commande sans l'option ``--no-deps``."
+
+msgid "Dependencies"
+msgstr "Dépendances"
+
+msgid "The `sigimax` package requires the following Python modules:"
+msgstr "Le paquet `sigimax` nécessite les modules Python suivants :"
+
+msgid "Name"
+msgstr "Nom"
+
+msgid "Version"
+msgstr "Version"
+
+msgid "Summary"
+msgstr "Description"
+
+msgid "Python"
+msgstr ""
+
+msgid ">=3.9, <4"
+msgstr ""
+
+msgid "Python programming language"
+msgstr "Langage de programmation Python"
+
+msgid "PlotPy"
+msgstr ""
+
+msgid ">= 2.7.4"
+msgstr ""
+
+msgid "Curve and image plotting tools for Python/Qt applications"
+msgstr "Outils de tracé de courbes et d'images pour les applications Python/Qt"
+
+msgid "psutil"
+msgstr ""
+
+msgid ">= 5.7"
+msgstr ""
+
+msgid "Cross-platform lib for process and system monitoring."
+msgstr "Bibliothèque multiplateforme pour la surveillance des processus et du système."
+
+msgid "Sigima"
+msgstr ""
+
+msgid ">= 1.1.0"
+msgstr ""
+
+msgid "Scientific computing engine for 1D signals and 2D images, part of the DataLab open-source platform."
+msgstr "Moteur de calcul scientifique pour les signaux 1D et les images 2D, partie de la plateforme open-source DataLab."
+
+msgid "Optional modules for GUI support (Qt):"
+msgstr "Modules optionnels pour le support de l'interface graphique (Qt) :"
+
+msgid "PyQt5"
+msgstr ""
+
+msgid ">= 5.15.6"
+msgstr ""
+
+msgid "Python bindings for the Qt cross platform application toolkit"
+msgstr "Liaisons Python pour la boîte à outils d'applications multiplateformes Qt"
+
+msgid "Optional modules for development:"
+msgstr "Modules optionnels pour le développement :"
+
+msgid "ruff"
+msgstr ""
+
+msgid "An extremely fast Python linter and code formatter, written in Rust."
+msgstr "Un linter et formateur de code Python extrêmement rapide, écrit en Rust."
+
+msgid "pylint"
+msgstr ""
+
+msgid "python code static checker"
+msgstr "Vérificateur statique de code Python"
+
+msgid "Coverage"
+msgstr ""
+
+msgid "Code coverage measurement for Python"
+msgstr "Mesure de la couverture de code pour Python"
+
+msgid "Optional modules for building the documentation:"
+msgstr "Modules optionnels pour la construction de la documentation :"
+
+msgid "sphinx"
+msgstr ""
+
+msgid "Python documentation generator"
+msgstr "Générateur de documentation Python"
+
+msgid "sphinx_intl"
+msgstr ""
+
+msgid "Sphinx utility that make it easy to translate and to apply translation."
+msgstr "Utilitaire Sphinx qui facilite la traduction et l'application des traductions."
+
+msgid "sphinx-sitemap"
+msgstr ""
+
+msgid "Sitemap generator for Sphinx"
+msgstr "Générateur de plan de site pour Sphinx"
+
+msgid "myst_parser"
+msgstr ""
+
+msgid "An extended [CommonMark](https://spec.commonmark.org/) compliant parser,"
+msgstr "Un analyseur étendu conforme à [CommonMark](https://spec.commonmark.org/),"
+
+msgid "myst-nb"
+msgstr ""
+
+msgid "A Jupyter Notebook Sphinx reader built on top of the MyST markdown parser."
+msgstr "Un lecteur Sphinx de Jupyter Notebook construit au-dessus de l'analyseur Markdown MyST."
+
+msgid "sphinx_design"
+msgstr ""
+
+msgid "A sphinx extension for designing beautiful, view size responsive web components."
+msgstr "Une extension Sphinx pour concevoir de beaux composants web adaptatifs."
+
+msgid "sphinx_gallery"
+msgstr ""
+
+msgid "A Sphinx extension that builds an HTML gallery of examples from any set of Python scripts."
+msgstr "Une extension Sphinx qui construit une galerie HTML d'exemples à partir d'un ensemble de scripts Python."
+
+msgid "sphinx-copybutton"
+msgstr ""
+
+msgid "Add a copy button to each of your code cells."
+msgstr "Ajoute un bouton de copie à chacune de vos cellules de code."
+
+msgid "pydata-sphinx-theme"
+msgstr ""
+
+msgid "Bootstrap-based Sphinx theme from the PyData community"
+msgstr "Thème Sphinx basé sur Bootstrap de la communauté PyData"
+
+msgid "Optional modules for running test suite:"
+msgstr "Modules optionnels pour l'exécution de la suite de tests :"
+
+msgid "pytest"
+msgstr ""
+
+msgid "pytest: simple powerful testing with Python"
+msgstr "pytest : tests simples et puissants avec Python"
+
+msgid "pytest-xvfb"
+msgstr ""
+
+msgid "A pytest plugin to run Xvfb (or Xephyr/Xvnc) for tests."
+msgstr "Un plugin pytest pour exécuter Xvfb (ou Xephyr/Xvnc) pour les tests."

@@ -1,0 +1,204 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2025, DataLab Platform Developers
+# This file is distributed under the same license as the SigimaX package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: SigimaX \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Language: fr\n"
+"Language-Team: fr <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+msgid "Version 0.1"
+msgstr "Version 0.1"
+
+msgid "SigimaX Version 0.1.0 (2026-03-04)"
+msgstr "SigimaX Version 0.1.0 (04/03/2026)"
+
+msgid "Initial development release — SigimaX is extracted from DataLab as a reusable GUI application framework for scientific computing Qt applications."
+msgstr "Première version de développement — SigimaX est extrait de DataLab en tant que framework d'application GUI réutilisable pour les applications Qt de calcul scientifique."
+
+msgid "Highlights"
+msgstr "Points forts"
+
+msgid "SigimaX provides the generic \"application skeleton\" that any scientific computing Qt application can build upon by subclassing its main window and configuration system. This release contains the full extraction from DataLab, including:"
+msgstr "SigimaX fournit le squelette applicatif générique sur lequel toute application Qt de calcul scientifique peut s'appuyer en héritant de sa fenêtre principale et de son système de configuration. Cette version contient l'extraction complète depuis DataLab, notamment :"
+
+msgid "Generic main window (`SGMXMainWindow`) with customizable menus, toolbars, and console"
+msgstr "Fenêtre principale générique (`SGMXMainWindow`) avec menus, barres d'outils et console personnalisables"
+
+msgid "Configuration system based on Sigima's typed option fields"
+msgstr "Système de configuration basé sur les champs d'options typés de Sigima"
+
+msgid "HDF5 workspace management (open, save, browse, import)"
+msgstr "Gestion de l'espace de travail HDF5 (ouvrir, enregistrer, parcourir, importer)"
+
+msgid "Splash screen and application launcher (`create()` / `run()`)"
+msgstr "Écran de démarrage et lanceur d'application (`create()` / `run()`)"
+
+msgid "PlotPy adapters for signal/image plot items"
+msgstr "Adaptateurs PlotPy pour les éléments de tracé signal/image"
+
+msgid "Reusable scientific widgets (fit dialogs, baseline, peak detection, cursor, etc.)"
+msgstr "Widgets scientifiques réutilisables (dialogues d'ajustement, ligne de base, détection de pics, curseur, etc.)"
+
+msgid "Comprehensive test suite with 155+ tests across unit, GUI, and app categories"
+msgstr "Suite de tests complète avec plus de 155 tests répartis dans les catégories unitaire, GUI et application"
+
+msgid "Application framework"
+msgstr "Framework applicatif"
+
+msgid "Implemented `SGMXMainWindow` — a generic main window that derived applications subclass to build their own UI, with customizable menu order, toolbar actions, and console namespace"
+msgstr "Implémentation de `SGMXMainWindow` — une fenêtre principale générique dont les applications dérivées héritent pour construire leur propre interface, avec un ordre de menus, des actions de barre d'outils et un espace de noms de console personnalisables"
+
+msgid "Added `create()` and `run()` application launcher functions in `app.py` with configurable splash screen support (`SplashScreenConfig`)"
+msgstr "Ajout des fonctions de lancement d'application `create()` et `run()` dans `app.py` avec support configurable de l'écran de démarrage (`SplashScreenConfig`)"
+
+msgid "Provided overridable hooks for derived apps: `reset_all()`, `_is_save_enabled()`, `_update_file_menu()`, `_update_view_menu()`, `_about()`"
+msgstr "Mise à disposition de hooks redéfinissables pour les applications dérivées : `reset_all()`, `_is_save_enabled()`, `_update_file_menu()`, `_update_view_menu()`, `_about()`"
+
+msgid "Added generic main toolbar configuration — derived apps can redefine toolbar actions"
+msgstr "Ajout d'une configuration générique de la barre d'outils principale — les applications dérivées peuvent redéfinir les actions de la barre d'outils"
+
+msgid "Added quit action to the file menu"
+msgstr "Ajout de l'action quitter au menu fichier"
+
+msgid "Configuration system"
+msgstr "Système de configuration"
+
+msgid "Implemented typed configuration options inspired by Sigima's non-INI-file config system, with `TypedOptionField`, `EnumOptionField`, `TupleOptionField`, and `FontOptionField`"
+msgstr "Implémentation d'options de configuration typées inspirées du système de configuration non-INI de Sigima, avec `TypedOptionField`, `EnumOptionField`, `TupleOptionField` et `FontOptionField`"
+
+msgid "Added generic application metadata options (`app_name`, `app_version`, `app_logo_path`, `app_desc`, `app_docurl`, `app_homeurl`, `app_supporturl`)"
+msgstr "Ajout d'options génériques de métadonnées d'application (`app_name`, `app_version`, `app_logo_path`, `app_desc`, `app_docurl`, `app_homeurl`, `app_supporturl`)"
+
+msgid "Configuration supports JSON persistence via `save()` / `load()` and environment variable overrides"
+msgstr "La configuration supporte la persistance JSON via `save()` / `load()` et la surcharge par variables d'environnement"
+
+msgid "Removed `process_isolation_enabled` option (DataLab-specific — the framework only used it cosmetically; the actual mechanism stays in DataLab)"
+msgstr "Suppression de l'option `process_isolation_enabled` (spécifique à DataLab — le framework ne l'utilisait que de manière cosmétique ; le mécanisme réel reste dans DataLab)"
+
+msgid "HDF5 support"
+msgstr "Support HDF5"
+
+msgid "Ported full HDF5 workspace management: open, save, browse files"
+msgstr "Portage complet de la gestion de l'espace de travail HDF5 : ouvrir, enregistrer, parcourir les fichiers"
+
+msgid "Added `import_dataset_from_file()` no-op hook for derived apps to handle application-specific dataset import from HDF5"
+msgstr "Ajout du hook `import_dataset_from_file()` (sans opération) pour que les applications dérivées puissent gérer l'import de jeux de données spécifiques depuis HDF5"
+
+msgid "Ported `H5BrowserDialog` widget for interactive HDF5 file browsing"
+msgstr "Portage du widget `H5BrowserDialog` pour la navigation interactive dans les fichiers HDF5"
+
+msgid "Widgets"
+msgstr "Widgets"
+
+msgid "Ported scientific dialog widgets from DataLab: curve fitting (`fitdialog`), signal baseline selection, signal peak detection, signal cursor, signal delta-X measurement, image background selection"
+msgstr "Portage des widgets de dialogue scientifique depuis DataLab : ajustement de courbe (`fitdialog`), sélection de ligne de base, détection de pics, curseur de signal, mesure de delta-X, sélection de fond d'image"
+
+msgid "Added `DockablePlotWidget` for embedding PlotPy plots in dock widgets, with configurable watermark and dock location via `SigimaXOptions`"
+msgstr "Ajout de `DockablePlotWidget` pour l'intégration de tracés PlotPy dans des widgets ancrables, avec filigrane et position d'ancrage configurables via `SigimaXOptions`"
+
+msgid "Ported status bar widgets: `BaseStatus`, `MemoryStatus`, `ConsoleStatus`"
+msgstr "Portage des widgets de barre d'état : `BaseStatus`, `MemoryStatus`, `ConsoleStatus`"
+
+msgid "Added `Wizard` multi-page dialog widget"
+msgstr "Ajout du widget de dialogue multi-pages `Wizard`"
+
+msgid "Added `LogViewerWindow` for log display"
+msgstr "Ajout de `LogViewerWindow` pour l'affichage des journaux"
+
+msgid "Added `FileViewerWidget` for read-only file viewing"
+msgstr "Ajout de `FileViewerWidget` pour la consultation de fichiers en lecture seule"
+
+msgid "Added `WarningErrorMessageBox` for warning/error display"
+msgstr "Ajout de `WarningErrorMessageBox` pour l'affichage des avertissements et erreurs"
+
+msgid "Added convenience re-exports in `widgets/__init__.py` with `__all__`"
+msgstr "Ajout de ré-exports pratiques dans `widgets/__init__.py` avec `__all__`"
+
+msgid "PlotPy adapters"
+msgstr "Adaptateurs PlotPy"
+
+msgid "Ported `adapters_plotpy` module for converting between Sigima objects (`SignalObj`, `ImageObj`) and PlotPy plot items"
+msgstr "Portage du module `adapters_plotpy` pour la conversion entre les objets Sigima (`SignalObj`, `ImageObj`) et les éléments de tracé PlotPy"
+
+msgid "Added `iterate_metadata_shape_items()` hook on `BaseObjPlotPyAdapter` — a no-op generator that derived apps (DataLab) can override to yield plot items for app-specific metadata entries (geometry results, table results)"
+msgstr "Ajout du hook `iterate_metadata_shape_items()` sur `BaseObjPlotPyAdapter` — un générateur sans opération que les applications dérivées (DataLab) peuvent redéfinir pour produire des éléments de tracé pour les entrées de métadonnées spécifiques (résultats géométriques, résultats tabulaires)"
+
+msgid "Cleaned up commented-out scalar adapter code (`GeometryPlotPyAdapter`, `TableAdapter`) — these stay in DataLab"
+msgstr "Nettoyage du code d'adaptateur scalaire mis en commentaire (`GeometryPlotPyAdapter`, `TableAdapter`) — ceux-ci restent dans DataLab"
+
+msgid "Environment and utilities"
+msgstr "Environnement et utilitaires"
+
+msgid "Implemented `SGMXExecEnv` runtime environment singleton (renamed from DataLab's `DLExecEnv`) with verbosity levels, demo mode, and unattended mode"
+msgstr "Implémentation du singleton d'environnement d'exécution `SGMXExecEnv` (renommé depuis `DLExecEnv` de DataLab) avec niveaux de verbosité, mode démo et mode sans interaction"
+
+msgid "Ported Qt helper utilities (`utils/qthelpers.py`): log file management, signal blocking context manager, stdout/stderr save/restore"
+msgstr "Portage des utilitaires Qt (`utils/qthelpers.py`) : gestion des fichiers journaux, gestionnaire de contexte pour le blocage des signaux, sauvegarde/restauration de stdout/stderr"
+
+msgid "Added local PDF documentation path handling in the Help menu"
+msgstr "Ajout de la gestion du chemin de documentation PDF locale dans le menu Aide"
+
+msgid "Package structure"
+msgstr "Structure du paquet"
+
+msgid "Dissolved `gui/` subpackage — moved `gui/main.py` → `mainwindow.py` (top-level) and `gui/docks.py` → `widgets/plotdock.py` for clearer naming"
+msgstr "Dissolution du sous-paquet `gui/` — déplacement de `gui/main.py` → `mainwindow.py` (niveau supérieur) et `gui/docks.py` → `widgets/plotdock.py` pour un nommage plus clair"
+
+msgid "Added `__all__` declarations in all public modules"
+msgstr "Ajout des déclarations `__all__` dans tous les modules publics"
+
+msgid "Added `from __future__ import annotations` across all modules"
+msgstr "Ajout de `from __future__ import annotations` dans tous les modules"
+
+msgid "Top-level `__init__.py` re-exports `SGMXMainWindow`, `create`, `run` (follows Sigima's pattern)"
+msgstr "Le fichier `__init__.py` de niveau supérieur ré-exporte `SGMXMainWindow`, `create`, `run` (suit le modèle de Sigima)"
+
+msgid "Fixed circular import between `__init__.py` and `config.py` by extracting metadata to `_metadata.py`"
+msgstr "Correction de l'import circulaire entre `__init__.py` et `config.py` par extraction des métadonnées dans `_metadata.py`"
+
+msgid "Removed dead code: commented-out imports, `config_old.py`, DataLab-specific action handler dependencies"
+msgstr "Suppression du code mort : imports mis en commentaire, `config_old.py`, dépendances spécifiques au gestionnaire d'actions de DataLab"
+
+msgid "Testing"
+msgstr "Tests"
+
+msgid "Built comprehensive test suite with 155+ tests organized into subpackages: `config/`, `mainwindow/`, `widgets/`, `hdf5/`, `adapters_plotpy/`, `utils/`"
+msgstr "Construction d'une suite de tests complète avec plus de 155 tests organisés en sous-paquets : `config/`, `mainwindow/`, `widgets/`, `hdf5/`, `adapters_plotpy/`, `utils/`"
+
+msgid "Standardized test file naming to `test_*.py` convention; non-test helpers prefixed with `_`"
+msgstr "Standardisation du nommage des fichiers de test selon la convention `test_*.py` ; les fichiers auxiliaires non-test sont préfixés par `_`"
+
+msgid "Added pytest markers: `@pytest.mark.unit` (pure logic, no Qt), `@pytest.mark.gui` (Qt widget tests), `@pytest.mark.app` (full main window)"
+msgstr "Ajout de marqueurs pytest : `@pytest.mark.unit` (logique pure, sans Qt), `@pytest.mark.gui` (tests de widgets Qt), `@pytest.mark.app` (fenêtre principale complète)"
+
+msgid "Added `--show-windows` flag for visual test validation (offscreen by default)"
+msgstr "Ajout du drapeau `--show-windows` pour la validation visuelle des tests (hors écran par défaut)"
+
+msgid "PlotPy adapter tests cover factory dispatch, make/update item roundtrips, ROI coordinate roundtrips, and annotation integration"
+msgstr "Les tests des adaptateurs PlotPy couvrent la répartition des fabriques, les allers-retours de création/mise à jour d'éléments, les allers-retours de coordonnées ROI et l'intégration des annotations"
+
+msgid "Project infrastructure"
+msgstr "Infrastructure du projet"
+
+msgid "Created `pyproject.toml` with Ruff rules (`D202`, `D403`, `RUF022`, Google pydocstyle), pytest config (`--import-mode=importlib`, `filterwarnings`)"
+msgstr "Création de `pyproject.toml` avec les règles Ruff (`D202`, `D403`, `RUF022`, pydocstyle Google), la configuration pytest (`--import-mode=importlib`, `filterwarnings`)"
+
+msgid "Added Sphinx documentation scaffolding (imported from Sigima's structure)"
+msgstr "Ajout de la structure de documentation Sphinx (importée depuis la structure de Sigima)"
+
+msgid "Added copilot instructions (`.github/copilot-instructions.md`)"
+msgstr "Ajout des instructions Copilot (`.github/copilot-instructions.md`)"
+
+msgid "Changed maintainer email to `datalab@codra.fr`"
+msgstr "Changement de l'adresse e-mail du mainteneur vers `datalab@codra.fr`"
