@@ -18,6 +18,8 @@ This release contains the full extraction from DataLab, including:
 * PlotPy adapters for signal/image plot items
 * Reusable scientific widgets (fit dialogs, baseline, peak detection, cursor, etc.)
 * Comprehensive test suite with 155+ tests across unit, GUI, and app categories
+* Full Sphinx documentation with API reference and gallery examples
+* Complete French translation (189 strings)
 
 ### Application framework ###
 
@@ -107,6 +109,23 @@ This release contains the full extraction from DataLab, including:
 * PlotPy adapter tests cover factory dispatch, make/update item roundtrips,
   ROI coordinate roundtrips, and annotation integration
 
+### Documentation ###
+
+* Added full Sphinx documentation with API reference pages for all public modules
+  (`app`, `config`, `env`, `mainwindow`, `widgets`, `h5`, `adapters_plotpy`, `utils`)
+* Added Sphinx-Gallery examples: getting started (`minimal_app.py`), features
+  (`configuration.py`, `plot_widget.py`), and use cases (`full_app.py`)
+* Added user guide pages: overview, installation, contributing
+* Documentation builds cleanly with `-W` (warnings-as-errors)
+
+### Internationalization ###
+
+* Added complete French translation of all 189 UI strings
+  (`sigimax/locale/fr/LC_MESSAGES/sigimax.po`)
+* Translations cover menus, toolbar, HDF5 browser, fit dialogs, signal widgets,
+  status bar, error/warning dialogs, wizard, and about/help
+* Terminology aligned with DataLab's existing French translations for consistency
+
 ### Project infrastructure ###
 
 * Created `pyproject.toml` with Ruff rules (`D202`, `D403`, `RUF022`, Google
@@ -114,3 +133,5 @@ This release contains the full extraction from DataLab, including:
 * Added Sphinx documentation scaffolding (imported from Sigima's structure)
 * Added copilot instructions (`.github/copilot-instructions.md`)
 * Changed maintainer email to `datalab@codra.fr`
+* Fixed `run_with_env.py` to substitute `sys.executable` when command starts
+  with `python`, ensuring the correct venv interpreter is used
