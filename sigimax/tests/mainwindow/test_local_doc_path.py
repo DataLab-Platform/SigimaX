@@ -18,6 +18,8 @@ from qtpy import QtCore as QC
 from sigimax.config import CONF as Conf
 from sigimax.mainwindow import SGMXMainWindow
 
+pytestmark = pytest.mark.unit
+
 # Access the name-mangled static method without instantiating a window
 _get_local_doc_path = (
     SGMXMainWindow._SGMXMainWindow__get_local_doc_path  # pylint: disable=protected-access

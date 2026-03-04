@@ -17,6 +17,7 @@ from __future__ import annotations
 from unittest.mock import MagicMock
 
 import numpy as np
+import pytest
 from guidata.qthelpers import qt_app_context
 from plotpy.items import CurveItem, MaskedXYImageItem
 from sigima.tests.data import create_multigaussian_image, create_paracetamol_signal
@@ -24,6 +25,8 @@ from sigima.tests.data import create_multigaussian_image, create_paracetamol_sig
 from sigimax.adapters_plotpy.converters import create_adapter_from_object
 from sigimax.adapters_plotpy.objects.image import ImageObjPlotPyAdapter
 from sigimax.adapters_plotpy.objects.signal import SignalObjPlotPyAdapter
+
+pytestmark = pytest.mark.gui
 
 __all__ = [
     "test_image_make_item",

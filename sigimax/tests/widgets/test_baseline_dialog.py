@@ -11,6 +11,7 @@ Baseline dialog test
 from __future__ import annotations
 
 import numpy as np
+import pytest
 import sigima.objects
 import sigima.proc.signal as sips
 from guidata.qthelpers import exec_dialog, qt_app_context
@@ -19,6 +20,8 @@ from sigima.viz import view_curves
 
 from sigimax.env import execenv
 from sigimax.widgets.signalbaseline import SignalBaselineDialog
+
+pytestmark = pytest.mark.gui
 
 
 def test_signal_baseline_selection():

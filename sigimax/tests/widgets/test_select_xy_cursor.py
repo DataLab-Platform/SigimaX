@@ -18,6 +18,8 @@ from sigima.tools.signal.features import find_x_values_at_y
 from sigimax.env import execenv
 from sigimax.widgets.signalcursor import SignalCursorDialog
 
+pytestmark = pytest.mark.gui
+
 
 @pytest.mark.parametrize("cursor_orientation", ["horizontal", "vertical"])
 def test_signal_cursor_selection(

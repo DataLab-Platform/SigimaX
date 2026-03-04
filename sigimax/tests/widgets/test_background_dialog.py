@@ -11,6 +11,7 @@ Image background dialog unit test.
 from __future__ import annotations
 
 import numpy as np
+import pytest
 import sigima.objects
 import sigima.params
 import sigima.proc.image as sipi
@@ -20,6 +21,8 @@ from sigima.tests.data import create_noisy_gaussian_image
 
 from sigimax.env import execenv
 from sigimax.widgets.imagebackground import ImageBackgroundDialog
+
+pytestmark = pytest.mark.gui
 
 
 def test_image_background_selection() -> None:

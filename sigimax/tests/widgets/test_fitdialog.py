@@ -8,6 +8,7 @@ Testing fit dialogs: Gaussian, Lorentzian, Voigt, etc.
 # pylint: disable=invalid-name  # Allows short reference names like x, y, ...
 # guitest: show
 
+import pytest
 from guidata.qthelpers import qt_app_context
 from sigima.objects import NormalDistribution1DParam
 from sigima.tests.data import create_noisy_signal, get_test_signal
@@ -16,6 +17,8 @@ from sigima.tools.signal.peakdetection import peak_indices
 from sigimax.env import execenv
 from sigimax.tests import helpers
 from sigimax.widgets import fitdialog as fdlg
+
+pytestmark = pytest.mark.gui
 
 
 def test_fit_dialog():

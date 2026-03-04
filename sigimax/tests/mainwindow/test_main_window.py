@@ -10,6 +10,7 @@ covered by other tests.
 
 # guitest: show
 
+import pytest
 from plotpy.constants import PlotType
 
 from sigimax.tests import sigimax_test_app_context
@@ -17,6 +18,7 @@ from sigimax.widgets.h5browser import H5Browser
 from sigimax.widgets.plotdock import DockablePlotWidget
 
 
+@pytest.mark.app
 def test_main_app():
     """Main window test"""
     with sigimax_test_app_context(console=True) as win:

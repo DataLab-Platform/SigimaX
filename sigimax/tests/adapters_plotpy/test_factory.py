@@ -36,6 +36,8 @@ from sigimax.adapters_plotpy.roi.signal import (
     SignalROIPlotPyAdapter,
 )
 
+pytestmark = pytest.mark.unit
+
 __all__ = [
     "test_factory_core_types",
     "test_factory_unsupported_type",

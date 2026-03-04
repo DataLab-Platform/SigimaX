@@ -19,6 +19,7 @@ downstream projects (like DataLab) can follow.
 from __future__ import annotations
 
 import numpy as np
+import pytest
 from guidata.configtools import get_icon
 from guidata.qthelpers import add_actions, create_action
 from plotpy.constants import PlotType
@@ -250,6 +251,7 @@ class MyAppMainWindow(SGMXMainWindow):
 # =============================================================================
 
 
+@pytest.mark.unit
 def test_derived_app():
     """Test that a derived application can be built on top of SigimaX."""
     # -- Verify custom options work --
@@ -306,6 +308,7 @@ def test_derived_app():
     print("All custom option tests passed.")
 
 
+@pytest.mark.app
 def test_splash_screen():
     """Test that the splash screen can be created and shown."""
     with qth.sigimax_app_context(exec_loop=False):
@@ -349,6 +352,7 @@ def test_splash_screen():
     print("Splash screen tests passed.")
 
 
+@pytest.mark.app
 def test_derived_app_window():
     # pylint: disable=protected-access
     # pylint: disable=redefined-outer-name

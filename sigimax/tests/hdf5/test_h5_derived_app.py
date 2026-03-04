@@ -26,6 +26,7 @@ import tempfile
 
 import h5py
 import numpy as np
+import pytest
 from guidata.io import HDF5Reader, HDF5Writer
 from plotpy.constants import PlotType
 from sigima import ImageObj, SignalObj
@@ -345,6 +346,7 @@ def _create_h5_with_datasets(path: str) -> None:
 # =============================================================================
 
 
+@pytest.mark.unit
 def test_object_store_serialize_roundtrip() -> None:
     """Test SimpleObjectStore serialize/deserialize without GUI."""
     store = SimpleObjectStore()
@@ -392,6 +394,7 @@ def test_object_store_serialize_roundtrip() -> None:
     execenv.print("Object store round-trip test passed.")
 
 
+@pytest.mark.app
 def test_derived_app_h5_workspace() -> None:
     """Test derived app: import → save → reload round-trip."""
     with qth.sigimax_app_context(exec_loop=False):
@@ -462,6 +465,7 @@ def test_derived_app_h5_workspace() -> None:
     execenv.print("Derived app workspace round-trip test passed.")
 
 
+@pytest.mark.app
 def test_derived_app_import_and_save() -> None:
     """Test importing an HDF5 file and saving the workspace."""
     fnames = helpers.get_test_fnames("*.h5")
@@ -502,6 +506,7 @@ def test_derived_app_import_and_save() -> None:
     execenv.print("Import-and-save test passed.")
 
 
+@pytest.mark.app
 def test_import_specific_dataset_and_save() -> None:
     """Test importing a specific dataset by name and save/load round-trip.
 

@@ -14,12 +14,15 @@ because PlotPy items are QGraphicsObject subclasses).
 from __future__ import annotations
 
 import numpy as np
+import pytest
 from guidata.qthelpers import qt_app_context
 from plotpy.items import AnnotatedRectangle, AnnotatedXRange
 from sigima.objects import create_image_roi, create_signal_roi
 from sigima.tests.data import create_multigaussian_image, create_paracetamol_signal
 
 from sigimax.adapters_plotpy.converters import create_adapter_from_object
+
+pytestmark = pytest.mark.gui
 
 __all__ = [
     "test_annotations_roundtrip",

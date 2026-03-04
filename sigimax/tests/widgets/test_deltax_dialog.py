@@ -7,11 +7,14 @@ Signal delta x dialog unit test.
 # pylint: disable=invalid-name  # Allows short reference names like x, y, ...
 # guitest: show
 
+import pytest
 from guidata.qthelpers import exec_dialog, qt_app_context
 from sigima.tests.data import create_paracetamol_signal
 from sigima.tools.signal.pulse import full_width_at_y
 
 from sigimax.widgets.signaldeltax import SignalDeltaXDialog
+
+pytestmark = pytest.mark.gui
 
 
 def test_signal_delta_x_dialog():

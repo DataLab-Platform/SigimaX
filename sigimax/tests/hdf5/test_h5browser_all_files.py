@@ -11,10 +11,13 @@ Try and open all HDF5 test data available.
 
 from __future__ import annotations
 
+import pytest
 from guidata.qthelpers import exec_dialog, qt_app_context
 
 from sigimax.tests import helpers
 from sigimax.tests.hdf5.test_h5browser_app import create_h5browser_dialog
+
+pytestmark = pytest.mark.gui
 
 
 def test_h5browser_all_files(pattern=None):

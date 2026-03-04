@@ -18,10 +18,13 @@ Verify that:
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from sigimax.config import CONF as Conf
 from sigimax.mainwindow import SGMXMainWindow
 from sigimax.utils import qthelpers as qth
+
+pytestmark = pytest.mark.app
 
 # =============================================================================
 # Derived window with custom console namespace

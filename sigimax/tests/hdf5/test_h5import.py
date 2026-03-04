@@ -6,8 +6,12 @@ HDF5 import application test
 
 # guitest: show
 
+import pytest
+
 from sigimax.env import execenv
 from sigimax.tests import helpers, sigimax_test_app_context
+
+pytestmark = pytest.mark.app
 
 
 def test_hdf5_import():

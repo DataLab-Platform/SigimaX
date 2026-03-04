@@ -6,9 +6,12 @@ Log viewer test
 
 # guitest: show
 
+import pytest
 from guidata.qthelpers import qt_app_context
 
 from sigimax.widgets.logviewer import exec_sigimax_logviewer_dialog
+
+pytestmark = pytest.mark.gui
 
 
 def test_logviewer_dialog():

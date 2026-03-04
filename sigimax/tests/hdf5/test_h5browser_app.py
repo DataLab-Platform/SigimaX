@@ -11,12 +11,15 @@ HDF5 Browser Application test
 
 from __future__ import annotations
 
+import pytest
 from guidata.qthelpers import exec_dialog, qt_app_context
 from qtpy import QtWidgets as QW
 
 from sigimax.env import execenv
 from sigimax.tests import helpers
 from sigimax.widgets.h5browser import H5BrowserDialog
+
+pytestmark = pytest.mark.gui
 
 
 def create_h5browser_dialog(

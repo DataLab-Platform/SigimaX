@@ -11,6 +11,7 @@ preserves the original coordinates for both signal and image ROI types.
 from __future__ import annotations
 
 import numpy as np
+import pytest
 from guidata.qthelpers import qt_app_context
 from sigima.objects import (
     CircularROI,
@@ -26,6 +27,8 @@ from sigimax.adapters_plotpy.converters import (
     plotitem_to_singleroi,
     singleroi_to_plotitem,
 )
+
+pytestmark = pytest.mark.gui
 
 __all__ = [
     "test_image_roi_roundtrip_circle",

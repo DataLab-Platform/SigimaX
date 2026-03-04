@@ -7,11 +7,14 @@ Signal peak detection dialog test.
 # pylint: disable=invalid-name  # Allows short reference names like x, y, ...
 # guitest: show
 
+import pytest
 from guidata.qthelpers import exec_dialog, qt_app_context
 from sigima.tests.data import get_test_signal
 
 from sigimax.env import execenv
 from sigimax.widgets.signalpeak import SignalPeakDetectionDialog
+
+pytestmark = pytest.mark.gui
 
 
 def test_peak1d_dialog():

@@ -7,10 +7,13 @@ Memory status widget application test
 # guitest: show
 
 import psutil
+import pytest
 
 from sigimax import config
 from sigimax.env import execenv
 from sigimax.tests import sigimax_test_app_context
+
+pytestmark = pytest.mark.app
 
 
 def memory_alarm(threshold, expect_alarm):

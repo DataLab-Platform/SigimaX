@@ -23,6 +23,7 @@ The test builds a minimal derived window that:
 
 from __future__ import annotations
 
+import pytest
 from guidata.configtools import get_icon
 from guidata.qthelpers import add_actions, create_action
 from qtpy import QtWidgets as QW
@@ -31,6 +32,8 @@ from sigimax.config import CONF as Conf
 from sigimax.config import _
 from sigimax.mainwindow import SGMXMainWindow
 from sigimax.utils import qthelpers as qth
+
+pytestmark = pytest.mark.app
 
 # =============================================================================
 # Derived window with custom menu hooks
