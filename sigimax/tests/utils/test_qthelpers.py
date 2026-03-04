@@ -18,8 +18,11 @@ import sys
 import tempfile
 
 import pytest
+from guidata.qthelpers import qt_app_context
+from qtpy import QtWidgets as QW
 
 from sigimax.utils.qthelpers import (
+    block_signals,
     get_log_contents,
     initialize_log_file,
     is_running_tests,
@@ -36,9 +39,11 @@ class TestGetLogContents:
     """Tests for get_log_contents."""
 
     def test_nonexistent_file_returns_none(self):
+        """Should return None for a nonexistent file."""
         assert get_log_contents("/nonexistent/path/file.log") is None
 
     def test_empty_file_returns_empty(self):
+        """Should return empty string for an empty file."""
         with tempfile.NamedTemporaryFile(mode="w", suffix=".log", delete=False) as f:
             path = f.name
         try:
@@ -49,6 +54,7 @@ class TestGetLogContents:
             os.unlink(path)
 
     def test_file_with_content(self):
+        """Should return the file contents as a string."""
         with tempfile.NamedTemporaryFile(
             mode="w", suffix=".log", delete=False, encoding="utf-8"
         ) as f:
@@ -65,6 +71,7 @@ class TestInitializeLogFile:
     """Tests for initialize_log_file."""
 
     def test_no_previous_log(self):
+        """Should initialize log file when no previous log exists (empty file)."""
         with tempfile.NamedTemporaryFile(mode="w", suffix=".log", delete=False) as f:
             path = f.name
         try:
@@ -75,6 +82,7 @@ class TestInitializeLogFile:
                 os.unlink(path)
 
     def test_with_previous_log(self):
+        """Should initialize and rename previous log file."""
         with tempfile.NamedTemporaryFile(
             mode="w", suffix=".log", delete=False, encoding="utf-8"
         ) as f:
@@ -95,12 +103,14 @@ class TestRemoveEmptyLogFile:
     """Tests for remove_empty_log_file."""
 
     def test_removes_empty_file(self):
+        """Should remove an empty log file."""
         with tempfile.NamedTemporaryFile(mode="w", suffix=".log", delete=False) as f:
             path = f.name
         remove_empty_log_file(path)
         assert not os.path.exists(path)
 
     def test_keeps_nonempty_file(self):
+        """Should not remove a file that has content."""
         with tempfile.NamedTemporaryFile(
             mode="w", suffix=".log", delete=False, encoding="utf-8"
         ) as f:
@@ -117,9 +127,11 @@ class TestIsRunningTests:
     """Tests for is_running_tests."""
 
     def test_returns_true_during_pytest(self):
+        """Should return True when running under pytest."""
         assert is_running_tests() is True
 
     def test_pytest_in_modules(self):
+        """Should have pytest in sys.modules during tests."""
         assert "pytest" in sys.modules
 
 
@@ -127,18 +139,21 @@ class TestSaveRestoreStds:
     """Tests for save_restore_stds context manager."""
 
     def test_restores_stdout(self):
+        """Should restore original stdout after context."""
         original_stdout = sys.stdout
         with save_restore_stds():
             assert sys.stdout is None
         assert sys.stdout is original_stdout
 
     def test_restores_stderr(self):
+        """Should restore original stderr after context."""
         original_stderr = sys.stderr
         with save_restore_stds():
             pass  # stdout is None inside
         assert sys.stderr is original_stderr
 
     def test_restores_on_exception(self):
+        """Should restore even if an exception is raised inside the context."""
         original_stdout = sys.stdout
         try:
             with save_restore_stds():
@@ -154,11 +169,6 @@ class TestSaveRestoreStds:
 @pytest.mark.gui
 def test_block_signals():
     """block_signals context manager blocks and unblocks signals."""
-    from guidata.qthelpers import qt_app_context
-    from qtpy import QtWidgets as QW
-
-    from sigimax.utils.qthelpers import block_signals
-
     with qt_app_context():
         widget = QW.QLineEdit()
         assert not widget.signalsBlocked()
@@ -170,11 +180,6 @@ def test_block_signals():
 @pytest.mark.gui
 def test_block_signals_disabled():
     """block_signals with enable=False should not block."""
-    from guidata.qthelpers import qt_app_context
-    from qtpy import QtWidgets as QW
-
-    from sigimax.utils.qthelpers import block_signals
-
     with qt_app_context():
         widget = QW.QLineEdit()
         with block_signals(widget, enable=False):

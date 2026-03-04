@@ -14,7 +14,6 @@ Covers:
 from __future__ import annotations
 
 import pytest
-from qtpy import QtWidgets as QW
 
 from sigimax.app import create as sigimax_create
 from sigimax.mainwindow import SGMXMainWindow

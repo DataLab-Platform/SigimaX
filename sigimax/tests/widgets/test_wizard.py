@@ -1,5 +1,7 @@
 # Copyright (c) DataLab Platform Developers, BSD 3-Clause license, see LICENSE file.
 
+# pylint: disable=protected-access
+
 """
 Tests for the Wizard widget (:mod:`sigimax.widgets.wizard`)
 -----------------------------------------------------------
@@ -49,9 +51,6 @@ class _PageB(WizardPage):
         self.checkbox = QW.QCheckBox("Accept terms")
         self.add_to_layout(self.checkbox)
         self.set_valid(True)
-
-    def initialize_page(self):
-        super().initialize_page()
 
 
 class _PageInvalid(WizardPage):

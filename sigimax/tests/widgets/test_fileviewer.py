@@ -33,6 +33,7 @@ class TestReadTextFile:
     pytestmark = pytest.mark.unit
 
     def test_read_utf8(self):
+        """Should read UTF-8 encoded files correctly."""
         with tempfile.NamedTemporaryFile(
             mode="w", suffix=".txt", delete=False, encoding="utf-8"
         ) as f:
@@ -45,6 +46,7 @@ class TestReadTextFile:
             os.unlink(path)
 
     def test_read_latin1(self):
+        """Should read Latin-1 encoded files correctly."""
         with tempfile.NamedTemporaryFile(mode="wb", suffix=".txt", delete=False) as f:
             f.write("résumé".encode("latin1"))
             path = f.name
@@ -55,6 +57,7 @@ class TestReadTextFile:
             os.unlink(path)
 
     def test_read_ascii(self):
+        """Should read ASCII encoded files correctly."""
         with tempfile.NamedTemporaryFile(
             mode="w", suffix=".txt", delete=False, encoding="ascii"
         ) as f:
@@ -73,6 +76,7 @@ class TestGetTitleContents:
     pytestmark = pytest.mark.unit
 
     def test_returns_tuple(self):
+        """Should return a (title, contents) tuple."""
         with tempfile.NamedTemporaryFile(
             mode="w", suffix=".txt", delete=False, encoding="utf-8"
         ) as f:

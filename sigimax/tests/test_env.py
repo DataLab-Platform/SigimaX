@@ -18,7 +18,7 @@ import io
 
 import pytest
 
-from sigimax.env import SGMXExecEnv, VerbosityLevels, execenv
+from sigimax.env import VerbosityLevels, execenv
 
 pytestmark = pytest.mark.unit
 
@@ -27,15 +27,19 @@ class TestVerbosityLevels:
     """Tests for VerbosityLevels enum."""
 
     def test_quiet_value(self):
+        """The QUIET level should have the value 'quiet'."""
         assert VerbosityLevels.QUIET.value == "quiet"
 
     def test_normal_value(self):
+        """The NORMAL level should have the value 'normal'."""
         assert VerbosityLevels.NORMAL.value == "normal"
 
     def test_debug_value(self):
+        """The DEBUG level should have the value 'debug'."""
         assert VerbosityLevels.DEBUG.value == "debug"
 
     def test_all_values(self):
+        """All enum values should be present and correct."""
         values = {v.value for v in VerbosityLevels}
         assert values == {"quiet", "normal", "debug"}
 
@@ -44,6 +48,7 @@ class TestSGMXExecEnv:
     """Tests for the SGMXExecEnv singleton behavior."""
 
     def test_to_dict_returns_dict(self):
+        """to_dict should return a dictionary with key properties."""
         d = execenv.to_dict()
         assert isinstance(d, dict)
         # Should contain at least the key properties

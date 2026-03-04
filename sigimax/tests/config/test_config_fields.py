@@ -70,31 +70,37 @@ class TestTupleOptionField:
     """Tests for TupleOptionField."""
 
     def test_get_default(self):
+        """Getting the default value should return the initial tuple."""
         c = _MiniContainer()
         assert c.my_tuple.get(sync_env=False) == (10, 20)
 
     def test_set_tuple(self):
+        """Setting a new tuple value should update the stored value."""
         c = _MiniContainer()
         c.my_tuple.set((100, 200), sync_env=False)
         assert c.my_tuple.get(sync_env=False) == (100, 200)
 
     def test_set_list_converts_to_tuple(self):
+        """Setting a list should convert it to a tuple and store it correctly."""
         c = _MiniContainer()
         c.my_tuple.set([5, 6], sync_env=False)
         assert c.my_tuple.get(sync_env=False) == (5, 6)
         assert isinstance(c.my_tuple.get(sync_env=False), tuple)
 
     def test_set_none(self):
+        """Setting None should store None without error."""
         c = _MiniContainer()
         c.my_tuple.set(None, sync_env=False)
         assert c.my_tuple.get(sync_env=False) is None
 
     def test_set_invalid_type_raises(self):
+        """Setting a non-iterable or non-list/tuple should raise a ValueError."""
         c = _MiniContainer()
         with pytest.raises(ValueError, match="expected tuple"):
             c.my_tuple.set("bad", sync_env=False)
 
     def test_set_invalid_int_raises(self):
+        """Setting an integer should raise a ValueError since it's not iterable."""
         c = _MiniContainer()
         with pytest.raises(ValueError, match="expected tuple"):
             c.my_tuple.set(42, sync_env=False)
@@ -107,15 +113,18 @@ class TestFontOptionField:
     """Tests for FontOptionField."""
 
     def test_get_default(self):
+        """Getting the default value should return the initial font tuple."""
         c = _MiniContainer()
         assert c.my_font.get(sync_env=False) == ("Arial", 12, False)
 
     def test_set_tuple(self):
+        """Setting a new font tuple should update the stored value."""
         c = _MiniContainer()
         c.my_font.set(("Courier", 10, True), sync_env=False)
         assert c.my_font.get(sync_env=False) == ("Courier", 10, True)
 
     def test_set_list_converts_to_tuple(self):
+        """Setting a list should convert it to a tuple and store it correctly."""
         c = _MiniContainer()
         c.my_font.set(["Mono", 14, False], sync_env=False)
         result = c.my_font.get(sync_env=False)
@@ -123,21 +132,25 @@ class TestFontOptionField:
         assert isinstance(result, tuple)
 
     def test_set_none(self):
+        """Setting None should store None without error."""
         c = _MiniContainer()
         c.my_font.set(None, sync_env=False)
         assert c.my_font.get(sync_env=False) is None
 
     def test_set_invalid_length_raises(self):
+        """Setting a tuple/list of incorrect length should raise a ValueError."""
         c = _MiniContainer()
         with pytest.raises(ValueError, match="expected.*family.*size.*bold"):
             c.my_font.set(("one", "two"), sync_env=False)
 
     def test_set_invalid_first_element_raises(self):
+        """Setting a non-string first element should raise a ValueError."""
         c = _MiniContainer()
         with pytest.raises(ValueError, match="expected.*family.*size.*bold"):
             c.my_font.set((123, 12, False), sync_env=False)
 
     def test_set_invalid_type_raises(self):
+        """Setting a non-iterable or non-list/tuple should raise a ValueError."""
         c = _MiniContainer()
         with pytest.raises(ValueError, match="expected.*family.*size.*bold"):
             c.my_font.set("bad", sync_env=False)
@@ -150,6 +163,10 @@ class TestAppOptionsContainer:
     """Tests for AppOptionsContainer to_dict / from_dict / reset."""
 
     def test_to_dict_roundtrip(self):
+        """
+        Setting some values and converting to dict should produce a dict that can be
+        loaded back to the same values.
+        """
         c = _MiniContainer()
         c.my_str.set("world", sync_env=False)
         c.my_tuple.set((1, 2), sync_env=False)
@@ -163,17 +180,23 @@ class TestAppOptionsContainer:
         assert c2.my_tuple.get(sync_env=False) == (1, 2)
 
     def test_from_dict_ignores_unknown_keys(self):
+        """
+        Providing unknown keys in from_dict should not raise an error and should ignore
+        them.
+        """
         c = _MiniContainer()
         c.from_dict({"unknown_key": 999, "my_str": "ok"})
         assert c.my_str.get(sync_env=False) == "ok"
 
     def test_from_dict_invalid_value_warning(self, capsys):
+        """Providing an invalid value in from_dict should produce a warning."""
         c = _MiniContainer()
         c.from_dict({"my_enum": "invalid_choice"})
         captured = capsys.readouterr()
         assert "Warning" in captured.out or "invalid" in captured.out.lower()
 
     def test_list_options(self):
+        """list_options should return the names of all defined options."""
         c = _MiniContainer()
         names = c.list_options()
         assert "my_tuple" in names
@@ -182,6 +205,7 @@ class TestAppOptionsContainer:
         assert "my_str" in names
 
     def test_save_load_roundtrip(self):
+        """Saving and loading should preserve the values."""
         c = _MiniContainer()
         c.my_str.set("persisted", sync_env=False)
         c.my_tuple.set((99, 100), sync_env=False)
@@ -203,6 +227,7 @@ class TestSigimaXOptions:
     """Tests for the full SigimaXOptions CONF singleton."""
 
     def test_list_options_contains_expected(self):
+        """list_options should include all expected option names."""
         opts = SigimaXOptions()
         names = opts.list_options()
         # Check a representative sample of expected options
@@ -217,6 +242,7 @@ class TestSigimaXOptions:
             assert name in names, f"Expected option '{name}' not in list_options()"
 
     def test_reset_to_defaults(self):
+        """reset_to_defaults should restore default values for all options."""
         opts = SigimaXOptions()
         original = opts.ima_def_colormap.get(sync_env=False)
         opts.ima_def_colormap.set("gray", sync_env=False)
@@ -232,14 +258,17 @@ class TestModuleHelpers:
     """Tests for get_old_log_fname, is_frozen, get_mod_source_dir."""
 
     def test_get_old_log_fname(self):
+        """get_old_log_fname should insert .1 before the extension."""
         assert get_old_log_fname("app.log") == "app.1.log"
         assert get_old_log_fname("/path/to/my.log") == "/path/to/my.1.log"
 
     def test_is_frozen_returns_bool(self):
+        """is_frozen should return a boolean value."""
         result = is_frozen("sigimax")
         assert isinstance(result, bool)
 
     def test_get_mod_source_dir_not_none_in_dev(self):
+        """get_mod_source_dir should return a directory path in development installs."""
         # In a development install, get_mod_source_dir should return a directory
         result = get_mod_source_dir()
         # Could be None in frozen builds, but in dev it should not be
