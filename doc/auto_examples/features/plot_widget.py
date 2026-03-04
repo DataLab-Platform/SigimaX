@@ -4,8 +4,9 @@
 Dockable Plot Widget
 ====================
 
-This example demonstrates how to use the :class:`~sigimax.widgets.plotdock.DockablePlotWidget`
-to embed interactive PlotPy curve and image plots in dock widgets.
+This example demonstrates how to use the
+:class:`~sigimax.widgets.plotdock.DockablePlotWidget` to embed interactive PlotPy curve
+and image plots in dock widgets.
 
 The ``DockablePlotWidget`` is a key building block for SigimaX-based applications,
 providing:
@@ -23,7 +24,6 @@ providing:
 import numpy as np
 from plotpy.builder import make
 from plotpy.constants import PlotType
-from qtpy import QtCore as QC
 from qtpy import QtWidgets as QW
 
 from sigimax.utils.qthelpers import sigimax_app_context
