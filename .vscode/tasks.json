@@ -8,7 +8,7 @@
             "command": "${command:python.interpreterPath}",
             "args": [
                 "scripts/run_with_env.py",
-                "${command:python.interpreterPath}",
+                "python",
                 "-m",
                 "ruff",
                 "format",
@@ -38,7 +38,7 @@
             "command": "${command:python.interpreterPath}",
             "args": [
                 "scripts/run_with_env.py",
-                "${command:python.interpreterPath}",
+                "python",
                 "-m",
                 "ruff",
                 "check",
@@ -90,7 +90,7 @@
             "command": "${command:python.interpreterPath}",
             "args": [
                 "scripts/run_with_env.py",
-                "${command:python.interpreterPath}",
+                "python",
                 "-m",
                 "pylint",
                 "sigimax",
@@ -126,7 +126,7 @@
             "command": "${command:python.interpreterPath}",
             "args": [
                 "scripts/run_with_env.py",
-                "${command:python.interpreterPath}",
+                "python",
                 "-m",
                 "pytest",
                 "--ff",
@@ -159,7 +159,7 @@
             "command": "${command:python.interpreterPath}",
             "args": [
                 "scripts/run_with_env.py",
-                "${command:python.interpreterPath}",
+                "python",
                 "-m",
                 "sphinx",
                 "build",
@@ -194,7 +194,7 @@
             "command": "${command:python.interpreterPath}",
             "args": [
                 "scripts/run_with_env.py",
-                "${command:python.interpreterPath}",
+                "python",
                 "-m",
                 "sphinx_intl",
                 "update",
@@ -237,7 +237,7 @@
             "command": "${command:python.interpreterPath}",
             "args": [
                 "scripts/run_with_env.py",
-                "${command:python.interpreterPath}",
+                "python",
                 "-m",
                 "guidata.utils.translations",
                 "cleanup-doc",
@@ -273,7 +273,7 @@
             "command": "${command:python.interpreterPath}",
             "args": [
                 "scripts/run_with_env.py",
-                "${command:python.interpreterPath}",
+                "python",
                 "-m",
                 "sphinx_intl",
                 "build",
@@ -303,7 +303,7 @@
             "command": "${command:python.interpreterPath}",
             "args": [
                 "scripts/run_with_env.py",
-                "${command:python.interpreterPath}",
+                "python",
                 "-m",
                 "guidata.utils.translations",
                 "scan",
@@ -342,7 +342,7 @@
             "command": "${command:python.interpreterPath}",
             "args": [
                 "scripts/run_with_env.py",
-                "${command:python.interpreterPath}",
+                "python",
                 "-m",
                 "guidata.utils.translations",
                 "compile",
@@ -377,7 +377,7 @@
             "command": "${command:python.interpreterPath}",
             "args": [
                 "scripts/run_with_env.py",
-                "${command:python.interpreterPath}",
+                "python",
                 "-m",
                 "guidata.utils.genreqs",
                 "all",
@@ -408,7 +408,7 @@
             "command": "${command:python.interpreterPath}",
             "args": [
                 "scripts/run_with_env.py",
-                "${command:python.interpreterPath}",
+                "python",
                 "-m",
                 "coverage",
                 "run",
@@ -438,13 +438,13 @@
             "label": "📊 Coverage full",
             "type": "shell",
             "windows": {
-                "command": "${command:python.interpreterPath} -m coverage combine; ${command:python.interpreterPath} -m coverage html; start htmlcov\\index.html",
+                "command": "${command:python.interpreterPath} scripts/run_with_env.py python -m coverage combine; ${command:python.interpreterPath} scripts/run_with_env.py python -m coverage html; start htmlcov\\index.html",
             },
             "linux": {
-                "command": "${command:python.interpreterPath} -m coverage combine && ${command:python.interpreterPath} -m coverage html && xdg-open htmlcov/index.html",
+                "command": "${command:python.interpreterPath} scripts/run_with_env.py python -m coverage combine && ${command:python.interpreterPath} scripts/run_with_env.py python -m coverage html && xdg-open htmlcov/index.html",
             },
             "osx": {
-                "command": "${command:python.interpreterPath} -m coverage combine && ${command:python.interpreterPath} -m coverage html && open htmlcov/index.html",
+                "command": "${command:python.interpreterPath} scripts/run_with_env.py python -m coverage combine && ${command:python.interpreterPath} scripts/run_with_env.py python -m coverage html && open htmlcov/index.html",
             },
             "options": {
                 "cwd": "${workspaceFolder}",
@@ -466,7 +466,7 @@
             "command": "${command:python.interpreterPath}",
             "args": [
                 "scripts/run_with_env.py",
-                "${command:python.interpreterPath}",
+                "python",
                 "-m",
                 "pip",
                 "install",
@@ -526,7 +526,7 @@
             "command": "${command:python.interpreterPath}",
             "args": [
                 "scripts/run_with_env.py",
-                "${command:python.interpreterPath}",
+                "python",
                 "-m",
                 "guidata.utils.cleanup"
             ],
@@ -551,7 +551,7 @@
             "command": "${command:python.interpreterPath}",
             "args": [
                 "scripts/run_with_env.py",
-                "${command:python.interpreterPath}",
+                "python",
                 "-m",
                 "sphinx",
                 "build",
@@ -607,7 +607,7 @@
             "command": "${command:python.interpreterPath}",
             "args": [
                 "scripts/run_with_env.py",
-                "${command:python.interpreterPath}",
+                "python",
                 "-m",
                 "guidata.utils.securebuild",
                 "--prebuild",

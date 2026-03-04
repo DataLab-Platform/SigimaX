@@ -1,16 +1,16 @@
 Coverage
-guidata >= 3.13.4
-myst_parser
-myst-nb
 PlotPy >= 2.8.2
+PyQt5 >= 5.15.6
+Sigima >= 1.1.0
+guidata >= 3.13.4
+myst-nb
+myst_parser
 psutil >= 5.7
 pydata-sphinx-theme
 pylint
-PyQt5 >= 5.15.6
 pytest
 pytest-xvfb
 ruff
-Sigima >= 1.1.0
 sphinx
 sphinx-copybutton
 sphinx-sitemap
