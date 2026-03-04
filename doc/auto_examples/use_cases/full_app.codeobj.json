@@ -1,0 +1,1543 @@
+{
+ "Conf.app_name.get": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sigima.config",
+   "module_short": "sigima.config",
+   "name": "TypedOptionField.get"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sigima",
+   "module_short": "sigima",
+   "name": "TypedOptionField.get"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sigima.config",
+   "module_short": "sigima.config",
+   "name": "OptionField.get"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sigima",
+   "module_short": "sigima",
+   "name": "OptionField.get"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sigimax.config.CONF.app_name",
+   "module_short": "sigimax.config.CONF.app_name",
+   "name": "get"
+  }
+ ],
+ "Conf.app_name.set": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sigima.config",
+   "module_short": "sigima.config",
+   "name": "TypedOptionField.set"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sigima",
+   "module_short": "sigima",
+   "name": "TypedOptionField.set"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sigima.config",
+   "module_short": "sigima.config",
+   "name": "OptionField.set"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sigima",
+   "module_short": "sigima",
+   "name": "OptionField.set"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sigimax.config.CONF.app_name",
+   "module_short": "sigimax.config.CONF.app_name",
+   "name": "set"
+  }
+ ],
+ "Conf.app_version.set": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sigima.config",
+   "module_short": "sigima.config",
+   "name": "TypedOptionField.set"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sigima",
+   "module_short": "sigima",
+   "name": "TypedOptionField.set"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sigima.config",
+   "module_short": "sigima.config",
+   "name": "OptionField.set"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sigima",
+   "module_short": "sigima",
+   "name": "OptionField.set"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sigimax.config.CONF.app_version",
+   "module_short": "sigimax.config.CONF.app_version",
+   "name": "set"
+  }
+ ],
+ "DockablePlotWidget": [
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sigimax.widgets.plotdock",
+   "module_short": "sigimax.widgets",
+   "name": "DockablePlotWidget"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sigimax.widgets",
+   "module_short": "sigimax.widgets",
+   "name": "DockablePlotWidget"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sigimax",
+   "module_short": "sigimax",
+   "name": "DockablePlotWidget"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "guidata.widgets.dockable",
+   "module_short": "guidata.widgets.dockable",
+   "name": "DockableWidget"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "guidata.widgets",
+   "module_short": "guidata.widgets",
+   "name": "DockableWidget"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "guidata",
+   "module_short": "guidata",
+   "name": "DockableWidget"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5.QtWidgets",
+   "module_short": "PyQt5.QtWidgets",
+   "name": "QWidget"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QWidget"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "guidata.widgets.dockable",
+   "module_short": "guidata.widgets.dockable",
+   "name": "DockableWidgetMixin"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "guidata.widgets",
+   "module_short": "guidata.widgets",
+   "name": "DockableWidgetMixin"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "guidata",
+   "module_short": "guidata",
+   "name": "DockableWidgetMixin"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5.QtCore",
+   "module_short": "PyQt5.QtCore",
+   "name": "QObject"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QObject"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5.QtGui",
+   "module_short": "PyQt5.QtGui",
+   "name": "QPaintDevice"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QPaintDevice"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5.sip",
+   "module_short": "PyQt5.sip",
+   "name": "wrapper"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "wrapper"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5.sip",
+   "module_short": "PyQt5.sip",
+   "name": "simplewrapper"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "simplewrapper"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sigimax.widgets.plotdock",
+   "module_short": "sigimax.widgets",
+   "name": "DockablePlotWidget"
+  }
+ ],
+ "EnumOptionField": [
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sigimax.config",
+   "module_short": "sigimax.config",
+   "name": "EnumOptionField"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sigimax",
+   "module_short": "sigimax",
+   "name": "EnumOptionField"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sigima.config",
+   "module_short": "sigima.config",
+   "name": "OptionField"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sigima",
+   "module_short": "sigima",
+   "name": "OptionField"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sigimax.config",
+   "module_short": "sigimax.config",
+   "name": "EnumOptionField"
+  }
+ ],
+ "PlotType.CURVE": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy.constants",
+   "module_short": "plotpy.constants",
+   "name": "PlotType"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy",
+   "module_short": "plotpy",
+   "name": "PlotType"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy.constants.PlotType",
+   "module_short": "plotpy.constants.PlotType",
+   "name": "CURVE"
+  }
+ ],
+ "QC.Qt.TopToolBarArea": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.QtCore.Qt",
+   "module_short": "PyQt5.QtCore.Qt",
+   "name": "ToolBarArea"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.Qt",
+   "module_short": "PyQt5.Qt",
+   "name": "ToolBarArea"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "qtpy.QtCore.Qt",
+   "module_short": "qtpy.QtCore.Qt",
+   "name": "TopToolBarArea"
+  }
+ ],
+ "QW.QToolBar": [
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5.QtWidgets",
+   "module_short": "PyQt5.QtWidgets",
+   "name": "QToolBar"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QToolBar"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5.QtWidgets",
+   "module_short": "PyQt5.QtWidgets",
+   "name": "QWidget"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QWidget"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5.QtCore",
+   "module_short": "PyQt5.QtCore",
+   "name": "QObject"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QObject"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5.QtGui",
+   "module_short": "PyQt5.QtGui",
+   "name": "QPaintDevice"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QPaintDevice"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5.sip",
+   "module_short": "PyQt5.sip",
+   "name": "wrapper"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "wrapper"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5.sip",
+   "module_short": "PyQt5.sip",
+   "name": "simplewrapper"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "simplewrapper"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "qtpy.QtWidgets",
+   "module_short": "qtpy.QtWidgets",
+   "name": "QToolBar"
+  }
+ ],
+ "SGMXMainWindow": [
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sigimax.mainwindow",
+   "module_short": "sigimax",
+   "name": "SGMXMainWindow"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sigimax",
+   "module_short": "sigimax",
+   "name": "SGMXMainWindow"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5.QtWidgets",
+   "module_short": "PyQt5.QtWidgets",
+   "name": "QMainWindow"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QMainWindow"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5.QtWidgets",
+   "module_short": "PyQt5.QtWidgets",
+   "name": "QWidget"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QWidget"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5.QtCore",
+   "module_short": "PyQt5.QtCore",
+   "name": "QObject"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QObject"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5.QtGui",
+   "module_short": "PyQt5.QtGui",
+   "name": "QPaintDevice"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QPaintDevice"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5.sip",
+   "module_short": "PyQt5.sip",
+   "name": "wrapper"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "wrapper"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5.sip",
+   "module_short": "PyQt5.sip",
+   "name": "simplewrapper"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "simplewrapper"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sigimax.mainwindow",
+   "module_short": "sigimax",
+   "name": "SGMXMainWindow"
+  }
+ ],
+ "SciAppMainWindow": [
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "__main__",
+   "module_short": "__main__",
+   "name": "SciAppMainWindow"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sigimax.mainwindow",
+   "module_short": "sigimax",
+   "name": "SGMXMainWindow"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sigimax",
+   "module_short": "sigimax",
+   "name": "SGMXMainWindow"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5.QtWidgets",
+   "module_short": "PyQt5.QtWidgets",
+   "name": "QMainWindow"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QMainWindow"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5.QtWidgets",
+   "module_short": "PyQt5.QtWidgets",
+   "name": "QWidget"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QWidget"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5.QtCore",
+   "module_short": "PyQt5.QtCore",
+   "name": "QObject"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QObject"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5.QtGui",
+   "module_short": "PyQt5.QtGui",
+   "name": "QPaintDevice"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QPaintDevice"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5.sip",
+   "module_short": "PyQt5.sip",
+   "name": "wrapper"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "wrapper"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5.sip",
+   "module_short": "PyQt5.sip",
+   "name": "simplewrapper"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "simplewrapper"
+  }
+ ],
+ "SigimaXOptions": [
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sigimax.config",
+   "module_short": "sigimax.config",
+   "name": "SigimaXOptions"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sigimax",
+   "module_short": "sigimax",
+   "name": "SigimaXOptions"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sigimax.config",
+   "module_short": "sigimax.config",
+   "name": "AppOptionsContainer"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sigimax",
+   "module_short": "sigimax",
+   "name": "AppOptionsContainer"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sigima.config",
+   "module_short": "sigima.config",
+   "name": "OptionsContainer"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sigima",
+   "module_short": "sigima",
+   "name": "OptionsContainer"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sigimax.config",
+   "module_short": "sigimax.config",
+   "name": "SigimaXOptions"
+  }
+ ],
+ "TypedOptionField": [
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sigima.config",
+   "module_short": "sigima.config",
+   "name": "TypedOptionField"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sigima",
+   "module_short": "sigima",
+   "name": "TypedOptionField"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sigima.config",
+   "module_short": "sigima.config",
+   "name": "OptionField"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sigima",
+   "module_short": "sigima",
+   "name": "OptionField"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sigima.config",
+   "module_short": "sigima.config",
+   "name": "TypedOptionField"
+  }
+ ],
+ "_": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "method"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sigimax.config",
+   "module_short": "sigimax.config",
+   "name": "_"
+  }
+ ],
+ "add_actions": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "guidata.qthelpers",
+   "module_short": "guidata.qthelpers",
+   "name": "add_actions"
+  }
+ ],
+ "create_action": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "guidata.qthelpers",
+   "module_short": "guidata.qthelpers",
+   "name": "create_action"
+  }
+ ],
+ "get_icon": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "guidata.configtools",
+   "module_short": "guidata.configtools",
+   "name": "get_icon"
+  }
+ ],
+ "make.curve": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy.builder",
+   "module_short": "plotpy.builder",
+   "name": "PlotBuilder.curve"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy",
+   "module_short": "plotpy",
+   "name": "PlotBuilder.curve"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy.builder.plot",
+   "module_short": "plotpy.builder.plot",
+   "name": "WidgetBuilder.curve"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy.builder",
+   "module_short": "plotpy.builder",
+   "name": "WidgetBuilder.curve"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy",
+   "module_short": "plotpy",
+   "name": "WidgetBuilder.curve"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy.builder.curvemarker",
+   "module_short": "plotpy.builder",
+   "name": "CurveMarkerCursorBuilder.curve"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy.builder",
+   "module_short": "plotpy.builder",
+   "name": "CurveMarkerCursorBuilder.curve"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy",
+   "module_short": "plotpy",
+   "name": "CurveMarkerCursorBuilder.curve"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy.builder.image",
+   "module_short": "plotpy.builder.image",
+   "name": "ImageBuilder.curve"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy.builder",
+   "module_short": "plotpy.builder",
+   "name": "ImageBuilder.curve"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy",
+   "module_short": "plotpy",
+   "name": "ImageBuilder.curve"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy.builder.label",
+   "module_short": "plotpy.builder.label",
+   "name": "LabelBuilder.curve"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy.builder",
+   "module_short": "plotpy.builder",
+   "name": "LabelBuilder.curve"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy",
+   "module_short": "plotpy",
+   "name": "LabelBuilder.curve"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy.builder.shape",
+   "module_short": "plotpy.builder.shape",
+   "name": "ShapeBuilder.curve"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy.builder",
+   "module_short": "plotpy.builder",
+   "name": "ShapeBuilder.curve"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy",
+   "module_short": "plotpy",
+   "name": "ShapeBuilder.curve"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy.builder.annotation",
+   "module_short": "plotpy.builder.annotation",
+   "name": "AnnotationBuilder.curve"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy.builder",
+   "module_short": "plotpy.builder",
+   "name": "AnnotationBuilder.curve"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy",
+   "module_short": "plotpy",
+   "name": "AnnotationBuilder.curve"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy.builder.make",
+   "module_short": "plotpy.builder.make",
+   "name": "curve"
+  }
+ ],
+ "np.linspace": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "_ArrayFunctionDispatcher"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "linspace"
+  }
+ ],
+ "np.pi": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "float"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "pi"
+  }
+ ],
+ "np.random.randn": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "module.randn"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy.random",
+   "module_short": "numpy.random",
+   "name": "randn"
+  }
+ ],
+ "np.sin": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ufunc"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "sin"
+  }
+ ],
+ "sigimax.config.SigimaXOptions": [
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "sigimax.config",
+   "module_short": "sigimax.config",
+   "name": "SigimaXOptions"
+  }
+ ],
+ "sigimax.mainwindow.SGMXMainWindow": [
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "sigimax.mainwindow",
+   "module_short": "sigimax",
+   "name": "SGMXMainWindow"
+  }
+ ],
+ "sigimax_app_context": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sigimax.utils.qthelpers",
+   "module_short": "sigimax.utils.qthelpers",
+   "name": "sigimax_app_context"
+  }
+ ],
+ "sigimax_create": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sigimax.app",
+   "module_short": "sigimax",
+   "name": "create"
+  }
+ ],
+ "win": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "__main__",
+   "module_short": "__main__",
+   "name": "SciAppMainWindow"
+  }
+ ],
+ "win._generate_signal": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "__main__",
+   "module_short": "__main__",
+   "name": "SciAppMainWindow._generate_signal"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sigimax.mainwindow",
+   "module_short": "sigimax.mainwindow",
+   "name": "SGMXMainWindow._generate_signal"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sigimax",
+   "module_short": "sigimax",
+   "name": "SGMXMainWindow._generate_signal"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.QtWidgets",
+   "module_short": "PyQt5.QtWidgets",
+   "name": "QMainWindow._generate_signal"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QMainWindow._generate_signal"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.QtWidgets",
+   "module_short": "PyQt5.QtWidgets",
+   "name": "QWidget._generate_signal"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QWidget._generate_signal"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.QtCore",
+   "module_short": "PyQt5.QtCore",
+   "name": "QObject._generate_signal"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QObject._generate_signal"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.QtGui",
+   "module_short": "PyQt5.QtGui",
+   "name": "QPaintDevice._generate_signal"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QPaintDevice._generate_signal"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.sip",
+   "module_short": "PyQt5.sip",
+   "name": "wrapper._generate_signal"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "wrapper._generate_signal"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.sip",
+   "module_short": "PyQt5.sip",
+   "name": "simplewrapper._generate_signal"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "simplewrapper._generate_signal"
+  }
+ ],
+ "win.close": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "builtin_function_or_method"
+  }
+ ],
+ "win.curve_dock.get_plot": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sigimax.widgets.plotdock",
+   "module_short": "sigimax.widgets",
+   "name": "DockablePlotWidget.get_plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sigimax.widgets",
+   "module_short": "sigimax.widgets",
+   "name": "DockablePlotWidget.get_plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sigimax",
+   "module_short": "sigimax",
+   "name": "DockablePlotWidget.get_plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "guidata.widgets.dockable",
+   "module_short": "guidata.widgets.dockable",
+   "name": "DockableWidget.get_plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "guidata.widgets",
+   "module_short": "guidata.widgets",
+   "name": "DockableWidget.get_plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "guidata",
+   "module_short": "guidata",
+   "name": "DockableWidget.get_plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.QtWidgets",
+   "module_short": "PyQt5.QtWidgets",
+   "name": "QWidget.get_plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QWidget.get_plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "guidata.widgets.dockable",
+   "module_short": "guidata.widgets.dockable",
+   "name": "DockableWidgetMixin.get_plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "guidata.widgets",
+   "module_short": "guidata.widgets",
+   "name": "DockableWidgetMixin.get_plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "guidata",
+   "module_short": "guidata",
+   "name": "DockableWidgetMixin.get_plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.QtCore",
+   "module_short": "PyQt5.QtCore",
+   "name": "QObject.get_plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QObject.get_plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.QtGui",
+   "module_short": "PyQt5.QtGui",
+   "name": "QPaintDevice.get_plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QPaintDevice.get_plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.sip",
+   "module_short": "PyQt5.sip",
+   "name": "wrapper.get_plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "wrapper.get_plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.sip",
+   "module_short": "PyQt5.sip",
+   "name": "simplewrapper.get_plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "simplewrapper.get_plot"
+  }
+ ],
+ "win.set_modified": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "__main__",
+   "module_short": "__main__",
+   "name": "SciAppMainWindow.set_modified"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sigimax.mainwindow",
+   "module_short": "sigimax",
+   "name": "SGMXMainWindow.set_modified"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sigimax",
+   "module_short": "sigimax",
+   "name": "SGMXMainWindow.set_modified"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.QtWidgets",
+   "module_short": "PyQt5.QtWidgets",
+   "name": "QMainWindow.set_modified"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QMainWindow.set_modified"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.QtWidgets",
+   "module_short": "PyQt5.QtWidgets",
+   "name": "QWidget.set_modified"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QWidget.set_modified"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.QtCore",
+   "module_short": "PyQt5.QtCore",
+   "name": "QObject.set_modified"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QObject.set_modified"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.QtGui",
+   "module_short": "PyQt5.QtGui",
+   "name": "QPaintDevice.set_modified"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QPaintDevice.set_modified"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.sip",
+   "module_short": "PyQt5.sip",
+   "name": "wrapper.set_modified"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "wrapper.set_modified"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.sip",
+   "module_short": "PyQt5.sip",
+   "name": "simplewrapper.set_modified"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "simplewrapper.set_modified"
+  }
+ ],
+ "win.show": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "__main__",
+   "module_short": "__main__",
+   "name": "SciAppMainWindow.show"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sigimax.mainwindow",
+   "module_short": "sigimax",
+   "name": "SGMXMainWindow.show"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sigimax",
+   "module_short": "sigimax",
+   "name": "SGMXMainWindow.show"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.QtWidgets",
+   "module_short": "PyQt5.QtWidgets",
+   "name": "QMainWindow.show"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QMainWindow.show"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.QtWidgets",
+   "module_short": "PyQt5.QtWidgets",
+   "name": "QWidget.show"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QWidget.show"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.QtCore",
+   "module_short": "PyQt5.QtCore",
+   "name": "QObject.show"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QObject.show"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.QtGui",
+   "module_short": "PyQt5.QtGui",
+   "name": "QPaintDevice.show"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QPaintDevice.show"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.sip",
+   "module_short": "PyQt5.sip",
+   "name": "wrapper.show"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "wrapper.show"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.sip",
+   "module_short": "PyQt5.sip",
+   "name": "simplewrapper.show"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "simplewrapper.show"
+  }
+ ],
+ "win.windowTitle": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "builtin_function_or_method"
+  }
+ ]
+}

@@ -1,0 +1,187 @@
+{
+ "DemoOptions": [
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "__main__",
+   "module_short": "__main__",
+   "name": "DemoOptions"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sigimax.config",
+   "module_short": "sigimax.config",
+   "name": "SigimaXOptions"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sigimax",
+   "module_short": "sigimax",
+   "name": "SigimaXOptions"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sigimax.config",
+   "module_short": "sigimax.config",
+   "name": "AppOptionsContainer"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sigimax",
+   "module_short": "sigimax",
+   "name": "AppOptionsContainer"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sigima.config",
+   "module_short": "sigima.config",
+   "name": "OptionsContainer"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sigima",
+   "module_short": "sigima",
+   "name": "OptionsContainer"
+  }
+ ],
+ "EnumOptionField": [
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sigimax.config",
+   "module_short": "sigimax.config",
+   "name": "EnumOptionField"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sigimax",
+   "module_short": "sigimax",
+   "name": "EnumOptionField"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sigima.config",
+   "module_short": "sigima.config",
+   "name": "OptionField"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sigima",
+   "module_short": "sigima",
+   "name": "OptionField"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sigimax.config",
+   "module_short": "sigimax.config",
+   "name": "EnumOptionField"
+  }
+ ],
+ "SigimaXOptions": [
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sigimax.config",
+   "module_short": "sigimax.config",
+   "name": "SigimaXOptions"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sigimax",
+   "module_short": "sigimax",
+   "name": "SigimaXOptions"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sigimax.config",
+   "module_short": "sigimax.config",
+   "name": "AppOptionsContainer"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sigimax",
+   "module_short": "sigimax",
+   "name": "AppOptionsContainer"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sigima.config",
+   "module_short": "sigima.config",
+   "name": "OptionsContainer"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sigima",
+   "module_short": "sigima",
+   "name": "OptionsContainer"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sigimax.config",
+   "module_short": "sigimax.config",
+   "name": "SigimaXOptions"
+  }
+ ],
+ "TypedOptionField": [
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sigima.config",
+   "module_short": "sigima.config",
+   "name": "TypedOptionField"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sigima",
+   "module_short": "sigima",
+   "name": "TypedOptionField"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sigima.config",
+   "module_short": "sigima.config",
+   "name": "OptionField"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sigima",
+   "module_short": "sigima",
+   "name": "OptionField"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sigima.config",
+   "module_short": "sigima.config",
+   "name": "TypedOptionField"
+  }
+ ],
+ "sigimax.config.SigimaXOptions": [
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "sigimax.config",
+   "module_short": "sigimax.config",
+   "name": "SigimaXOptions"
+  }
+ ]
+}

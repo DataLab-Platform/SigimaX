@@ -1,0 +1,2 @@
+.. automodule:: sigimax.h5
+    :no-members:

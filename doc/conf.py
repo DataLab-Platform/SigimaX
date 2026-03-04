@@ -74,19 +74,6 @@ def exclude_api_from_gettext(app):
         app.config.suppress_warnings.extend(["toc.excluded", "ref.doc"])
 
 
-def patch_datalab_client_example():
-    """Patch the datalab_client example to use stub server during doc build.
-
-    This function modifies the example execution context so that when
-    Sphinx-Gallery runs datalab_client.py, it connects to a stub server
-    instead of requiring a real DataLab instance.
-    """
-    from sigimax.client.stub import patch_simpleremoteproxy_for_stub
-
-    # Start stub server and apply the patch
-    return patch_simpleremoteproxy_for_stub()
-
-
 def setup(app):
     """Setup function for Sphinx."""
     app.add_directive("options-table", OptionsTableDirective)
@@ -146,29 +133,10 @@ sphinx_gallery_conf = qt_scraper.get_sphinx_gallery_conf(
 if "READTHEDOCS" in os.environ or "CI" in os.environ:
     os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
-# Patch datalab_client example to use stub server during documentation build
-_stub_server = None
-
-
-def _reset_example_namespace(gallery_conf, fname):
-    """Reset namespace and setup stub server for datalab_client example."""
-    global _stub_server
-    # Cleanup previous stub server if it exists
-    if _stub_server is not None:
-        _stub_server.stop()
-        _stub_server = None
-    # Setup new stub server for datalab_client example
-    if "datalab_client" in fname:
-        _stub_server = patch_datalab_client_example()
-
-
-# Add reset handler to sphinx_gallery_conf
-sphinx_gallery_conf["reset_modules"] = _reset_example_namespace
-sphinx_gallery_conf["reset_modules_order"] = "before"
 sphinx_gallery_conf["subsection_order"] = [
     "./examples/getting_started",
-    "./examples/use_cases",
     "./examples/features",
+    "./examples/use_cases",
 ]
 sphinx_gallery_conf["within_subsection_order"] = "ExampleTitleSortKey"
 # Note: The handler also cleans up the stub server from previous examples
@@ -218,7 +186,7 @@ html_theme_options = {
 html_static_path = ["_static"]
 
 # -- Options for LaTeX output ------------------------------------------------
-latex_logo = "_static/SigimaX-Frontpage.png"
+latex_logo = "_static/Sigima-Frontpage.png"
 
 # -- Options for sphinx-intl package -----------------------------------------
 locale_dirs = ["locale/"]  # path is example but recommended.
@@ -238,4 +206,6 @@ intersphinx_mapping = {
     "scipy": ("https://docs.scipy.org/doc/scipy/", None),
     "scikit-image": ("https://scikit-image.org/docs/stable/", None),
     "guidata": ("https://guidata.readthedocs.io/en/latest/", None),
+    "plotpy": ("https://plotpy.readthedocs.io/en/latest/", None),
+    "sigima": ("https://sigima.readthedocs.io/en/latest/", None),
 }

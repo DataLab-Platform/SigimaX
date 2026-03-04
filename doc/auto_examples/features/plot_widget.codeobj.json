@@ -1,0 +1,1279 @@
+{
+ "DockablePlotWidget": [
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sigimax.widgets.plotdock",
+   "module_short": "sigimax.widgets",
+   "name": "DockablePlotWidget"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sigimax.widgets",
+   "module_short": "sigimax.widgets",
+   "name": "DockablePlotWidget"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sigimax",
+   "module_short": "sigimax",
+   "name": "DockablePlotWidget"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "guidata.widgets.dockable",
+   "module_short": "guidata.widgets.dockable",
+   "name": "DockableWidget"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "guidata.widgets",
+   "module_short": "guidata.widgets",
+   "name": "DockableWidget"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "guidata",
+   "module_short": "guidata",
+   "name": "DockableWidget"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5.QtWidgets",
+   "module_short": "PyQt5.QtWidgets",
+   "name": "QWidget"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QWidget"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "guidata.widgets.dockable",
+   "module_short": "guidata.widgets.dockable",
+   "name": "DockableWidgetMixin"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "guidata.widgets",
+   "module_short": "guidata.widgets",
+   "name": "DockableWidgetMixin"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "guidata",
+   "module_short": "guidata",
+   "name": "DockableWidgetMixin"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5.QtCore",
+   "module_short": "PyQt5.QtCore",
+   "name": "QObject"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QObject"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5.QtGui",
+   "module_short": "PyQt5.QtGui",
+   "name": "QPaintDevice"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QPaintDevice"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5.sip",
+   "module_short": "PyQt5.sip",
+   "name": "wrapper"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "wrapper"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5.sip",
+   "module_short": "PyQt5.sip",
+   "name": "simplewrapper"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "simplewrapper"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sigimax.widgets.plotdock",
+   "module_short": "sigimax.widgets",
+   "name": "DockablePlotWidget"
+  }
+ ],
+ "PlotType.CURVE": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy.constants",
+   "module_short": "plotpy.constants",
+   "name": "PlotType"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy",
+   "module_short": "plotpy",
+   "name": "PlotType"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy.constants.PlotType",
+   "module_short": "plotpy.constants.PlotType",
+   "name": "CURVE"
+  }
+ ],
+ "QW.QMainWindow": [
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5.QtWidgets",
+   "module_short": "PyQt5.QtWidgets",
+   "name": "QMainWindow"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QMainWindow"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5.QtWidgets",
+   "module_short": "PyQt5.QtWidgets",
+   "name": "QWidget"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QWidget"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5.QtCore",
+   "module_short": "PyQt5.QtCore",
+   "name": "QObject"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QObject"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5.QtGui",
+   "module_short": "PyQt5.QtGui",
+   "name": "QPaintDevice"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QPaintDevice"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5.sip",
+   "module_short": "PyQt5.sip",
+   "name": "wrapper"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "wrapper"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5.sip",
+   "module_short": "PyQt5.sip",
+   "name": "simplewrapper"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "simplewrapper"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "qtpy.QtWidgets",
+   "module_short": "qtpy.QtWidgets",
+   "name": "QMainWindow"
+  }
+ ],
+ "curve_widget": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sigimax.widgets.plotdock",
+   "module_short": "sigimax.widgets",
+   "name": "DockablePlotWidget"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sigimax.widgets",
+   "module_short": "sigimax.widgets",
+   "name": "DockablePlotWidget"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sigimax",
+   "module_short": "sigimax",
+   "name": "DockablePlotWidget"
+  }
+ ],
+ "curve_widget.create_dockwidget": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sigimax.widgets.plotdock",
+   "module_short": "sigimax.widgets",
+   "name": "DockablePlotWidget.create_dockwidget"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sigimax.widgets",
+   "module_short": "sigimax.widgets",
+   "name": "DockablePlotWidget.create_dockwidget"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sigimax",
+   "module_short": "sigimax",
+   "name": "DockablePlotWidget.create_dockwidget"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "guidata.widgets.dockable",
+   "module_short": "guidata.widgets.dockable",
+   "name": "DockableWidget.create_dockwidget"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "guidata.widgets",
+   "module_short": "guidata.widgets",
+   "name": "DockableWidget.create_dockwidget"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "guidata",
+   "module_short": "guidata",
+   "name": "DockableWidget.create_dockwidget"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.QtWidgets",
+   "module_short": "PyQt5.QtWidgets",
+   "name": "QWidget.create_dockwidget"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QWidget.create_dockwidget"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "guidata.widgets.dockable",
+   "module_short": "guidata.widgets.dockable",
+   "name": "DockableWidgetMixin.create_dockwidget"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "guidata.widgets",
+   "module_short": "guidata.widgets",
+   "name": "DockableWidgetMixin.create_dockwidget"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "guidata",
+   "module_short": "guidata",
+   "name": "DockableWidgetMixin.create_dockwidget"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.QtCore",
+   "module_short": "PyQt5.QtCore",
+   "name": "QObject.create_dockwidget"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QObject.create_dockwidget"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.QtGui",
+   "module_short": "PyQt5.QtGui",
+   "name": "QPaintDevice.create_dockwidget"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QPaintDevice.create_dockwidget"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.sip",
+   "module_short": "PyQt5.sip",
+   "name": "wrapper.create_dockwidget"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "wrapper.create_dockwidget"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.sip",
+   "module_short": "PyQt5.sip",
+   "name": "simplewrapper.create_dockwidget"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "simplewrapper.create_dockwidget"
+  }
+ ],
+ "curve_widget.get_plot": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sigimax.widgets.plotdock",
+   "module_short": "sigimax.widgets",
+   "name": "DockablePlotWidget.get_plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sigimax.widgets",
+   "module_short": "sigimax.widgets",
+   "name": "DockablePlotWidget.get_plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sigimax",
+   "module_short": "sigimax",
+   "name": "DockablePlotWidget.get_plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "guidata.widgets.dockable",
+   "module_short": "guidata.widgets.dockable",
+   "name": "DockableWidget.get_plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "guidata.widgets",
+   "module_short": "guidata.widgets",
+   "name": "DockableWidget.get_plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "guidata",
+   "module_short": "guidata",
+   "name": "DockableWidget.get_plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.QtWidgets",
+   "module_short": "PyQt5.QtWidgets",
+   "name": "QWidget.get_plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QWidget.get_plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "guidata.widgets.dockable",
+   "module_short": "guidata.widgets.dockable",
+   "name": "DockableWidgetMixin.get_plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "guidata.widgets",
+   "module_short": "guidata.widgets",
+   "name": "DockableWidgetMixin.get_plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "guidata",
+   "module_short": "guidata",
+   "name": "DockableWidgetMixin.get_plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.QtCore",
+   "module_short": "PyQt5.QtCore",
+   "name": "QObject.get_plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QObject.get_plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.QtGui",
+   "module_short": "PyQt5.QtGui",
+   "name": "QPaintDevice.get_plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QPaintDevice.get_plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.sip",
+   "module_short": "PyQt5.sip",
+   "name": "wrapper.get_plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "wrapper.get_plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.sip",
+   "module_short": "PyQt5.sip",
+   "name": "simplewrapper.get_plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "simplewrapper.get_plot"
+  }
+ ],
+ "dock": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.QtWidgets",
+   "module_short": "PyQt5.QtWidgets",
+   "name": "QDockWidget"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QDockWidget"
+  }
+ ],
+ "location": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.QtCore.Qt",
+   "module_short": "PyQt5.QtCore.Qt",
+   "name": "DockWidgetArea"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.Qt",
+   "module_short": "PyQt5.Qt",
+   "name": "DockWidgetArea"
+  }
+ ],
+ "main": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.QtWidgets",
+   "module_short": "PyQt5.QtWidgets",
+   "name": "QMainWindow"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QMainWindow"
+  }
+ ],
+ "main.addDockWidget": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "builtin_function_or_method"
+  }
+ ],
+ "main.close": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "builtin_function_or_method"
+  }
+ ],
+ "main.resize": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "builtin_function_or_method"
+  }
+ ],
+ "main.setWindowTitle": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "builtin_function_or_method"
+  }
+ ],
+ "main.show": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "builtin_function_or_method"
+  }
+ ],
+ "make.curve": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy.builder",
+   "module_short": "plotpy.builder",
+   "name": "PlotBuilder.curve"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy",
+   "module_short": "plotpy",
+   "name": "PlotBuilder.curve"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy.builder.plot",
+   "module_short": "plotpy.builder.plot",
+   "name": "WidgetBuilder.curve"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy.builder",
+   "module_short": "plotpy.builder",
+   "name": "WidgetBuilder.curve"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy",
+   "module_short": "plotpy",
+   "name": "WidgetBuilder.curve"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy.builder.curvemarker",
+   "module_short": "plotpy.builder",
+   "name": "CurveMarkerCursorBuilder.curve"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy.builder",
+   "module_short": "plotpy.builder",
+   "name": "CurveMarkerCursorBuilder.curve"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy",
+   "module_short": "plotpy",
+   "name": "CurveMarkerCursorBuilder.curve"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy.builder.image",
+   "module_short": "plotpy.builder.image",
+   "name": "ImageBuilder.curve"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy.builder",
+   "module_short": "plotpy.builder",
+   "name": "ImageBuilder.curve"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy",
+   "module_short": "plotpy",
+   "name": "ImageBuilder.curve"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy.builder.label",
+   "module_short": "plotpy.builder.label",
+   "name": "LabelBuilder.curve"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy.builder",
+   "module_short": "plotpy.builder",
+   "name": "LabelBuilder.curve"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy",
+   "module_short": "plotpy",
+   "name": "LabelBuilder.curve"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy.builder.shape",
+   "module_short": "plotpy.builder.shape",
+   "name": "ShapeBuilder.curve"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy.builder",
+   "module_short": "plotpy.builder",
+   "name": "ShapeBuilder.curve"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy",
+   "module_short": "plotpy",
+   "name": "ShapeBuilder.curve"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy.builder.annotation",
+   "module_short": "plotpy.builder.annotation",
+   "name": "AnnotationBuilder.curve"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy.builder",
+   "module_short": "plotpy.builder",
+   "name": "AnnotationBuilder.curve"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy",
+   "module_short": "plotpy",
+   "name": "AnnotationBuilder.curve"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy.builder.make",
+   "module_short": "plotpy.builder.make",
+   "name": "curve"
+  }
+ ],
+ "np.cos": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ufunc"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "cos"
+  }
+ ],
+ "np.linspace": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "_ArrayFunctionDispatcher"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "linspace"
+  }
+ ],
+ "np.pi": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "float"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "pi"
+  }
+ ],
+ "np.sin": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ufunc"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "sin"
+  }
+ ],
+ "plot": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy.plot.base",
+   "module_short": "plotpy.plot",
+   "name": "BasePlot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy.plot",
+   "module_short": "plotpy.plot",
+   "name": "BasePlot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy",
+   "module_short": "plotpy",
+   "name": "BasePlot"
+  }
+ ],
+ "plot.add_item": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy.plot.base",
+   "module_short": "plotpy.plot",
+   "name": "BasePlot.add_item"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy.plot",
+   "module_short": "plotpy.plot",
+   "name": "BasePlot.add_item"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy",
+   "module_short": "plotpy",
+   "name": "BasePlot.add_item"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "qwt.plot",
+   "module_short": "qwt.plot",
+   "name": "QwtPlot.add_item"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "qwt",
+   "module_short": "qwt",
+   "name": "QwtPlot.add_item"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.QtWidgets",
+   "module_short": "PyQt5.QtWidgets",
+   "name": "QFrame.add_item"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QFrame.add_item"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.QtWidgets",
+   "module_short": "PyQt5.QtWidgets",
+   "name": "QWidget.add_item"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QWidget.add_item"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.QtCore",
+   "module_short": "PyQt5.QtCore",
+   "name": "QObject.add_item"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QObject.add_item"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.QtGui",
+   "module_short": "PyQt5.QtGui",
+   "name": "QPaintDevice.add_item"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QPaintDevice.add_item"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.sip",
+   "module_short": "PyQt5.sip",
+   "name": "wrapper.add_item"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "wrapper.add_item"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.sip",
+   "module_short": "PyQt5.sip",
+   "name": "simplewrapper.add_item"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "simplewrapper.add_item"
+  }
+ ],
+ "plot.do_autoscale": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy.plot.base",
+   "module_short": "plotpy.plot",
+   "name": "BasePlot.do_autoscale"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy.plot",
+   "module_short": "plotpy.plot",
+   "name": "BasePlot.do_autoscale"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy",
+   "module_short": "plotpy",
+   "name": "BasePlot.do_autoscale"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "qwt.plot",
+   "module_short": "qwt.plot",
+   "name": "QwtPlot.do_autoscale"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "qwt",
+   "module_short": "qwt",
+   "name": "QwtPlot.do_autoscale"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.QtWidgets",
+   "module_short": "PyQt5.QtWidgets",
+   "name": "QFrame.do_autoscale"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QFrame.do_autoscale"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.QtWidgets",
+   "module_short": "PyQt5.QtWidgets",
+   "name": "QWidget.do_autoscale"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QWidget.do_autoscale"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.QtCore",
+   "module_short": "PyQt5.QtCore",
+   "name": "QObject.do_autoscale"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QObject.do_autoscale"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.QtGui",
+   "module_short": "PyQt5.QtGui",
+   "name": "QPaintDevice.do_autoscale"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QPaintDevice.do_autoscale"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.sip",
+   "module_short": "PyQt5.sip",
+   "name": "wrapper.do_autoscale"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "wrapper.do_autoscale"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.sip",
+   "module_short": "PyQt5.sip",
+   "name": "simplewrapper.do_autoscale"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "simplewrapper.do_autoscale"
+  }
+ ],
+ "plot.get_items": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy.plot.base",
+   "module_short": "plotpy.plot",
+   "name": "BasePlot.get_items"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy.plot",
+   "module_short": "plotpy.plot",
+   "name": "BasePlot.get_items"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "plotpy",
+   "module_short": "plotpy",
+   "name": "BasePlot.get_items"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "qwt.plot",
+   "module_short": "qwt.plot",
+   "name": "QwtPlot.get_items"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "qwt",
+   "module_short": "qwt",
+   "name": "QwtPlot.get_items"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.QtWidgets",
+   "module_short": "PyQt5.QtWidgets",
+   "name": "QFrame.get_items"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QFrame.get_items"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.QtWidgets",
+   "module_short": "PyQt5.QtWidgets",
+   "name": "QWidget.get_items"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QWidget.get_items"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.QtCore",
+   "module_short": "PyQt5.QtCore",
+   "name": "QObject.get_items"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QObject.get_items"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.QtGui",
+   "module_short": "PyQt5.QtGui",
+   "name": "QPaintDevice.get_items"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "QPaintDevice.get_items"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.sip",
+   "module_short": "PyQt5.sip",
+   "name": "wrapper.get_items"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "wrapper.get_items"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5.sip",
+   "module_short": "PyQt5.sip",
+   "name": "simplewrapper.get_items"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "PyQt5",
+   "module_short": "PyQt5",
+   "name": "simplewrapper.get_items"
+  }
+ ],
+ "sigimax.widgets.plotdock.DockablePlotWidget": [
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "sigimax.widgets.plotdock",
+   "module_short": "sigimax.widgets",
+   "name": "DockablePlotWidget"
+  }
+ ],
+ "sigimax_app_context": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sigimax.utils.qthelpers",
+   "module_short": "sigimax.utils.qthelpers",
+   "name": "sigimax_app_context"
+  }
+ ],
+ "x": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ]
+}
