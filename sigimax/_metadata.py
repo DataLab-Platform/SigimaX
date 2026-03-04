@@ -24,7 +24,7 @@ projects like Flask and setuptools-scm that need a rich ``__init__.py``
 alongside internal access to version information.
 """
 
-__version__ = "0.0.1.dev0"
+__version__ = "0.1.0"
 __docurl__ = "https://sigimax.readthedocs.io/"
 __homeurl__ = "https://github.com/DataLab-Platform/SigimaX"
 __supporturl__ = "https://github.com/DataLab-Platform/SigimaX/issues/new/choose"

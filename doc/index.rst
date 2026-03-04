@@ -40,6 +40,7 @@ SigimaX has been funded by the following stakeholders:
    :hidden:
 
    requirements
+   release_notes/index
 
 .. _DataLab: https://www.datalab-platform.com
 .. _CODRA: https://codra.net/
