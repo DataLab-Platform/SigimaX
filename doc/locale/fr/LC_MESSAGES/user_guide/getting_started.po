@@ -8,7 +8,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SigimaX \n"
 "Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-03-04 16:31+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
 "Language-Team: fr <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
@@ -23,8 +25,9 @@ msgstr "Premiers pas"
 msgid "This page provides a quick introduction to building applications with SigimaX."
 msgstr "Cette page fournit une introduction rapide à la construction d'applications avec SigimaX."
 
-msgid "SigimaX follows a **three-step derivation pattern**: subclass the configuration, subclass the main window, and launch with ``run()``. This pattern is proven in production \u2014 `DataLab <https://datalab-platform.com/>`_ is built entirely on it."
-msgstr "SigimaX suit un **patron de d\u00e9rivation en trois \u00e9tapes** : h\u00e9riter de la configuration, h\u00e9riter de la fen\u00eatre principale, et lancer avec ``run()``. Ce patron est \u00e9prouv\u00e9 en production \u2014 `DataLab <https://datalab-platform.com/>`_ est enti\u00e8rement construit dessus."
+#, fuzzy
+msgid "SigimaX follows a **three-step derivation pattern**: subclass the configuration, subclass the main window, and launch with ``run()``. This pattern is proven in production — `DataLab <https://datalab-platform.com/>`_ is built entirely on it."
+msgstr "SigimaX suit un **patron de d\\u00e9rivation en trois \\u00e9tapes** : h\\u00e9riter de la configuration, h\\u00e9riter de la fen\\u00eatre principale, et lancer avec ``run()``. Ce patron est \\u00e9prouv\\u00e9 en production \\u2014 `DataLab <https://datalab-platform.com/>`_ est enti\\u00e8rement construit dessus."
 
 msgid "The Derivation Pattern"
 msgstr "Le patron de dérivation"
@@ -154,3 +157,4 @@ msgstr "Lisez la :doc:`overview` pour les détails de l'architecture"
 
 msgid "Dive into the :doc:`/api/index` for complete reference documentation"
 msgstr "Plongez dans la :doc:`/api/index` pour la documentation de référence complète"
+

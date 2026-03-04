@@ -8,7 +8,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SigimaX \n"
 "Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-03-04 16:31+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
 "Language-Team: fr <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
@@ -38,10 +40,19 @@ msgstr ""
 msgid "Python programming language"
 msgstr "Langage de programmation Python"
 
+msgid "guidata"
+msgstr ""
+
+msgid ">= 3.13.4"
+msgstr ""
+
+msgid "Automatic GUI generation for easy dataset editing and display"
+msgstr ""
+
 msgid "PlotPy"
 msgstr ""
 
-msgid ">= 2.7.4"
+msgid ">= 2.8.2"
 msgstr ""
 
 msgid "Curve and image plotting tools for Python/Qt applications"
@@ -169,3 +180,4 @@ msgstr ""
 
 msgid "A pytest plugin to run Xvfb (or Xephyr/Xvnc) for tests."
 msgstr "Un plugin pytest pour exécuter Xvfb (ou Xephyr/Xvnc) pour les tests."
+
