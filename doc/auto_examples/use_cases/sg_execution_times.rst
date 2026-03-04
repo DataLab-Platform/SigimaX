@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**00:00.090** total execution time for 1 file **from auto_examples\use_cases**:
+**00:00.114** total execution time for 1 file **from auto_examples\use_cases**:
 
 .. container::
 
@@ -33,5 +33,5 @@ Computation times
      - Time
      - Mem (MB)
    * - :ref:`sphx_glr_auto_examples_use_cases_full_app.py` (``full_app.py``)
-     - 00:00.090
+     - 00:00.114
      - 0.0

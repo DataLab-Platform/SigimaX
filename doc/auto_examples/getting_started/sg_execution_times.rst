@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**00:01.188** total execution time for 1 file **from auto_examples\getting_started**:
+**00:01.158** total execution time for 1 file **from auto_examples\getting_started**:
 
 .. container::
 
@@ -33,5 +33,5 @@ Computation times
      - Time
      - Mem (MB)
    * - :ref:`sphx_glr_auto_examples_getting_started_minimal_app.py` (``minimal_app.py``)
-     - 00:01.188
+     - 00:01.158
      - 0.0

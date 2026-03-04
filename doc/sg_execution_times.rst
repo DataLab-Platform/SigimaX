@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**00:00.032** total execution time for 4 files **from all galleries**:
+**00:01.369** total execution time for 4 files **from all galleries**:
 
 .. container::
 
@@ -32,15 +32,15 @@ Computation times
    * - Example
      - Time
      - Mem (MB)
-   * - :ref:`sphx_glr_auto_examples_features_configuration.py` (``examples\features\configuration.py``)
-     - 00:00.032
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_features_plot_widget.py` (``examples\features\plot_widget.py``)
-     - 00:00.000
-     - 0.0
    * - :ref:`sphx_glr_auto_examples_getting_started_minimal_app.py` (``examples\getting_started\minimal_app.py``)
-     - 00:00.000
+     - 00:01.158
      - 0.0
    * - :ref:`sphx_glr_auto_examples_use_cases_full_app.py` (``examples\use_cases\full_app.py``)
-     - 00:00.000
+     - 00:00.114
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_features_plot_widget.py` (``examples\features\plot_widget.py``)
+     - 00:00.081
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_features_configuration.py` (``examples\features\configuration.py``)
+     - 00:00.015
      - 0.0
