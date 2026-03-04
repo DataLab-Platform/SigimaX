@@ -1,16 +1,16 @@
 Coverage
-PlotPy >= 2.7.4
-PyQt5 >= 5.15.6
-Sigima >= 1.1.0
-myst-nb
+guidata >= 3.13.4
 myst_parser
-opencv-python-headless >= 4.5
+myst-nb
+PlotPy >= 2.8.2
 psutil >= 5.7
 pydata-sphinx-theme
 pylint
+PyQt5 >= 5.15.6
 pytest
 pytest-xvfb
 ruff
+Sigima >= 1.1.0
 sphinx
 sphinx-copybutton
 sphinx-sitemap

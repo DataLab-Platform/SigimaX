@@ -20,6 +20,9 @@ doc/contributing/changelog.md
 .venv
 .env
 
+#AI instructions
+*.ai
+
 # Created by https://www.gitignore.io/api/python
 
 ### Python ###
