@@ -29,7 +29,14 @@ def load_env_file(env_path: str | None = None) -> None:
 
 
 def execute_command(command: list[str]) -> int:
-    """Execute a command with the loaded environment variables."""
+    """Execute a command with the loaded environment variables.
+
+    If the command starts with "python", it is replaced by the current
+    interpreter (``sys.executable``) so that the subprocess uses the same
+    virtual-environment as the caller.
+    """
+    if command and command[0].lower() == "python":
+        command[0] = sys.executable
     print("Executing command:")
     print(" ".join(command))
     print("")
