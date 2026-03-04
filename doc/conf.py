@@ -20,10 +20,10 @@ class OptionsTableDirective(Directive):
 
     def run(self):
         """Generate and include the options table."""
-        from sigimax.config import options
+        from sigimax.config import CONF
 
         # Get the RST content
-        rst_content = options.generate_rst_doc()
+        rst_content = CONF.generate_rst_doc()
 
         # Create a container node
         container = nodes.container()
@@ -90,6 +90,7 @@ release = sigimax.__version__
 # -- General configuration ---------------------------------------------------
 
 extensions = [
+    "sphinx.ext.autosummary",
     "sphinx.ext.intersphinx",
     "sphinx.ext.napoleon",
     "sphinx.ext.mathjax",

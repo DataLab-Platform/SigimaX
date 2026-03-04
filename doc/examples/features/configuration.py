@@ -73,7 +73,7 @@ class DemoOptions(SigimaXOptions):
         self._defaults.update(
             {
                 name: getattr(self, name).get(sync_env=False)
-                for name in ("iterations", "precision", "algorithm", "verbose_mode")
+                for name in ("iterations", "precision", "algorithm", "verbose")
             }
         )
 

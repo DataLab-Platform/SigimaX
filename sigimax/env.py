@@ -1,7 +1,8 @@
 # Copyright (c) DataLab Platform Developers, BSD 3-Clause license, see LICENSE file.
 
 """
-SigimaX environment utilities
+SigimaX environment utilities (:mod:`sigimax.env`)
+==================================================
 """
 
 from __future__ import annotations

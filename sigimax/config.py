@@ -2,7 +2,7 @@
 
 """
 SigimaX Configuration Options System (:mod:`sigimax.config`)
-------------------------------------------------
+------------------------------------------------------------
 
 Sigima-style in-memory option system for SigimaX-based GUI applications.
 

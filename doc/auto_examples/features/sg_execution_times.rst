@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**00:00.103** total execution time for 2 files **from auto_examples\features**:
+**00:00.032** total execution time for 2 files **from auto_examples\features**:
 
 .. container::
 
@@ -32,9 +32,9 @@ Computation times
    * - Example
      - Time
      - Mem (MB)
-   * - :ref:`sphx_glr_auto_examples_features_plot_widget.py` (``plot_widget.py``)
-     - 00:00.089
-     - 0.0
    * - :ref:`sphx_glr_auto_examples_features_configuration.py` (``configuration.py``)
-     - 00:00.014
+     - 00:00.032
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_features_plot_widget.py` (``plot_widget.py``)
+     - 00:00.000
      - 0.0

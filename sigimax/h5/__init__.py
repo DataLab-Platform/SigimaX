@@ -2,7 +2,8 @@
 
 
 """
-SigimaX HDF5 I/O module
+SigimaX HDF5 I/O module (:mod:`sigimax.h5`)
+============================================
 """
 
 __all__ = [

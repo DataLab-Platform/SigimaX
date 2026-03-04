@@ -108,7 +108,7 @@ Subclass :class:`~sigimax.config.SigimaXOptions` and add typed fields.
             self._defaults.update(
                 {
                     name: getattr(self, name).get(sync_env=False)
-                    for name in ("iterations", "precision", "algorithm", "verbose_mode")
+                    for name in ("iterations", "precision", "algorithm", "verbose")
                 }
             )
 
@@ -143,17 +143,17 @@ Basic get/set operations
 
 
 
+
+
 .. rst-class:: sphx-glr-script-out
 
-.. code-block:: pytb
+ .. code-block:: none
 
-    Traceback (most recent call last):
-      File "C:\Users\T.mallet\Documents\Datalab_Intra\SigimaX\doc\examples\features\configuration.py", line 85, in <module>
-        conf = DemoOptions()
-      File "C:\Users\T.mallet\Documents\Datalab_Intra\SigimaX\doc\examples\features\configuration.py", line 75, in __init__
-        name: getattr(self, name).get(sync_env=False)
-              ~~~~~~~^^^^^^^^^^^^
-    AttributeError: 'DemoOptions' object has no attribute 'verbose_mode'
+    === Basic get/set ===
+    Iterations: 100
+    Algorithm:  gradient
+    Updated iterations: 500
+    Updated algorithm:  newton
 
 
 
@@ -180,6 +180,22 @@ restores the previous value when leaving the block.
     print(f"After context:  iterations = {conf.iterations.get()}")
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+
+    === Context manager ===
+    Before context: iterations = 500
+    Inside context: iterations = 10
+    After context:  iterations = 500
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 112-116
 
 Enum validation
@@ -198,6 +214,20 @@ Enum validation
         print("ERROR: Should have raised ValueError")
     except ValueError as e:
         print(f"Correctly rejected invalid value: {e}")
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+
+    === Enum validation ===
+    Correctly rejected invalid value: Option 'algorithm': expected one of ['gradient', 'newton', 'simplex'], got 'invalid_algorithm'
+
+
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 125-129
@@ -223,6 +253,22 @@ Options can be serialized to a dictionary (and from there to JSON).
     print(f"Restored algorithm:  {conf2.algorithm.get()}")
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+
+    === Serialization ===
+    Serialized keys: ['algorithm', 'app_copyright', 'app_desc', 'app_developer', 'app_docurl', 'app_homeurl', 'app_local_doc_path', 'app_logo_path']...
+    Restored iterations: 500
+    Restored algorithm:  newton
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 141-143
 
 Reset to defaults
@@ -240,6 +286,21 @@ Reset to defaults
     print(f"After reset:  {conf.iterations.get()}")
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+
+    === Reset to defaults ===
+    Before reset: 999
+    After reset:  100
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 151-155
 
 Listing all options
@@ -255,6 +316,90 @@ Listing all options
     print("\n=== All options ===")
     for name in sorted(conf.list_options()):
         print(f"  {name}")
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+
+    === All options ===
+      algorithm
+      app_copyright
+      app_desc
+      app_developer
+      app_docurl
+      app_homeurl
+      app_local_doc_path
+      app_logo_path
+      app_name
+      app_supporturl
+      app_version
+      auto_normalize_kernel
+      available_memory_threshold
+      base_dir
+      color_mode
+      console_enabled
+      console_max_line_count
+      datetime_format
+      external_editor_args
+      external_editor_path
+      extract_roi_singleobj
+      faulthandler_enabled
+      faulthandler_log_available
+      faulthandler_log_path
+      fft_shift_enabled
+      h5_clear_workspace
+      h5_clear_workspace_ask
+      h5_fname_in_title
+      h5_fullpath_in_title
+      ignore_warnings
+      ima_autoscale_margin_percent
+      ima_def_alpha
+      ima_def_alpha_function
+      ima_def_colormap
+      ima_def_interpolation
+      ima_def_invert_colormap
+      ima_def_keep_lut_range
+      ima_eliminate_outliers
+      ima_format
+      imageio_formats
+      iterations
+      keep_results
+      operation_mode
+      plot_dock_location
+      plot_toolbar_position
+      precision
+      show_console_on_error
+      show_label
+      show_result_dialog
+      sig_autodownsampling
+      sig_autodownsampling_maxpoints
+      sig_autoscale_margin_percent
+      sig_def_baseline
+      sig_def_curvestyle
+      sig_def_shade
+      sig_format
+      sig_linewidth
+      sig_linewidth_perfs_threshold
+      splash_image_path
+      splash_show_progress
+      traceback_log_available
+      traceback_log_path
+      use_image_dims
+      use_signal_bounds
+      verbose
+      watermark_image_path
+      window_maximized
+      window_position
+      window_size
+      window_state
+      xarray_compat_behavior
+
+
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 161-172
