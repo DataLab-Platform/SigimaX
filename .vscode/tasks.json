@@ -650,5 +650,81 @@
                 "clear": true,
             },
         },
+        {
+            "label": "🔄 Switch to PyQt5",
+            "type": "shell",
+            "command": "${command:python.interpreterPath} scripts/run_with_env.py python -m pip uninstall -y PyQt5 PyQt5-sip PyQt5-Qt5 PyQt6 PyQt6-sip PyQt6-Qt6 PySide6 shiboken6; ${command:python.interpreterPath} scripts/run_with_env.py python -m pip install --quiet PyQt5>=5.15.6; ${command:python.interpreterPath} scripts/run_with_env.py python -c 'import qtpy; print(qtpy.API_NAME, qtpy.QT_VERSION)'",
+            "options": {
+                "cwd": "${workspaceFolder}",
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": false,
+            },
+            "presentation": {
+                "clear": true,
+                "echo": true,
+                "focus": false,
+                "panel": "dedicated",
+                "reveal": "always",
+            },
+        },
+        {
+            "label": "🔄 Switch to PyQt6",
+            "type": "shell",
+            "command": "${command:python.interpreterPath} scripts/run_with_env.py python -m pip uninstall -y PyQt5 PyQt5-sip PyQt5-Qt5 PyQt6 PyQt6-sip PyQt6-Qt6 PySide6 shiboken6; ${command:python.interpreterPath} scripts/run_with_env.py python -m pip install --quiet PyQt6; ${command:python.interpreterPath} scripts/run_with_env.py python -c 'import qtpy; print(qtpy.API_NAME, qtpy.QT_VERSION)'",
+            "options": {
+                "cwd": "${workspaceFolder}",
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": false,
+            },
+            "presentation": {
+                "clear": true,
+                "echo": true,
+                "focus": false,
+                "panel": "dedicated",
+                "reveal": "always",
+            },
+        },
+        {
+            "label": "🔄 Switch to PySide6",
+            "type": "shell",
+            "command": "${command:python.interpreterPath} scripts/run_with_env.py python -m pip uninstall -y PyQt5 PyQt5-sip PyQt5-Qt5 PyQt6 PyQt6-sip PyQt6-Qt6 PySide6 shiboken6; ${command:python.interpreterPath} scripts/run_with_env.py python -m pip install --quiet PySide6; ${command:python.interpreterPath} scripts/run_with_env.py python -c 'import qtpy; print(qtpy.API_NAME, qtpy.QT_VERSION)'",
+            "options": {
+                "cwd": "${workspaceFolder}",
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": false,
+            },
+            "presentation": {
+                "clear": true,
+                "echo": true,
+                "focus": false,
+                "panel": "dedicated",
+                "reveal": "always",
+            },
+        },
+        {
+            "label": "🔄🗑️ Uninstall Qt bindings",
+            "type": "shell",
+            "command": "${command:python.interpreterPath} scripts/run_with_env.py python -m pip uninstall -y PyQt5 PyQt5-sip PyQt5-Qt5 PyQt6 PyQt6-sip PyQt6-Qt6 PySide6 shiboken6",
+            "options": {
+                "cwd": "${workspaceFolder}",
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": false,
+            },
+            "presentation": {
+                "clear": true,
+                "echo": true,
+                "focus": false,
+                "panel": "dedicated",
+                "reveal": "always",
+            },
+        },
     ],
 }
