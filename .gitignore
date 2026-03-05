@@ -19,6 +19,8 @@ doc/contributing/changelog.md
 # Visual Studio Code
 .venv
 .env
+.venv*
+.*venv*
 
 #AI instructions
 *.ai
