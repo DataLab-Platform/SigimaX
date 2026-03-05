@@ -63,7 +63,11 @@ def _get_venv_python(venv_dir: Path) -> str | None:
     ]
     for candidate in candidates:
         if candidate.is_file():
-            return str(candidate.resolve())
+            # Keep the venv-local executable path without resolving symlinks:
+            # on Linux/WSL, ``bin/python`` is often a symlink to a global
+            # interpreter (e.g. /usr/bin/python3.x). Resolving it would lose
+            # venv context and site-packages selection.
+            return str(candidate.absolute())
     return None
 
 
@@ -88,7 +92,9 @@ def resolve_python(project_root: Path) -> str:
     if python_env:
         python_path = Path(python_env)
         if python_path.is_file():
-            resolved = str(python_path.resolve())
+            # Do not resolve symlinks for the same reason as in
+            # ``_get_venv_python``.
+            resolved = str(python_path.absolute())
             print(f"  🐍 Using PYTHON from .env: {resolved}")
             return resolved
         print(f"  ⚠️  PYTHON variable set but not found: {python_env}")
