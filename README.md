@@ -166,6 +166,16 @@ pip install -e .
 
 SigimaX comes with a comprehensive test suite based on `pytest` (155 tests).
 
+### ✅ Validated Environments
+
+The test suite has been checked with the following matrix:
+
+- **Python**: 3.9, 3.10, 3.11, 3.12, 3.13, 3.14
+- **Operating systems**: Windows, Linux
+- **Qt bindings**: PyQt5, PyQt6, PySide6 (future fix needed)
+
+> ⚠️ Note: PySide6 is currently known to be not fully working in this matrix.
+
 ```bash
 # Run all tests (offscreen, no GUI)
 python scripts/run_with_env.py python -m pytest
