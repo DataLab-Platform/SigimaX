@@ -39,14 +39,31 @@ def _find_venv_python(project_root: Path) -> str | None:
         venv_path = Path(venv_dir)
         if not venv_path.is_dir():
             continue
-        # Windows: Scripts/python.exe — Unix: bin/python
-        candidates = [
-            venv_path / "Scripts" / "python.exe",
-            venv_path / "bin" / "python",
-        ]
-        for candidate in candidates:
-            if candidate.is_file():
-                return str(candidate.resolve())
+        result = _get_venv_python(venv_path)
+        if result:
+            return result
+    return None
+
+
+def _get_venv_python(venv_dir: Path) -> str | None:
+    """Get the Python executable from a specific venv directory.
+
+    Args:
+        venv_dir: Path to the virtual environment directory.
+
+    Returns:
+        Absolute path to the Python executable, or None if not found.
+    """
+    if not venv_dir.is_dir():
+        return None
+    # Windows: Scripts/python.exe — Unix: bin/python
+    candidates = [
+        venv_dir / "Scripts" / "python.exe",
+        venv_dir / "bin" / "python",
+    ]
+    for candidate in candidates:
+        if candidate.is_file():
+            return str(candidate.resolve())
     return None
 
 
@@ -56,8 +73,9 @@ def resolve_python(project_root: Path) -> str:
     Priority order:
 
     1. ``PYTHON`` environment variable (set in ``.env`` or externally)
-    2. ``.venv*`` directory in *project_root*
-    3. ``sys.executable`` (the interpreter running this script)
+    2. ``VENV_DIR`` environment variable (explicit venv directory)
+    3. ``.venv*`` directory in *project_root* (auto-discovery)
+    4. ``sys.executable`` (the interpreter running this script)
 
     Args:
         project_root: The root directory of the project.
@@ -75,13 +93,25 @@ def resolve_python(project_root: Path) -> str:
             return resolved
         print(f"  ⚠️  PYTHON variable set but not found: {python_env}")
 
-    # 2. Local venv
+    # 2. Explicit VENV_DIR variable (e.g. for multiple local venvs)
+    venv_dir_env = os.environ.get("VENV_DIR")
+    if venv_dir_env:
+        venv_dir = Path(venv_dir_env)
+        if not venv_dir.is_absolute():
+            venv_dir = project_root / venv_dir
+        venv_python = _get_venv_python(venv_dir)
+        if venv_python:
+            print(f"  🐍 Using VENV_DIR from .env: {venv_python}")
+            return venv_python
+        print(f"  ⚠️  VENV_DIR set but no Python found in: {venv_dir}")
+
+    # 3. Auto-discover local venv
     venv_python = _find_venv_python(project_root)
     if venv_python:
         print(f"  🐍 Using venv Python: {venv_python}")
         return venv_python
 
-    # 3. Fallback
+    # 4. Fallback
     print(f"  🐍 Using caller Python: {sys.executable}")
     return sys.executable
 
