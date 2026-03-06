@@ -3,7 +3,7 @@
 
 # Inspired from https://pytest-qt.readthedocs.io/en/latest/troubleshooting.html#github-actions
 
-name: Install and Test on Ubuntu (latest)
+name: Install and Test on Ubuntu (latest) with PyQt6
 
 on:
   push:
@@ -36,7 +36,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.13"]
+        python-version: ["3.9", "3.13", "3.14"]
 
     steps:
     - uses: actions/checkout@v4
@@ -46,34 +46,51 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
-        sudo apt install libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0 x11-utils
+        sudo apt-get update
+        sudo apt-get install -y libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0 x11-utils libegl1
         /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1920x1200x24 -ac +extension GLX
         python -m pip install --upgrade pip
         python -m pip install ruff pytest
+        pip install PyQt6
         if [ "${{ github.ref_name }}" = "develop" ]; then
-           pip uninstall -y guidata
+           # Clone and install development versions of key dependencies with editable install
            cd ..
+           git clone --depth 1 https://github.com/PlotPyStack/PythonQwt.git
            git clone --depth 1 --branch develop https://github.com/PlotPyStack/guidata.git
+           git clone --depth 1 --branch develop https://github.com/PlotPyStack/plotpy.git
+           git clone --depth 1 --branch develop https://github.com/DataLab-Platform/sigima.git
            cd SigimaX
            pip install -e ../guidata
+           pip install -e ../PythonQwt
+           pip install -e ../plotpy
+           pip install -e ../sigima
            # Install tomli for TOML parsing (safe if already present)
            pip install tomli
            # Extract dependencies and save to file, then install
-           python -c "import tomli; f=open('pyproject.toml','rb'); data=tomli.load(f); deps=[d for d in data['project']['dependencies'] if not any(p in d for p in ['guidata'])]; open('deps.txt','w').write('\n'.join(deps))"
+           python -c "import tomli; f=open('pyproject.toml','rb'); data=tomli.load(f); deps=[d for d in data['project']['dependencies'] if not any(p in d for p in ['guidata','PlotPy','Sigima'])]; open('deps.txt','w').write('\n'.join(deps))"
            pip install -r deps.txt
            # Install SigimaX without dependencies
            pip install --no-deps .
         elif [ "${{ github.ref_name }}" = "release" ]; then
-           pip uninstall -y guidata
+           # Clone dependencies from release branches (with fallback to main/master)
            cd ..
+           # Try cloning PythonQwt from main or master
+           git clone --depth 1 https://github.com/PlotPyStack/PythonQwt.git || git clone --depth 1 --branch master https://github.com/PlotPyStack/PythonQwt.git
            # Try cloning guidata from release, fallback to main or master
            git clone --depth 1 --branch release https://github.com/PlotPyStack/guidata.git || git clone --depth 1 https://github.com/PlotPyStack/guidata.git || git clone --depth 1 --branch master https://github.com/PlotPyStack/guidata.git
+           # Try cloning plotpy from release, fallback to main or master
+           git clone --depth 1 --branch release https://github.com/PlotPyStack/plotpy.git || git clone --depth 1 https://github.com/PlotPyStack/plotpy.git || git clone --depth 1 --branch master https://github.com/PlotPyStack/plotpy.git
+           # Try cloning sigima from release, fallback to main
+           git clone --depth 1 --branch release https://github.com/DataLab-Platform/sigima.git || git clone --depth 1 https://github.com/DataLab-Platform/sigima.git
            cd SigimaX
            pip install -e ../guidata
+           pip install -e ../PythonQwt
+           pip install -e ../plotpy
+           pip install -e ../sigima
            # Install tomli for TOML parsing (safe if already present)
            pip install tomli
            # Extract dependencies and save to file, then install
-           python -c "import tomli; f=open('pyproject.toml','rb'); data=tomli.load(f); deps=[d for d in data['project']['dependencies'] if not any(p in d for p in ['guidata'])]; open('deps.txt','w').write('\n'.join(deps))"
+           python -c "import tomli; f=open('pyproject.toml','rb'); data=tomli.load(f); deps=[d for d in data['project']['dependencies'] if not any(p in d for p in ['guidata','PlotPy','Sigima'])]; open('deps.txt','w').write('\n'.join(deps))"
            pip install -r deps.txt
            # Install SigimaX without dependencies
            pip install --no-deps .
@@ -95,7 +112,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Set up Python 3.13
+    - name: Set up Python 3.14
       uses: actions/setup-python@v5
       with:
         python-version: "3.13"
@@ -106,7 +123,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y \
           libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 \
-          libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0 x11-utils
+          libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0 x11-utils libegl1
 
         /sbin/start-stop-daemon --start --quiet \
           --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background \
@@ -114,12 +131,21 @@ jobs:
 
         python -m pip install --upgrade pip
         python -m pip install ruff pytest
+        python -m pip install PyQt6
+
+        # Clone and install Sigima from the same branch as SigimaX
+        cd ..
+        git clone --depth 1 --branch ${{ github.ref_name }} https://github.com/DataLab-Platform/sigima.git || git clone --depth 1 https://github.com/DataLab-Platform/sigima.git
+        cd SigimaX
 
         # Install SigimaX itself, but do NOT install its pinned deps
         python -m pip install -e . --no-deps
 
-        # Extract dependency names from pyproject.toml and install latest versions
-        python -m pip install -U --upgrade-strategy eager $(python -c "import tomllib, re; print(' '.join(re.sub(r'[\[\]<>=!~,.\s].*$', '', d).strip() for d in tomllib.loads(open('pyproject.toml', 'rb').read().decode())['project']['dependencies']))")
+        # Install Sigima from local clone
+        python -m pip install -e ../sigima
+
+        # Extract dependency names from pyproject.toml (excluding Sigima) and install latest versions
+        python -m pip install -U --upgrade-strategy eager $(python -c "import tomllib, re; print(' '.join(re.sub(r'[\[\]<>=!~,.\s].*$', '', d).strip() for d in tomllib.loads(open('pyproject.toml', 'rb').read().decode())['project']['dependencies'] if 'Sigima' not in d))")
 
     - name: Lint with Ruff (latest)
       run: ruff check --output-format=github sigimax

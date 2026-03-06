@@ -726,5 +726,81 @@
                 "reveal": "always",
             },
         },
+        {
+            "label": "🧪 GitHub Actions local: list jobs (act)",
+            "type": "shell",
+            "command": "act",
+            "args": [
+                "-l",
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}",
+            },
+            "group": {
+                "kind": "test",
+                "isDefault": false,
+            },
+            "presentation": {
+                "clear": true,
+                "echo": true,
+                "focus": false,
+                "panel": "dedicated",
+                "reveal": "always",
+            },
+        },
+        {
+            "label": "🧪 GitHub Actions local: test_pyqt5.yml (pull_request)",
+            "type": "shell",
+            "command": "act",
+            "args": [
+                "pull_request",
+                "-W",
+                ".github/workflows/test_pyqt5.yml",
+                "-P",
+                "ubuntu-latest=ghcr.io/catthehacker/ubuntu:full-latest",
+                "-v",
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}",
+            },
+            "group": {
+                "kind": "test",
+                "isDefault": false,
+            },
+            "presentation": {
+                "clear": true,
+                "echo": true,
+                "focus": false,
+                "panel": "dedicated",
+                "reveal": "always",
+            },
+        },
+        {
+            "label": "🧪 GitHub Actions local: test_pyqt6.yml (pull_request)",
+            "type": "shell",
+            "command": "act",
+            "args": [
+                "pull_request",
+                "-W",
+                ".github/workflows/test_pyqt6.yml",
+                "-P",
+                "ubuntu-latest=ghcr.io/catthehacker/ubuntu:full-latest",
+                "-v",
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}",
+            },
+            "group": {
+                "kind": "test",
+                "isDefault": false,
+            },
+            "presentation": {
+                "clear": true,
+                "echo": true,
+                "focus": false,
+                "panel": "dedicated",
+                "reveal": "always",
+            },
+        },
     ],
 }
