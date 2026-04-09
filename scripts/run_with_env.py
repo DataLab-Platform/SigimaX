@@ -5,8 +5,10 @@
 This script automatically detects the best Python interpreter to use:
 
 1. ``PYTHON`` variable in ``.env`` file (e.g. for WinPython distributions)
-2. A local virtual environment (``.venv*`` directory in the project root)
-3. Falls back to ``sys.executable`` (the Python that launched this script)
+2. ``WINPYDIRBASE`` variable (legacy WinPython base directory)
+3. ``VENV_DIR`` variable (explicit virtual environment directory)
+4. A local virtual environment (``.venv*`` directory in the project root)
+5. Falls back to ``sys.executable`` (the Python that launched this script)
 
 This ensures that VS Code tasks always use the correct Python environment
 regardless of which interpreter is configured globally or in VS Code.
@@ -77,9 +79,10 @@ def resolve_python(project_root: Path) -> str:
     Priority order:
 
     1. ``PYTHON`` environment variable (set in ``.env`` or externally)
-    2. ``VENV_DIR`` environment variable (explicit venv directory)
-    3. ``.venv*`` directory in *project_root* (auto-discovery)
-    4. ``sys.executable`` (the interpreter running this script)
+    2. ``WINPYDIRBASE`` environment variable (legacy WinPython base directory)
+    3. ``VENV_DIR`` environment variable (explicit venv directory)
+    4. ``.venv*`` directory in *project_root* (auto-discovery)
+    5. ``sys.executable`` (the interpreter running this script)
 
     Args:
         project_root: The root directory of the project.
@@ -99,7 +102,25 @@ def resolve_python(project_root: Path) -> str:
             return resolved
         print(f"  ⚠️  PYTHON variable set but not found: {python_env}")
 
-    # 2. Explicit VENV_DIR variable (e.g. for multiple local venvs)
+    # 2. Legacy WINPYDIRBASE variable (WinPython distribution)
+    winpy_base = os.environ.get("WINPYDIRBASE")
+    if winpy_base and Path(winpy_base).is_dir():
+        # Search for python.exe in the WinPython directory structure
+        # (e.g. WINPYDIRBASE/python-3.11.5.amd64/python.exe)
+        for candidate in sorted(Path(winpy_base).glob("python-*/python.exe")):
+            if candidate.is_file():
+                resolved = str(candidate.absolute())
+                print(f"  🐍 Using WINPYDIRBASE (legacy): {resolved}")
+                return resolved
+        # Also try direct python.exe in the base directory
+        direct = Path(winpy_base) / "python.exe"
+        if direct.is_file():
+            resolved = str(direct.absolute())
+            print(f"  🐍 Using WINPYDIRBASE (legacy): {resolved}")
+            return resolved
+        print(f"  ⚠️  WINPYDIRBASE set but no Python found in: {winpy_base}")
+
+    # 3. Explicit VENV_DIR variable (e.g. for multiple local venvs)
     venv_dir_env = os.environ.get("VENV_DIR")
     if venv_dir_env:
         venv_dir = Path(venv_dir_env)
@@ -111,13 +132,13 @@ def resolve_python(project_root: Path) -> str:
             return venv_python
         print(f"  ⚠️  VENV_DIR set but no Python found in: {venv_dir}")
 
-    # 3. Auto-discover local venv
+    # 4. Auto-discover local venv
     venv_python = _find_venv_python(project_root)
     if venv_python:
         print(f"  🐍 Using venv Python: {venv_python}")
         return venv_python
 
-    # 4. Fallback
+    # 5. Fallback
     print(f"  🐍 Using caller Python: {sys.executable}")
     return sys.executable
 
