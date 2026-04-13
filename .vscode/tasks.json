@@ -8,7 +8,7 @@
             "command": "${command:python.interpreterPath}",
             "args": [
                 "scripts/run_with_env.py",
-                "python",
+                "${command:python.interpreterPath}",
                 "-m",
                 "ruff",
                 "format",
@@ -38,7 +38,7 @@
             "command": "${command:python.interpreterPath}",
             "args": [
                 "scripts/run_with_env.py",
-                "python",
+                "${command:python.interpreterPath}",
                 "-m",
                 "ruff",
                 "check",
@@ -90,7 +90,7 @@
             "command": "${command:python.interpreterPath}",
             "args": [
                 "scripts/run_with_env.py",
-                "python",
+                "${command:python.interpreterPath}",
                 "-m",
                 "pylint",
                 "sigimax",
@@ -126,7 +126,7 @@
             "command": "${command:python.interpreterPath}",
             "args": [
                 "scripts/run_with_env.py",
-                "python",
+                "${command:python.interpreterPath}",
                 "-m",
                 "pytest",
                 "--ff",
@@ -159,7 +159,7 @@
             "command": "${command:python.interpreterPath}",
             "args": [
                 "scripts/run_with_env.py",
-                "python",
+                "${command:python.interpreterPath}",
                 "-m",
                 "sphinx",
                 "build",
@@ -194,7 +194,7 @@
             "command": "${command:python.interpreterPath}",
             "args": [
                 "scripts/run_with_env.py",
-                "python",
+                "${command:python.interpreterPath}",
                 "-m",
                 "sphinx_intl",
                 "update",
@@ -237,7 +237,7 @@
             "command": "${command:python.interpreterPath}",
             "args": [
                 "scripts/run_with_env.py",
-                "python",
+                "${command:python.interpreterPath}",
                 "-m",
                 "guidata.utils.translations",
                 "cleanup-doc",
@@ -273,10 +273,12 @@
             "command": "${command:python.interpreterPath}",
             "args": [
                 "scripts/run_with_env.py",
-                "python",
+                "${command:python.interpreterPath}",
                 "-m",
                 "sphinx_intl",
                 "build",
+                "-d",
+                "doc/locale",
             ],
             "options": {
                 "cwd": "${workspaceFolder}",
@@ -303,7 +305,7 @@
             "command": "${command:python.interpreterPath}",
             "args": [
                 "scripts/run_with_env.py",
-                "python",
+                "${command:python.interpreterPath}",
                 "-m",
                 "guidata.utils.translations",
                 "scan",
@@ -342,7 +344,7 @@
             "command": "${command:python.interpreterPath}",
             "args": [
                 "scripts/run_with_env.py",
-                "python",
+                "${command:python.interpreterPath}",
                 "-m",
                 "guidata.utils.translations",
                 "compile",
@@ -377,7 +379,7 @@
             "command": "${command:python.interpreterPath}",
             "args": [
                 "scripts/run_with_env.py",
-                "python",
+                "${command:python.interpreterPath}",
                 "-m",
                 "guidata.utils.genreqs",
                 "all",
@@ -408,7 +410,7 @@
             "command": "${command:python.interpreterPath}",
             "args": [
                 "scripts/run_with_env.py",
-                "python",
+                "${command:python.interpreterPath}",
                 "-m",
                 "coverage",
                 "run",
@@ -438,13 +440,13 @@
             "label": "📊 Coverage full",
             "type": "shell",
             "windows": {
-                "command": "${command:python.interpreterPath} scripts/run_with_env.py python -m coverage combine; ${command:python.interpreterPath} scripts/run_with_env.py python -m coverage html; start htmlcov\\index.html",
+                "command": "${command:python.interpreterPath} -m coverage combine; if ($?) { ${command:python.interpreterPath} -m coverage html; if ($?) { start htmlcov\\index.html } }",
             },
             "linux": {
-                "command": "${command:python.interpreterPath} scripts/run_with_env.py python -m coverage combine && ${command:python.interpreterPath} scripts/run_with_env.py python -m coverage html && xdg-open htmlcov/index.html",
+                "command": "${command:python.interpreterPath} -m coverage combine && ${command:python.interpreterPath} -m coverage html && xdg-open htmlcov/index.html",
             },
             "osx": {
-                "command": "${command:python.interpreterPath} scripts/run_with_env.py python -m coverage combine && ${command:python.interpreterPath} scripts/run_with_env.py python -m coverage html && open htmlcov/index.html",
+                "command": "${command:python.interpreterPath} -m coverage combine && ${command:python.interpreterPath} -m coverage html && open htmlcov/index.html",
             },
             "options": {
                 "cwd": "${workspaceFolder}",
@@ -466,7 +468,7 @@
             "command": "${command:python.interpreterPath}",
             "args": [
                 "scripts/run_with_env.py",
-                "python",
+                "${command:python.interpreterPath}",
                 "-m",
                 "pip",
                 "install",
@@ -497,17 +499,14 @@
             "type": "shell",
         },
         {
-            "label": "🔁 Reinstall guidata/plotpy dev",
+            "label": "🔁 Reinstall guidata/plotpy/sigima dev",
             "type": "shell",
-            "windows": {
-                "command": ".venv/scripts/pip uninstall -y guidata plotpy; Remove-Item -Recurse -Force .venv/Lib/site-packages/guidata -ErrorAction SilentlyContinue; Remove-Item -Recurse -Force .venv/Lib/site-packages/plotpy -ErrorAction SilentlyContinue; .venv/scripts/pip install -e ../guidata; .venv/scripts/pip install -e ../plotpy",
-            },
-            "linux": {
-                "command": ".venv/bin/pip uninstall -y guidata plotpy && rm -rf .venv/lib/python*/site-packages/guidata && rm -rf .venv/lib/python*/site-packages/plotpy && .venv/bin/pip install -e ../guidata && .venv/bin/pip install -e ../plotpy",
-            },
-            "osx": {
-                "command": ".venv/bin/pip uninstall -y guidata plotpy && rm -rf .venv/lib/python*/site-packages/guidata && rm -rf .venv/lib/python*/site-packages/plotpy && .venv/bin/pip install -e ../guidata && .venv/bin/pip install -e ../plotpy",
-            },
+            "command": "${config:python.defaultInterpreterPath}",
+            "args": [
+                "scripts/run_with_env.py",
+                "${config:python.defaultInterpreterPath}",
+                "${workspaceFolder}/scripts/reinstall_dev.py",
+            ],
             "options": {
                 "cwd": "${workspaceFolder}",
                 "statusbar": {
@@ -526,7 +525,7 @@
             "command": "${command:python.interpreterPath}",
             "args": [
                 "scripts/run_with_env.py",
-                "python",
+                "${command:python.interpreterPath}",
                 "-m",
                 "guidata.utils.cleanup"
             ],
@@ -551,7 +550,7 @@
             "command": "${command:python.interpreterPath}",
             "args": [
                 "scripts/run_with_env.py",
-                "python",
+                "${command:python.interpreterPath}",
                 "-m",
                 "sphinx",
                 "build",
@@ -607,7 +606,7 @@
             "command": "${command:python.interpreterPath}",
             "args": [
                 "scripts/run_with_env.py",
-                "python",
+                "${command:python.interpreterPath}",
                 "-m",
                 "guidata.utils.securebuild",
                 "--prebuild",
@@ -653,7 +652,7 @@
         {
             "label": "🔄 Switch to PyQt5",
             "type": "shell",
-            "command": "${command:python.interpreterPath} scripts/run_with_env.py python -m pip uninstall -y PyQt5 PyQt5-sip PyQt5-Qt5 PyQt6 PyQt6-sip PyQt6-Qt6 PySide6 shiboken6; ${command:python.interpreterPath} scripts/run_with_env.py python -m pip install --quiet PyQt5>=5.15.6; ${command:python.interpreterPath} scripts/run_with_env.py python -c 'import qtpy; print(qtpy.API_NAME, qtpy.QT_VERSION)'",
+            "command": "${command:python.interpreterPath} scripts/run_with_env.py ${command:python.interpreterPath} -m pip uninstall -y PyQt5 PyQt5-sip PyQt5-Qt5 PyQt6 PyQt6-sip PyQt6-Qt6 PySide6 shiboken6; ${command:python.interpreterPath} scripts/run_with_env.py ${command:python.interpreterPath} -m pip install --quiet PyQt5>=5.15.6; ${command:python.interpreterPath} scripts/run_with_env.py ${command:python.interpreterPath} -c 'import qtpy; print(qtpy.API_NAME, qtpy.QT_VERSION)'",
             "options": {
                 "cwd": "${workspaceFolder}",
             },
@@ -672,7 +671,7 @@
         {
             "label": "🔄 Switch to PyQt6",
             "type": "shell",
-            "command": "${command:python.interpreterPath} scripts/run_with_env.py python -m pip uninstall -y PyQt5 PyQt5-sip PyQt5-Qt5 PyQt6 PyQt6-sip PyQt6-Qt6 PySide6 shiboken6; ${command:python.interpreterPath} scripts/run_with_env.py python -m pip install --quiet PyQt6; ${command:python.interpreterPath} scripts/run_with_env.py python -c 'import qtpy; print(qtpy.API_NAME, qtpy.QT_VERSION)'",
+            "command": "${command:python.interpreterPath} scripts/run_with_env.py ${command:python.interpreterPath} -m pip uninstall -y PyQt5 PyQt5-sip PyQt5-Qt5 PyQt6 PyQt6-sip PyQt6-Qt6 PySide6 shiboken6; ${command:python.interpreterPath} scripts/run_with_env.py ${command:python.interpreterPath} -m pip install --quiet PyQt6; ${command:python.interpreterPath} scripts/run_with_env.py ${command:python.interpreterPath} -c 'import qtpy; print(qtpy.API_NAME, qtpy.QT_VERSION)'",
             "options": {
                 "cwd": "${workspaceFolder}",
             },
@@ -691,7 +690,7 @@
         {
             "label": "🔄 Switch to PySide6",
             "type": "shell",
-            "command": "${command:python.interpreterPath} scripts/run_with_env.py python -m pip uninstall -y PyQt5 PyQt5-sip PyQt5-Qt5 PyQt6 PyQt6-sip PyQt6-Qt6 PySide6 shiboken6; ${command:python.interpreterPath} scripts/run_with_env.py python -m pip install --quiet PySide6; ${command:python.interpreterPath} scripts/run_with_env.py python -c 'import qtpy; print(qtpy.API_NAME, qtpy.QT_VERSION)'",
+            "command": "${command:python.interpreterPath} scripts/run_with_env.py ${command:python.interpreterPath} -m pip uninstall -y PyQt5 PyQt5-sip PyQt5-Qt5 PyQt6 PyQt6-sip PyQt6-Qt6 PySide6 shiboken6; ${command:python.interpreterPath} scripts/run_with_env.py ${command:python.interpreterPath} -m pip install --quiet PySide6; ${command:python.interpreterPath} scripts/run_with_env.py ${command:python.interpreterPath} -c 'import qtpy; print(qtpy.API_NAME, qtpy.QT_VERSION)'",
             "options": {
                 "cwd": "${workspaceFolder}",
             },
