@@ -277,6 +277,8 @@
                 "-m",
                 "sphinx_intl",
                 "build",
+                "-d",
+                "doc/locale",
             ],
             "options": {
                 "cwd": "${workspaceFolder}",
@@ -438,13 +440,13 @@
             "label": "📊 Coverage full",
             "type": "shell",
             "windows": {
-                "command": "${command:python.interpreterPath} -m coverage combine; ${command:python.interpreterPath} -m coverage html; start htmlcov\\index.html",
+                "command": "${command:python.interpreterPath} scripts/run_with_env.py ${command:python.interpreterPath} -m coverage combine; if ($?) { ${command:python.interpreterPath} scripts/run_with_env.py ${command:python.interpreterPath} -m coverage html; if ($?) { start htmlcov\\index.html } }",
             },
             "linux": {
-                "command": "${command:python.interpreterPath} -m coverage combine && ${command:python.interpreterPath} -m coverage html && xdg-open htmlcov/index.html",
+                "command": "${command:python.interpreterPath} scripts/run_with_env.py ${command:python.interpreterPath} -m coverage combine && ${command:python.interpreterPath} scripts/run_with_env.py ${command:python.interpreterPath} -m coverage html && xdg-open htmlcov/index.html",
             },
             "osx": {
-                "command": "${command:python.interpreterPath} -m coverage combine && ${command:python.interpreterPath} -m coverage html && open htmlcov/index.html",
+                "command": "${command:python.interpreterPath} scripts/run_with_env.py ${command:python.interpreterPath} -m coverage combine && ${command:python.interpreterPath} scripts/run_with_env.py ${command:python.interpreterPath} -m coverage html && open htmlcov/index.html",
             },
             "options": {
                 "cwd": "${workspaceFolder}",
@@ -497,17 +499,14 @@
             "type": "shell",
         },
         {
-            "label": "🔁 Reinstall guidata/plotpy dev",
+            "label": "🔁 Reinstall guidata/plotpy/sigima dev",
             "type": "shell",
-            "windows": {
-                "command": ".venv/scripts/pip uninstall -y guidata plotpy; Remove-Item -Recurse -Force .venv/Lib/site-packages/guidata -ErrorAction SilentlyContinue; Remove-Item -Recurse -Force .venv/Lib/site-packages/plotpy -ErrorAction SilentlyContinue; .venv/scripts/pip install -e ../guidata; .venv/scripts/pip install -e ../plotpy",
-            },
-            "linux": {
-                "command": ".venv/bin/pip uninstall -y guidata plotpy && rm -rf .venv/lib/python*/site-packages/guidata && rm -rf .venv/lib/python*/site-packages/plotpy && .venv/bin/pip install -e ../guidata && .venv/bin/pip install -e ../plotpy",
-            },
-            "osx": {
-                "command": ".venv/bin/pip uninstall -y guidata plotpy && rm -rf .venv/lib/python*/site-packages/guidata && rm -rf .venv/lib/python*/site-packages/plotpy && .venv/bin/pip install -e ../guidata && .venv/bin/pip install -e ../plotpy",
-            },
+            "command": "${config:python.defaultInterpreterPath}",
+            "args": [
+                "scripts/run_with_env.py",
+                "${config:python.defaultInterpreterPath}",
+                "${workspaceFolder}/scripts/reinstall_dev.py",
+            ],
             "options": {
                 "cwd": "${workspaceFolder}",
                 "statusbar": {
@@ -648,6 +647,158 @@
                 "panel": "dedicated",
                 "showReuseMessage": true,
                 "clear": true,
+            },
+        },
+        {
+            "label": "🔄 Switch to PyQt5",
+            "type": "shell",
+            "command": "${command:python.interpreterPath} scripts/run_with_env.py ${command:python.interpreterPath} -m pip uninstall -y PyQt5 PyQt5-sip PyQt5-Qt5 PyQt6 PyQt6-sip PyQt6-Qt6 PySide6 shiboken6; ${command:python.interpreterPath} scripts/run_with_env.py ${command:python.interpreterPath} -m pip install --quiet PyQt5>=5.15.6; ${command:python.interpreterPath} scripts/run_with_env.py ${command:python.interpreterPath} -c 'import qtpy; print(qtpy.API_NAME, qtpy.QT_VERSION)'",
+            "options": {
+                "cwd": "${workspaceFolder}",
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": false,
+            },
+            "presentation": {
+                "clear": true,
+                "echo": true,
+                "focus": false,
+                "panel": "dedicated",
+                "reveal": "always",
+            },
+        },
+        {
+            "label": "🔄 Switch to PyQt6",
+            "type": "shell",
+            "command": "${command:python.interpreterPath} scripts/run_with_env.py ${command:python.interpreterPath} -m pip uninstall -y PyQt5 PyQt5-sip PyQt5-Qt5 PyQt6 PyQt6-sip PyQt6-Qt6 PySide6 shiboken6; ${command:python.interpreterPath} scripts/run_with_env.py ${command:python.interpreterPath} -m pip install --quiet PyQt6; ${command:python.interpreterPath} scripts/run_with_env.py ${command:python.interpreterPath} -c 'import qtpy; print(qtpy.API_NAME, qtpy.QT_VERSION)'",
+            "options": {
+                "cwd": "${workspaceFolder}",
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": false,
+            },
+            "presentation": {
+                "clear": true,
+                "echo": true,
+                "focus": false,
+                "panel": "dedicated",
+                "reveal": "always",
+            },
+        },
+        {
+            "label": "🔄 Switch to PySide6",
+            "type": "shell",
+            "command": "${command:python.interpreterPath} scripts/run_with_env.py ${command:python.interpreterPath} -m pip uninstall -y PyQt5 PyQt5-sip PyQt5-Qt5 PyQt6 PyQt6-sip PyQt6-Qt6 PySide6 shiboken6; ${command:python.interpreterPath} scripts/run_with_env.py ${command:python.interpreterPath} -m pip install --quiet PySide6; ${command:python.interpreterPath} scripts/run_with_env.py ${command:python.interpreterPath} -c 'import qtpy; print(qtpy.API_NAME, qtpy.QT_VERSION)'",
+            "options": {
+                "cwd": "${workspaceFolder}",
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": false,
+            },
+            "presentation": {
+                "clear": true,
+                "echo": true,
+                "focus": false,
+                "panel": "dedicated",
+                "reveal": "always",
+            },
+        },
+        {
+            "label": "🔄🗑️ Uninstall Qt bindings",
+            "type": "shell",
+            "command": "${command:python.interpreterPath} scripts/run_with_env.py python -m pip uninstall -y PyQt5 PyQt5-sip PyQt5-Qt5 PyQt6 PyQt6-sip PyQt6-Qt6 PySide6 shiboken6",
+            "options": {
+                "cwd": "${workspaceFolder}",
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": false,
+            },
+            "presentation": {
+                "clear": true,
+                "echo": true,
+                "focus": false,
+                "panel": "dedicated",
+                "reveal": "always",
+            },
+        },
+        {
+            "label": "🧪 GitHub Actions local: list jobs (act)",
+            "type": "shell",
+            "command": "act",
+            "args": [
+                "-l",
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}",
+            },
+            "group": {
+                "kind": "test",
+                "isDefault": false,
+            },
+            "presentation": {
+                "clear": true,
+                "echo": true,
+                "focus": false,
+                "panel": "dedicated",
+                "reveal": "always",
+            },
+        },
+        {
+            "label": "🧪 GitHub Actions local: test_pyqt5.yml (pull_request)",
+            "type": "shell",
+            "command": "act",
+            "args": [
+                "pull_request",
+                "-W",
+                ".github/workflows/test_pyqt5.yml",
+                "-P",
+                "ubuntu-latest=ghcr.io/catthehacker/ubuntu:full-latest",
+                "-v",
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}",
+            },
+            "group": {
+                "kind": "test",
+                "isDefault": false,
+            },
+            "presentation": {
+                "clear": true,
+                "echo": true,
+                "focus": false,
+                "panel": "dedicated",
+                "reveal": "always",
+            },
+        },
+        {
+            "label": "🧪 GitHub Actions local: test_pyqt6.yml (pull_request)",
+            "type": "shell",
+            "command": "act",
+            "args": [
+                "pull_request",
+                "-W",
+                ".github/workflows/test_pyqt6.yml",
+                "-P",
+                "ubuntu-latest=ghcr.io/catthehacker/ubuntu:full-latest",
+                "-v",
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}",
+            },
+            "group": {
+                "kind": "test",
+                "isDefault": false,
+            },
+            "presentation": {
+                "clear": true,
+                "echo": true,
+                "focus": false,
+                "panel": "dedicated",
+                "reveal": "always",
             },
         },
     ],

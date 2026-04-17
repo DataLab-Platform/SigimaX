@@ -1,0 +1,81 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2025, DataLab Platform Developers
+# This file is distributed under the same license as the SigimaX package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: SigimaX \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Language: fr\n"
+"Language-Team: fr <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+msgid "Public modules:"
+msgstr "Modules publics :"
+
+msgid "API"
+msgstr "API"
+
+msgid "The public Application Programming Interface (API) of SigimaX provides the building blocks for creating scientific desktop applications."
+msgstr "L'interface de programmation d'application (API) publique de SigimaX fournit les briques de base pour créer des applications de bureau scientifiques."
+
+msgid "Module"
+msgstr "Module"
+
+msgid "Purpose"
+msgstr "Objectif"
+
+msgid ":mod:`sigimax.app`"
+msgstr ""
+
+msgid "Application launcher — ``create()`` and ``run()`` entry points for starting a SigimaX-based application with splash screen support."
+msgstr "Lanceur d'application — points d'entrée ``create()`` et ``run()`` pour démarrer une application basée sur SigimaX avec prise en charge de l'écran de démarrage."
+
+msgid ":mod:`sigimax.config`"
+msgstr ""
+
+msgid "Configuration system — ``SigimaXOptions`` singleton (``CONF``), typed option fields (``EnumOptionField``, ``TupleOptionField``, ``FontOptionField``), and translation function ``_()``."
+msgstr "Système de configuration — singleton ``SigimaXOptions`` (``CONF``), champs d'options typés (``EnumOptionField``, ``TupleOptionField``, ``FontOptionField``), et fonction de traduction ``_()``."
+
+msgid ":mod:`sigimax.env`"
+msgstr ""
+
+msgid "Runtime environment — ``SGMXExecEnv`` singleton (``execenv``) for controlling unattended mode, verbosity, demo mode, and screenshots."
+msgstr "Environnement d'exécution — singleton ``SGMXExecEnv`` (``execenv``) pour contrôler le mode non interactif, la verbosité, le mode démo et les captures d'écran."
+
+msgid ":mod:`sigimax.mainwindow`"
+msgstr ""
+
+msgid "Generic main window — ``SGMXMainWindow`` with customizable menus, toolbars, console, HDF5 workspace, and status bar."
+msgstr "Fenêtre principale générique — ``SGMXMainWindow`` avec menus, barres d'outils, console, espace de travail HDF5 et barre d'état personnalisables."
+
+msgid ":mod:`sigimax.widgets`"
+msgstr ""
+
+msgid "Reusable Qt widgets — scientific dialogs (fitting, peak detection, baseline, cursor, delta-X), HDF5 browser, log viewer, wizard, splash screen, status bar, and dockable plot widgets."
+msgstr "Widgets Qt réutilisables — boîtes de dialogue scientifiques (ajustement, détection de pics, ligne de base, curseur, delta-X), navigateur HDF5, visionneuse de journaux, assistant, écran de démarrage, barre d'état et widgets graphiques ancrables."
+
+msgid ":mod:`sigimax.h5`"
+msgstr ""
+
+msgid "HDF5 I/O — import, read, write, and browse HDF5 files with node factory and data extraction utilities."
+msgstr "E/S HDF5 — import, lecture, écriture et navigation dans les fichiers HDF5 avec utilitaires de fabrique de nœuds et d'extraction de données."
+
+msgid ":mod:`sigimax.adapters_plotpy`"
+msgstr ""
+
+msgid "PlotPy adapters — converters between Sigima objects (``SignalObj``, ``ImageObj``, ROIs) and PlotPy plot/annotation items."
+msgstr "Adaptateurs PlotPy — convertisseurs entre les objets Sigima (``SignalObj``, ``ImageObj``, ROI) et les éléments de tracé/annotation PlotPy."
+
+msgid ":mod:`sigimax.utils`"
+msgstr ""
+
+msgid "Utilities — Qt helpers (log management, signal blocking, progress bars), configuration directory resolution, and callback workers."
+msgstr "Utilitaires — aides Qt (gestion des journaux, blocage de signaux, barres de progression), résolution du répertoire de configuration et workers de rappel."

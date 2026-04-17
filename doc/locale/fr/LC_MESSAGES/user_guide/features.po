@@ -1,0 +1,291 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2025, DataLab Platform Developers
+# This file is distributed under the same license as the SigimaX package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: SigimaX \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Language: fr\n"
+"Language-Team: fr <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+msgid "Features"
+msgstr "Fonctionnalités"
+
+msgid "This page provides an organized catalog of SigimaX's key features."
+msgstr "Cette page fournit un catalogue organisé des principales fonctionnalités de SigimaX."
+
+msgid "Application Framework"
+msgstr "Framework applicatif"
+
+msgid "Feature"
+msgstr "Fonctionnalité"
+
+msgid "Description"
+msgstr "Description"
+
+msgid ":class:`~sigimax.mainwindow.SGMXMainWindow`"
+msgstr ""
+
+msgid "Generic main window with customizable menus, toolbars, console, and dock widgets. Derived apps subclass this to build their own UI."
+msgstr "Fenêtre principale générique avec menus, barres d'outils, console et widgets ancrables personnalisables. Les applications dérivées en héritent pour construire leur propre interface."
+
+msgid ":func:`~sigimax.app.create`"
+msgstr ""
+
+msgid "Instantiate a main window with optional splash screen, console, and size. Returns the window instance for embedding."
+msgstr "Instancie une fenêtre principale avec écran de démarrage, console et taille optionnels. Retourne l'instance de la fenêtre pour l'intégration."
+
+msgid ":func:`~sigimax.app.run`"
+msgstr ""
+
+msgid "Create the window and enter the Qt event loop. The standard entry point for standalone applications."
+msgstr "Crée la fenêtre et entre dans la boucle d'événements Qt. Le point d'entrée standard pour les applications autonomes."
+
+msgid ":class:`~sigimax.widgets.splashscreen.SplashScreenConfig`"
+msgstr ""
+
+msgid "Configurable splash screen with image, app name, version, tagline, and optional progress display."
+msgstr "Écran de démarrage configurable avec image, nom de l'application, version, slogan et affichage optionnel de la progression."
+
+msgid "Configuration System"
+msgstr "Système de configuration"
+
+msgid ":class:`~sigimax.config.SigimaXOptions`"
+msgstr ""
+
+msgid "Full configuration singleton (``CONF``) with 20+ typed options covering app metadata, plot defaults, HDF5 settings, and more."
+msgstr "Singleton de configuration complet (``CONF``) avec plus de 20 options typées couvrant les métadonnées de l'application, les paramètres par défaut des tracés, les paramètres HDF5, et plus encore."
+
+msgid "``EnumOptionField``"
+msgstr ""
+
+msgid "Option constrained to a set of string choices, with validation."
+msgstr "Option contrainte à un ensemble de choix de chaînes de caractères, avec validation."
+
+msgid "``TupleOptionField``"
+msgstr ""
+
+msgid "Fixed-length tuple option with type checking."
+msgstr "Option de tuple de longueur fixe avec vérification de type."
+
+msgid "``FontOptionField``"
+msgstr ""
+
+msgid "Font option with validation against available system fonts."
+msgstr "Option de police avec validation par rapport aux polices système disponibles."
+
+msgid "JSON persistence"
+msgstr "Persistance JSON"
+
+msgid "``save()`` / ``load()`` methods for configuration persistence."
+msgstr "Méthodes ``save()`` / ``load()`` pour la persistance de la configuration."
+
+msgid "Environment sync"
+msgstr "Synchronisation avec l'environnement"
+
+msgid "Options can synchronize to environment variables for cross-process communication."
+msgstr "Les options peuvent se synchroniser avec les variables d'environnement pour la communication inter-processus."
+
+msgid "Context managers"
+msgstr "Gestionnaires de contexte"
+
+msgid "Temporary overrides with ``option.context(value)`` pattern."
+msgstr "Surcharges temporaires avec le patron ``option.context(value)``."
+
+msgid "Configuration options reference"
+msgstr "Référence des options de configuration"
+
+msgid "The full list of configuration options available in the ``CONF`` singleton:"
+msgstr "La liste complète des options de configuration disponibles dans le singleton ``CONF`` :"
+
+msgid "HDF5 Workspace"
+msgstr "Espace de travail HDF5"
+
+msgid "Open/Save workspace"
+msgstr "Ouvrir/Enregistrer l'espace de travail"
+
+msgid "Built-in HDF5 workspace management for opening and saving project files."
+msgstr "Gestion intégrée de l'espace de travail HDF5 pour l'ouverture et l'enregistrement des fichiers de projet."
+
+msgid ":class:`~sigimax.widgets.h5browser.H5BrowserDialog`"
+msgstr ""
+
+msgid "Interactive HDF5 file browser with tree view, supporting scalar, array, text, and compound datasets."
+msgstr "Explorateur interactif de fichiers HDF5 avec vue en arbre, supportant les jeux de données scalaires, tableaux, texte et composés."
+
+msgid "Import datasets"
+msgstr "Importer des jeux de données"
+
+msgid "``import_dataset_from_file()`` hook for derived apps to handle application-specific HDF5 dataset import."
+msgstr "Hook ``import_dataset_from_file()`` pour que les applications dérivées gèrent l'import de jeux de données HDF5 spécifiques à l'application."
+
+msgid ":class:`~sigimax.h5.H5Importer`"
+msgstr ""
+
+msgid "Low-level HDF5 import utilities with node factory and data extraction."
+msgstr "Utilitaires d'import HDF5 bas niveau avec fabrique de nœuds et extraction de données."
+
+msgid "Scientific Widgets"
+msgstr "Widgets scientifiques"
+
+msgid "Widget"
+msgstr "Widget"
+
+msgid ":class:`~sigimax.widgets.plotdock.DockablePlotWidget`"
+msgstr ""
+
+msgid "Embeds PlotPy plots in dock widgets, with configurable watermark and dock location. Supports ``PlotType.CURVE`` and ``PlotType.IMAGE``."
+msgstr "Intègre des tracés PlotPy dans des widgets ancrables, avec filigrane et position d'ancrage configurables. Supporte ``PlotType.CURVE`` et ``PlotType.IMAGE``."
+
+msgid "Curve fitting dialogs"
+msgstr "Dialogues d'ajustement de courbe"
+
+msgid "Gaussian, polynomial, and custom curve fitting via :mod:`sigimax.widgets.fitdialog`."
+msgstr "Ajustement de courbe gaussien, polynomial et personnalisé via :mod:`sigimax.widgets.fitdialog`."
+
+msgid "Signal peak detection"
+msgstr "Détection de pics de signal"
+
+msgid "Interactive peak detection dialog via :mod:`sigimax.widgets.signalpeak`."
+msgstr "Dialogue de détection de pics interactif via :mod:`sigimax.widgets.signalpeak`."
+
+msgid "Signal baseline selection"
+msgstr "Sélection de ligne de base"
+
+msgid "Baseline selection for background subtraction via :mod:`sigimax.widgets.signalbaseline`."
+msgstr "Sélection de la ligne de base pour la soustraction du fond via :mod:`sigimax.widgets.signalbaseline`."
+
+msgid "Signal cursor"
+msgstr "Curseur de signal"
+
+msgid "Cursor-based value readout via :mod:`sigimax.widgets.signalcursor`."
+msgstr "Lecture de valeur par curseur via :mod:`sigimax.widgets.signalcursor`."
+
+msgid "Signal delta-X"
+msgstr "Delta-X de signal"
+
+msgid "Delta-X measurement between two points via :mod:`sigimax.widgets.signaldeltax`."
+msgstr "Mesure du delta-X entre deux points via :mod:`sigimax.widgets.signaldeltax`."
+
+msgid "Image background"
+msgstr "Fond d'image"
+
+msgid "Image background region selection via :mod:`sigimax.widgets.imagebackground`."
+msgstr "Sélection de la région de fond d'image via :mod:`sigimax.widgets.imagebackground`."
+
+msgid ":class:`~sigimax.widgets.wizard.Wizard`"
+msgstr ""
+
+msgid "Multi-page wizard dialog with navigation, validation, and data collection (Next/Back/Finish/Cancel)."
+msgstr "Dialogue assistant multi-pages avec navigation, validation et collecte de données (Suivant/Précédent/Terminer/Annuler)."
+
+msgid ":class:`~sigimax.widgets.logviewer.LogViewerWindow`"
+msgstr ""
+
+msgid "Log viewer dialog for displaying application log files."
+msgstr "Dialogue de visualisation des journaux pour l'affichage des fichiers journaux de l'application."
+
+msgid ":class:`~sigimax.widgets.warningerror.WarningErrorMessageBox`"
+msgstr ""
+
+msgid "Warning/error display dialog with traceback support."
+msgstr "Dialogue d'affichage des avertissements et erreurs avec support des traces d'exécution."
+
+msgid "Status Bar Widgets"
+msgstr "Widgets de barre d'état"
+
+msgid ":class:`~sigimax.widgets.status.MemoryStatus`"
+msgstr ""
+
+msgid "Displays current memory usage with configurable alarm threshold."
+msgstr "Affiche l'utilisation mémoire courante avec un seuil d'alarme configurable."
+
+msgid ":class:`~sigimax.widgets.status.ConsoleStatus`"
+msgstr ""
+
+msgid "Console toggle button in the status bar."
+msgstr "Bouton d'activation/désactivation de la console dans la barre d'état."
+
+msgid ":class:`~sigimax.widgets.status.BaseStatus`"
+msgstr ""
+
+msgid "Base status bar widget for custom status indicators."
+msgstr "Widget de barre d'état de base pour les indicateurs d'état personnalisés."
+
+msgid "PlotPy Adapters"
+msgstr "Adaptateurs PlotPy"
+
+msgid "Signal/Image adapters"
+msgstr "Adaptateurs Signal/Image"
+
+msgid "Convert between Sigima objects (:class:`~sigima.objects.SignalObj`, :class:`~sigima.objects.ImageObj`) and PlotPy plot items for display."
+msgstr "Conversion entre les objets Sigima (:class:`~sigima.objects.SignalObj`, :class:`~sigima.objects.ImageObj`) et les éléments de tracé PlotPy pour l'affichage."
+
+msgid "ROI adapters"
+msgstr "Adaptateurs ROI"
+
+msgid "Convert between Sigima ROI objects and PlotPy annotation items (segment, rectangular, circular, polygonal)."
+msgstr "Conversion entre les objets ROI Sigima et les éléments d'annotation PlotPy (segment, rectangulaire, circulaire, polygonal)."
+
+msgid ":func:`~sigimax.adapters_plotpy.create_adapter_from_object`"
+msgstr ""
+
+msgid "Factory function that dispatches to the correct adapter based on object type."
+msgstr "Fonction fabrique qui redirige vers l'adaptateur correct en fonction du type d'objet."
+
+msgid "JSON roundtrips"
+msgstr "Allers-retours JSON"
+
+msgid "``items_to_json()`` / ``json_to_items()`` for serializing plot items."
+msgstr "``items_to_json()`` / ``json_to_items()`` pour la sérialisation des éléments de tracé."
+
+msgid "Runtime Environment"
+msgstr "Environnement d'exécution"
+
+msgid ":class:`~sigimax.env.SGMXExecEnv`"
+msgstr ""
+
+msgid "Runtime environment singleton (``execenv``) controlling unattended mode, verbosity levels, demo mode, screenshot capture, and delay settings."
+msgstr "Singleton d'environnement d'exécution (``execenv``) contrôlant le mode sans interaction, les niveaux de verbosité, le mode démo, la capture d'écran et les paramètres de délai."
+
+msgid ":class:`~sigimax.env.VerbosityLevels`"
+msgstr ""
+
+msgid "Enum with ``quiet``, ``normal``, and ``debug`` verbosity levels."
+msgstr "\u00c9num\u00e9ration avec les niveaux de verbosit\u00e9 ``quiet``, ``normal`` et ``debug``."
+
+msgid "Command-line arguments"
+msgstr "Arguments en ligne de commande"
+
+msgid "``--unattended``, ``--verbose``, ``--screenshot``, ``--delay``, ``--version``, ``--reset`` parsed automatically on startup."
+msgstr "``--unattended``, ``--verbose``, ``--screenshot``, ``--delay``, ``--version``, ``--reset`` analysés automatiquement au démarrage."
+
+msgid "Context manager"
+msgstr "Gestionnaire de contexte"
+
+msgid "``execenv.context()`` for temporarily overriding environment settings."
+msgstr "``execenv.context()`` pour surcharger temporairement les paramètres d'environnement."
+
+msgid "Internationalization"
+msgstr "Internationalisation"
+
+msgid "SigimaX supports internationalization with gettext:"
+msgstr "SigimaX supporte l'internationalisation avec gettext :"
+
+msgid "All UI strings are wrapped with ``_()`` from :mod:`sigimax.config`"
+msgstr "Toutes les chaînes de l'interface sont encapsulées avec ``_()`` depuis :mod:`sigimax.config`"
+
+msgid "Translations are stored in ``locale/`` (currently English and French)"
+msgstr "Les traductions sont stockées dans ``locale/`` (actuellement anglais et français)"
+
+msgid "Use ``guidata.utils.translations`` CLI to scan and compile translations"
+msgstr "Utilisez la CLI ``guidata.utils.translations`` pour analyser et compiler les traductions"

@@ -1,0 +1,93 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2025, DataLab Platform Developers
+# This file is distributed under the same license as the SigimaX package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: SigimaX \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Language: fr\n"
+"Language-Team: fr <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+msgid ":ref:`Go to the end <sphx_glr_download_auto_examples_getting_started_minimal_app.py>` to download the full example code."
+msgstr ":ref:`Aller à la fin <sphx_glr_download_auto_examples_getting_started_minimal_app.py>` pour télécharger le code complet de l'exemple."
+
+msgid "Minimal Derived Application"
+msgstr "Application dérivée minimale"
+
+msgid "This example demonstrates the **derivation pattern** — the core concept of SigimaX. In just a few lines of code, you can build a full-featured scientific desktop application with menus, toolbars, console, and status bar."
+msgstr "Cet exemple illustre le **patron de dérivation** — le concept central de SigimaX. En quelques lignes de code, vous pouvez construire une application scientifique de bureau complète avec menus, barres d'outils, console et barre d'état."
+
+msgid "The three-step pattern is:"
+msgstr "Le patron en trois étapes est :"
+
+msgid "**Subclass** :class:`~sigimax.config.SigimaXOptions` for app-specific options"
+msgstr "**Sous-classer** :class:`~sigimax.config.SigimaXOptions` pour les options spécifiques à l'application"
+
+msgid "**Subclass** :class:`~sigimax.mainwindow.SGMXMainWindow` for custom UI"
+msgstr "**Sous-classer** :class:`~sigimax.mainwindow.SGMXMainWindow` pour l'interface personnalisée"
+
+msgid "**Call** :func:`~sigimax.app.create` to launch"
+msgstr "**Appeler** :func:`~sigimax.app.create` pour lancer"
+
+msgid "This example creates a minimal \"MyApp\" with a dockable curve plot widget."
+msgstr "Cet exemple crée une application minimale \"MyApp\" avec un widget de graphique de courbes ancrable."
+
+msgid "Importing necessary modules"
+msgstr "Import des modules nécessaires"
+
+msgid "Step 1: Define custom configuration"
+msgstr "Étape 1 : Définir la configuration personnalisée"
+
+msgid "Subclass :class:`~sigimax.config.SigimaXOptions` to add fields specific to your application. Options are typed, validated, and support JSON persistence."
+msgstr "Sous-classer :class:`~sigimax.config.SigimaXOptions` pour ajouter des champs spécifiques à votre application. Les options sont typées, validées et prennent en charge la persistance JSON."
+
+msgid "Step 2: Customize the main window"
+msgstr "Étape 2 : Personnaliser la fenêtre principale"
+
+msgid "Subclass :class:`~sigimax.mainwindow.SGMXMainWindow` to add your own menus, toolbars, and dock widgets."
+msgstr "Sous-classer :class:`~sigimax.mainwindow.SGMXMainWindow` pour ajouter vos propres menus, barres d'outils et widgets ancrables."
+
+msgid "Step 3: Launch the application"
+msgstr "Étape 3 : Lancer l'application"
+
+msgid "Use :func:`~sigimax.app.create` to instantiate the window (without entering the Qt event loop, so sphinx-gallery can capture the screenshot)."
+msgstr "Utiliser :func:`~sigimax.app.create` pour instancier la fenêtre (sans entrer dans la boucle d'événements Qt, afin que sphinx-gallery puisse capturer la capture d'écran)."
+
+msgid "Summary"
+msgstr "Résumé"
+
+msgid "This example showed the minimal derivation pattern:"
+msgstr "Cet exemple a présenté le patron de dérivation minimal :"
+
+msgid "**Configuration**: ``MyAppOptions`` adds typed, validated options"
+msgstr "**Configuration** : ``MyAppOptions`` ajoute des options typées et validées"
+
+msgid "**Main window**: ``MyAppMainWindow`` adds a curve plot dock"
+msgstr "**Fenêtre principale** : ``MyAppMainWindow`` ajoute un dock de graphique de courbes"
+
+msgid "**Launcher**: ``create()`` or ``run()`` starts the application"
+msgstr "**Lanceur** : ``create()`` ou ``run()`` démarre l'application"
+
+msgid "For a production app, use ``run(window_class=MyAppMainWindow)`` instead of ``create()`` — it enters the Qt event loop and shows a splash screen."
+msgstr "Pour une application en production, utiliser ``run(window_class=MyAppMainWindow)`` au lieu de ``create()`` — cela entre dans la boucle d'événements Qt et affiche un écran d'accueil."
+
+msgid ":download:`Download Jupyter notebook: minimal_app.ipynb <minimal_app.ipynb>`"
+msgstr ":download:`Télécharger le notebook Jupyter : minimal_app.ipynb <minimal_app.ipynb>`"
+
+msgid ":download:`Download Python source code: minimal_app.py <minimal_app.py>`"
+msgstr ":download:`Télécharger le code source Python : minimal_app.py <minimal_app.py>`"
+
+msgid ":download:`Download zipped: minimal_app.zip <minimal_app.zip>`"
+msgstr ":download:`Télécharger l'archive : minimal_app.zip <minimal_app.zip>`"
+
+msgid "`Gallery generated by Sphinx-Gallery <https://sphinx-gallery.github.io>`_"
+msgstr "`Galerie générée par Sphinx-Gallery <https://sphinx-gallery.github.io>`_"

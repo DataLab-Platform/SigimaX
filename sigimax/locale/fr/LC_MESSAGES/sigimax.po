@@ -6,14 +6,611 @@ msgid ""
 msgstr ""
 "Project-Id-Version: sigimax VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-02-06 14:54+0100\n"
 "PO-Revision-Date: 2026-01-19 17:06+0100\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
 "Language-Team: fr <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.17.0\n"
+"Generated-By: Babel 2.18.0\n"
+
+msgid "Curve Viewer"
+msgstr "Visionneuse de courbes"
+
+msgid "Signal Viewer"
+msgstr "Visionneuse de signaux"
+
+msgid "&Analysis"
+msgstr "&Analyse"
+
+msgid "Generate signal"
+msgstr "Générer un signal"
+
+msgid "Clear plot"
+msgstr "Effacer le graphique"
+
+msgid "Analysis"
+msgstr "Analyse"
+
+msgid "Generate"
+msgstr "Générer"
+
+msgid "Signal generated"
+msgstr "Signal généré"
+
+msgid ""
+"SigimaX is a GUI library working with Sigima and PlotPyStack.\n"
+"             It provides a App configuration system, a generic MainWindow class and a\n"
+"             set of widgets to build applications on top of Sigima and PlotPyStack."
+msgstr ""
+"SigimaX est une bibliothèque graphique fonctionnant avec Sigima et PlotPyStack.\n"
+"             Elle fournit un système de configuration d'application, une classe MainWindow générique et un\n"
+"             ensemble de widgets pour construire des applications basées sur Sigima et PlotPyStack."
+
+msgid "Warning"
+msgstr "Attention"
+
+#, python-format
+msgid "Available memory is below %d MB.<br><br>Do you want to continue?"
+msgstr "La mémoire disponible est inférieure à %d Mo.<br><br>Voulez-vous continuer ?"
+
+msgid "This software is in the <b>beta stage</b> of its release cycle. The focus of beta testing is providing a feature complete software for users interested in trying new features before the final release. However, <u>beta software may not behave as expected and will probably have more bugs or performance issues than completed software</u>."
+msgstr "Ce logiciel est au stade <b>bêta</b> de son cycle de publication. L'objectif des tests bêta est de fournir un logiciel complet en fonctionnalités pour les utilisateurs souhaitant essayer de nouvelles fonctionnalités avant la version finale. Cependant, <u>un logiciel bêta peut ne pas se comporter comme prévu et aura probablement plus de bogues ou de problèmes de performances qu'un logiciel finalisé</u>."
+
+msgid "This software is in the <b>alpha stage</b> of its release cycle. The focus of alpha testing is providing an incomplete software for early testing of specific features by users. Please note that <u>alpha software was not thoroughly tested</u> by the developer before it is released."
+msgstr "Ce logiciel est au stade <b>alpha</b> de son cycle de publication. L'objectif des tests alpha est de fournir un logiciel incomplet pour des tests précoces de fonctionnalités spécifiques par les utilisateurs. Veuillez noter que <u>le logiciel alpha n'a pas été testé de manière approfondie</u> par le développeur avant sa publication."
+
+msgid "<i>This is not a stable release.</i>"
+msgstr "<i>Ceci n'est pas une version stable.</i>"
+
+msgid "Do you want to see available log files?"
+msgstr "Voulez-vous voir les fichiers journaux disponibles ?"
+
+#, python-format
+msgid "Welcome to %s!"
+msgstr "Bienvenue dans %s !"
+
+msgid "Main Toolbar"
+msgstr "Barre d'outils principale"
+
+msgid "Open HDF5 files..."
+msgstr "Ouvrir des fichiers HDF5..."
+
+msgid "Open one or more HDF5 files"
+msgstr "Ouvrir un ou plusieurs fichiers HDF5"
+
+msgid "Save to HDF5 file..."
+msgstr "Enregistrer dans un fichier HDF5..."
+
+msgid "Save to HDF5 file"
+msgstr "Enregistrer dans un fichier HDF5"
+
+msgid "Browse HDF5 file..."
+msgstr "Parcourir un fichier HDF5..."
+
+msgid "Browse an HDF5 file"
+msgstr "Parcourir un fichier HDF5"
+
+msgid "Hide window"
+msgstr "Masquer la fenêtre"
+
+msgid "Quit"
+msgstr "Quitter"
+
+msgid "Quit application"
+msgstr "Quitter l'application"
+
+msgid "&File"
+msgstr "&Fichier"
+
+msgid "&View"
+msgstr "&Affichage"
+
+#, python-format
+msgid ""
+"Welcome to %s console!\n"
+"You can access the main window with the 'win' variable.\n"
+"Modules imported at startup: os, sys, os.path as osp, time, numpy as np, scipy.signal as sps, scipy.ndimage as spi"
+msgstr ""
+"Bienvenue dans la console %s !\n"
+"Vous pouvez accéder à la fenêtre principale avec la variable 'win'.\n"
+"Modules importés au démarrage : os, sys, os.path as osp, time, numpy as np, scipy.signal as sps, scipy.ndimage as spi"
+
+msgid "Console"
+msgstr "Console"
+
+msgid "Online documentation"
+msgstr "Documentation en ligne"
+
+msgid "PDF documentation"
+msgstr "Documentation PDF"
+
+msgid "Test segfault/Python error"
+msgstr "Tester erreur de segmentation/Python"
+
+msgid "Log files"
+msgstr "Journaux de bord"
+
+msgid "Project home page"
+msgstr "Page d'accueil du projet"
+
+msgid "Bug report or feature request"
+msgstr "Rapport d'anomalie ou demande de nouvelle fonctionnalité"
+
+msgid "About..."
+msgstr "À propos..."
+
+msgid "Save"
+msgstr "Enregistrer"
+
+msgid "Do you want to clear current workspace before importing data from HDF5 files?"
+msgstr "Voulez-vous effacer l'espace de travail actuel avant d'importer des données depuis des fichiers HDF5 ?"
+
+msgid "<u>Note:</u> If you choose <i>No</i>, when importing workspace files, objects with conflicting identifiers will have their processing history lost (features like 'Show source' and 'Recompute' will not work for those objects). Non-conflicting objects will preserve their processing history."
+msgstr "<u>Note :</u> Si vous choisissez <i>Non</i>, lors de l'importation de fichiers d'espace de travail, les objets avec des identifiants en conflit perdront leur historique de traitement (les fonctionnalités telles que 'Afficher la source' et 'Recalculer' ne fonctionneront pas pour ces objets). Les objets sans conflit conserveront leur historique de traitement."
+
+#, python-format
+msgid "Choosing to ignore this message will prevent it from being displayed again, and will use the current setting (%s)."
+msgstr "Choisir d'ignorer ce message empêchera son réaffichage et utilisera le paramètre actuel (%s)."
+
+msgid "Yes"
+msgstr "Oui"
+
+msgid "No"
+msgstr "Non"
+
+msgid "Open"
+msgstr "Ouvrir"
+
+msgid "HDF5 files (*.h5 *.hdf5 *.hdf *.he5);;All files (*)"
+msgstr "Fichiers HDF5 (*.h5 *.hdf5 *.hdf *.he5);;Tous les fichiers (*)"
+
+#, python-format
+msgid "%d object(s) imported successfully"
+msgstr "%d objet(s) importé(s) avec succès"
+
+msgid "Home page"
+msgstr "Page d'accueil"
+
+msgid "Documentation"
+msgstr "Documentation"
+
+msgid "Support"
+msgstr "Support"
+
+msgid "Developed and maintained by DataLab open-source project team"
+msgstr "Développé et maintenu par l'équipe du projet open-source DataLab"
+
+msgid "About"
+msgstr "À propos"
+
+msgid "Do you want to save all signals and images to an HDF5 file before quitting the application?"
+msgstr "Voulez-vous enregistrer tous les signaux et images dans un fichier HDF5 avant de quitter l'application ?"
+
+msgid "&Tools"
+msgstr "&Outils"
+
+msgid "Generate sine wave"
+msgstr "Générer une onde sinusoïddale"
+
+msgid "Generate a sample sine wave and display it"
+msgstr "Générer un exemple d'onde sinusoïddale et l'afficher"
+
+msgid "Remove all curves from the plot"
+msgstr "Supprimer toutes les courbes du graphique"
+
+msgid "Show configuration"
+msgstr "Afficher la configuration"
+
+msgid "Print all current configuration options to the console"
+msgstr "Afficher toutes les options de configuration actuelles dans la console"
+
+msgid "MyApp Tools"
+msgstr "Outils MyApp"
+
+msgid "Sine"
+msgstr "Sinus"
+
+msgid "Generate a sine wave"
+msgstr "Générer une onde sinusoïddale"
+
+#, python-format
+msgid "Generated sine wave with %d points"
+msgstr "Onde sinusoïddale générée avec %d points"
+
+msgid "Plot cleared"
+msgstr "Graphique effacé"
+
+msgid "New project"
+msgstr "Nouveau projet"
+
+msgid "Create a new empty project"
+msgstr "Créer un nouveau projet vide"
+
+msgid "Import CSV..."
+msgstr "Importer CSV..."
+
+msgid "Import data from a CSV file"
+msgstr "Importer des données depuis un fichier CSV"
+
+msgid "Web API status"
+msgstr "État de l'API Web"
+
+msgid "Show Web API connection status"
+msgstr "Afficher l'état de connexion de l'API Web"
+
+msgid "Preferences..."
+msgstr "Préférences..."
+
+msgid "Edit application preferences"
+msgstr "Modifier les préférences de l'application"
+
+msgid "Release notes"
+msgstr "Notes de version"
+
+msgid "Show release notes"
+msgstr "Afficher les notes de version"
+
+msgid "Settings..."
+msgstr "Paramètres..."
+
+msgid "Open settings dialog"
+msgstr "Ouvrir la boîte de dialogue des paramètres"
+
+msgid "My Action"
+msgstr "Mon action"
+
+msgid "A custom action"
+msgstr "Une action personnalisée"
+
+msgid "Cancel"
+msgstr "Annuler"
+
+msgid "Error:"
+msgstr "Erreur :"
+
+msgid "Context"
+msgstr "Contexte"
+
+#, python-format
+msgid "The file %s could not be read:"
+msgstr "Le fichier %s n'a pas pu être lu :"
+
+#, python-format
+msgid "The file %s could not be written:"
+msgstr "Le fichier %s n'a pas pu être écrit :"
+
+msgid "in this folder"
+msgstr "dans ce dossier"
+
+msgid "Open tab menu"
+msgstr "Ouvrir le menu de l'onglet"
+
+msgid "Contents of file"
+msgstr "Contenu du fichier"
+
+msgid "Polymomial fit"
+msgstr "Ajustement polynomial"
+
+msgid "Amplitude"
+msgstr "Amplitude"
+
+msgid "Base line"
+msgstr "Ligne de base"
+
+msgid "Std-dev"
+msgstr "Écart-type"
+
+msgid "Mean"
+msgstr "Moyenne"
+
+msgid "Gaussian fit"
+msgstr "Ajustement gaussien"
+
+msgid "Lorentzian fit"
+msgstr "Ajustement lorentzien"
+
+msgid "Voigt fit"
+msgstr "Ajustement de Voigt"
+
+msgid "Y0"
+msgstr "Y0"
+
+msgid "Multi-Gaussian fit"
+msgstr "Ajustement multi-gaussien"
+
+msgid "Multi-Lorentzian fit"
+msgstr "Ajustement multi-lorentzien"
+
+msgid "A coefficient"
+msgstr "Coefficient A"
+
+msgid "B coefficient"
+msgstr "Coefficient B"
+
+msgid "y0 constant"
+msgstr "Constante y0"
+
+msgid "Exponential fit"
+msgstr "Ajustement exponentiel"
+
+msgid "Frequency"
+msgstr "Fréquence"
+
+msgid "Phase"
+msgstr "Phase"
+
+msgid "Continuous component"
+msgstr "Composante continue"
+
+msgid "Sinusoidal fit"
+msgstr "Ajustement sinusoïdal"
+
+msgid "CDF fit"
+msgstr "Ajustement CDF"
+
+msgid "Peak wavelength"
+msgstr "Longueur d'onde du pic"
+
+msgid "Width factor"
+msgstr "Facteur de largeur"
+
+msgid "Planckian fit"
+msgstr "Ajustement planckien"
+
+msgid "Left amplitude"
+msgstr "Amplitude gauche"
+
+msgid "Right amplitude"
+msgstr "Amplitude droite"
+
+msgid "Left width"
+msgstr "Largeur gauche"
+
+msgid "Right width"
+msgstr "Largeur droite"
+
+msgid "Center"
+msgstr "Centre"
+
+msgid "Left baseline"
+msgstr "Ligne de base gauche"
+
+msgid "Right baseline"
+msgstr "Ligne de base droite"
+
+msgid "Two half-Gaussian fit"
+msgstr "Ajustement bi-demi-gaussien"
+
+msgid "Center position"
+msgstr "Position du centre"
+
+msgid "Left time constant"
+msgstr "Constante de temps gauche"
+
+msgid "Right time constant"
+msgstr "Constante de temps droite"
+
+msgid "Piecewise exponential (raise-decay) fit"
+msgstr "Ajustement exponentiel par morceaux (montée-décroissance)"
+
+msgid "Collapse all"
+msgstr "Tout réduire"
+
+msgid "Expand all"
+msgstr "Tout développer"
+
+msgid "Restore"
+msgstr "Restaurer"
+
+msgid "Restore original tree layout"
+msgstr "Restaurer la disposition originale de l'arborescence"
+
+msgid "Collapse selection"
+msgstr "Réduire la sélection"
+
+msgid "Expand selection"
+msgstr "Développer la sélection"
+
+msgid "HDF5 Browser"
+msgstr "Explorateur HDF5"
+
+msgid "Size"
+msgstr "Taille"
+
+msgid "Type"
+msgstr "Type"
+
+msgid "Value"
+msgstr "Valeur"
+
+msgid "Name"
+msgstr "Nom"
+
+msgid "Unsupported data"
+msgstr "Données non prises en charge"
+
+msgid "Group"
+msgstr "Groupe"
+
+msgid "Attributes"
+msgstr "Attributs"
+
+msgid "Show array"
+msgstr "Afficher le tableau"
+
+msgid "Path"
+msgstr "Chemin"
+
+msgid "Description"
+msgstr "Description"
+
+msgid "Textual preview"
+msgstr "Aperçu textuel"
+
+msgid "Close"
+msgstr "Fermer"
+
+msgid "Select HDF5 file"
+msgstr "Sélectionner un fichier HDF5"
+
+msgid "Check all"
+msgstr "Tout cocher"
+
+msgid "Uncheck all"
+msgstr "Tout décocher"
+
+msgid "Show only supported data"
+msgstr "Afficher uniquement les données prises en charge"
+
+msgid "Show values"
+msgstr "Afficher les valeurs"
+
+msgid "Image background selection"
+msgstr "Sélection du fond d'image"
+
+msgid "Background area"
+msgstr "Zone de fond"
+
+msgid "Background value:"
+msgstr "Valeur du fond :"
+
+msgid "Log files were generated during current session."
+msgstr "Des fichiers journaux ont été générés pendant la session en cours."
+
+msgid "Log files were generated during last session."
+msgstr "Des fichiers journaux ont été générés pendant la dernière session."
+
+msgid "Log files are currently empty."
+msgstr "Les fichiers journaux sont actuellement vides."
+
+msgid "Signal baseline selection"
+msgstr "Sélection de la ligne de base du signal"
+
+msgid "Select X value with cursor"
+msgstr "Sélectionner la valeur X avec le curseur"
+
+msgid "Select Y value with cursor"
+msgstr "Sélectionner la valeur Y avec le curseur"
+
+msgid "Apply"
+msgstr "Appliquer"
+
+msgid "Apply cursor position"
+msgstr "Appliquer la position du curseur"
+
+msgid "Cursor position"
+msgstr "Position du curseur"
+
+msgid "Minimum distance:"
+msgstr "Distance minimale :"
+
+msgid "Signal peak detection"
+msgstr "Détection de pics du signal"
+
+msgid "Peaks:"
+msgstr "Pics :"
+
+msgid "Internal console"
+msgstr "Console interne"
+
+msgid ""
+"Click to show the internal console.\n"
+"The icon will turn red if an error or warning is logged."
+msgstr ""
+"Cliquer pour afficher la console interne.\n"
+"L'icône deviendra rouge si une erreur ou un avertissement est enregistré."
+
+msgid ""
+"Click to show the internal console.\n"
+"An error or warning has been logged."
+msgstr ""
+"Cliquer pour afficher la console interne.\n"
+"Une erreur ou un avertissement a été enregistré."
+
+msgid ""
+"Click to show the internal console.\n"
+"No error or warning has been logged."
+msgstr ""
+"Cliquer pour afficher la console interne.\n"
+"Aucune erreur ou avertissement n'a été enregistré."
+
+msgid "Memory available:"
+msgstr "Mémoire disponible :"
+
+msgid "Memory used:"
+msgstr "Mémoire utilisée :"
+
+msgid "Alarm threshold:"
+msgstr "Seuil d'alarme :"
+
+msgid "Memory:"
+msgstr "Mémoire :"
+
+msgid "Error message"
+msgstr "Message d'erreur"
+
+msgid "The following traceback may help to understand the problem:"
+msgstr "Le traceback suivant peut aider à comprendre le problème :"
+
+msgid "Warning message"
+msgstr "Message d'avertissement"
+
+msgid "Please take into account the following warning message:"
+msgstr "Veuillez prendre en compte le message d'avertissement suivant :"
+
+msgid "An error has occured during the following context:"
+msgstr "Une erreur s'est produite dans le contexte suivant :"
+
+msgid "Tip"
+msgstr "Astuce"
+
+msgid "Please click on the 'Ignore' button to ignore this warning next time."
+msgstr "Veuillez cliquer sur le bouton « Ignorer » pour ignorer cet avertissement la prochaine fois."
+
+msgid "Back"
+msgstr "Précédent"
+
+msgid "Next"
+msgstr "Suivant"
+
+msgid "Finish"
+msgstr "Terminer"
+
+msgid "Welcome to the Example Wizard"
+msgstr "Bienvenue dans l'assistant d'exemple"
+
+msgid "This wizard will guide you through the process of importing data."
+msgstr "Cet assistant vous guidera tout au long du processus d'importation de données."
+
+msgid "Select the Source of the Data"
+msgstr "Sélectionner la source des données"
+
+msgid "Select the source of the data to be imported (clipboard or file)."
+msgstr "Sélectionner la source des données à importer (presse-papiers ou fichier)."
+
+msgid "Clipboard"
+msgstr "Presse-papiers"
+
+msgid "File"
+msgstr "Fichier"
+
+msgid "Browse..."
+msgstr "Parcourir..."
+
+msgid "Select the File to Import"
+msgstr "Sélectionner le fichier à importer"
+
+msgid "CSV Files (*.csv);;Text Files (*.txt);;All Files (*)"
+msgstr "Fichiers CSV (*.csv);;Fichiers texte (*.txt);;Tous les fichiers (*)"
+
+msgid "Error"
+msgstr "Erreur"
+
+msgid "Please select the file to import."
+msgstr "Veuillez sélectionner le fichier à importer."
+
+msgid "Example Wizard"
+msgstr "Assistant d'exemple"
 

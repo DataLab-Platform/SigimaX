@@ -4,7 +4,7 @@
 name = "sigimax"
 authors = [{ name = "Pierre Raybaut", email = "p.raybaut@codra.fr" }]
 maintainers = [
-    { name = "DataLab Platform Developers", email = "p.raybaut@codra.fr" },
+    { name = "DataLab Platform Developers", email = "datalab@codra.fr" },
 ]
 description = "Reusable GUI components and application utilities, part of the DataLab platform for signal and image processing"
 readme = "README.md"
@@ -27,6 +27,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Scientific/Engineering",
     "Topic :: Scientific/Engineering :: Image Processing",
     "Topic :: Scientific/Engineering :: Human Machine Interfaces",
@@ -36,8 +37,10 @@ classifiers = [
 ]
 requires-python = ">=3.9, <4"
 dependencies = [
-    "PlotPy >= 2.7.4",
+    "guidata >= 3.13.4",
+    "PlotPy >= 2.8.2",
     "psutil >= 5.7",
+    "Sigima >= 1.1.0",
 ]
 dynamic = ["version"]
 
@@ -50,7 +53,7 @@ Homepage = "https://datalab-platform.com/"
 Documentation = "https://datalab-platform.com/"
 
 [project.optional-dependencies]
-opencv = ["opencv-python-headless >= 4.5"]
+qt = ["PyQt5 >= 5.15.6"]
 dev = ["ruff", "pylint", "Coverage"]
 doc = [
     "sphinx",
@@ -93,10 +96,21 @@ include = ["sigimax*"]
 ]
 
 [tool.setuptools.dynamic]
-version = { attr = "sigimax.__version__" }
+version = { attr = "sigimax._metadata.__version__" }
 
 [tool.pytest.ini_options]
-addopts = "sigimax"
+addopts = "sigimax --import-mode=importlib"
+filterwarnings = [
+    "ignore::DeprecationWarning:pandas.*",
+    "ignore::DeprecationWarning:scipy.*",
+    "ignore::DeprecationWarning:skimage.*",
+]
+markers = [
+    "validation: mark a test as a validation test (ground truth or analytical)",
+    "unit: pure logic test, no Qt application context needed",
+    "app: requires full application context (SGMXMainWindow)",
+    "gui: requires visible Qt window (use --show-windows)",
+]
 
 [tool.ruff]
 exclude = [".git", ".vscode", "build", "dist", "*.ipynb"]
@@ -106,7 +120,7 @@ target-version = "py39"                        # Assume Python 3.9.
 
 [tool.ruff.lint]
 # all rules can be found here: https://beta.ruff.rs/docs/rules/
-select = ["E", "F", "W", "I", "NPY201"]
+select = ["D202", "D403", "E", "F", "I", "NPY201", "RUF022", "W"]
 ignore = [
     "E203", # space before : (needed for how black formats slicing)
 ]
@@ -116,6 +130,9 @@ quote-style = "double"            # Like Black, use double quotes for strings.
 indent-style = "space"            # Like Black, indent with spaces, rather than tabs.
 skip-magic-trailing-comma = false # Like Black, respect magic trailing commas.
 line-ending = "auto"              # Like Black, automatically detect the appropriate line ending.
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
 
 [tool.ruff.lint.per-file-ignores]
 "doc/*" = ["E402"]

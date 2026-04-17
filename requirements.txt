@@ -1,8 +1,10 @@
 Coverage
-PlotPy >= 2.7.4
+PlotPy >= 2.8.2
+PyQt5 >= 5.15.6
+Sigima >= 1.1.0
+guidata >= 3.13.4
 myst-nb
 myst_parser
-opencv-python-headless >= 4.5
 psutil >= 5.7
 pydata-sphinx-theme
 pylint
