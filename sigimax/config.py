@@ -178,9 +178,10 @@ class EnumOptionField(OptionField):
         default: str,
         choices: list[str],
         description: str = "",
+        category: str = "",
     ) -> None:
         self.choices = choices
-        super().__init__(container, name, default, description)
+        super().__init__(container, name, default, description, category)
 
     def check(self, value: Any) -> None:
         """Check if value is one of the allowed choices.
@@ -612,6 +613,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.color_mode = EnumOptionField(
             self,
             "color_mode",
+            category="main",
             default="auto",
             choices=["auto", "dark", "light"],
             description="Application color mode (auto, dark, or light).",
@@ -631,6 +633,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.traceback_log_path = TypedOptionField(
             self,
             "traceback_log_path",
+            category="main",
             default=f".{self.app_name.get()}_traceback.log",
             expected_type=str,
             description="Path to the traceback log file (relative to config dir).",
@@ -638,6 +641,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.traceback_log_available = TypedOptionField(
             self,
             "traceback_log_available",
+            category="main",
             default=False,
             expected_type=bool,
             description="Whether a traceback log file is currently available.",
@@ -645,6 +649,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.faulthandler_enabled = TypedOptionField(
             self,
             "faulthandler_enabled",
+            category="main",
             default=True,
             expected_type=bool,
             description="If True, enable Python faulthandler for crash reporting.",
@@ -652,6 +657,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.faulthandler_log_path = TypedOptionField(
             self,
             "faulthandler_log_path",
+            category="main",
             default=f".{self.app_name.get()}_faulthandler.log",
             expected_type=str,
             description="Path to the faulthandler log file (relative to config dir).",
@@ -659,6 +665,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.faulthandler_log_available = TypedOptionField(
             self,
             "faulthandler_log_available",
+            category="main",
             default=False,
             expected_type=bool,
             description="Whether a faulthandler log file is currently available.",
@@ -671,6 +678,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.available_memory_threshold = TypedOptionField(
             self,
             "available_memory_threshold",
+            category="main",
             default=500,
             expected_type=int,
             description=(
@@ -681,6 +689,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.ignore_warnings = TypedOptionField(
             self,
             "ignore_warnings",
+            category="proc",
             default=False,
             expected_type=bool,
             description=("If True, suppress Python warnings during computations."),
@@ -693,6 +702,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.window_maximized = TypedOptionField(
             self,
             "window_maximized",
+            category="main",
             default=False,
             expected_type=bool,
             description="Whether the main window was maximized on last close.",
@@ -700,18 +710,21 @@ class SigimaXOptions(AppOptionsContainer):
         self.window_position = TupleOptionField(
             self,
             "window_position",
+            category="main",
             default=None,
             description="Main window position as (x, y) tuple, or None.",
         )
         self.window_size = TupleOptionField(
             self,
             "window_size",
+            category="main",
             default=None,
             description="Main window size as (width, height) tuple, or None.",
         )
         self.window_state = TypedOptionField(
             self,
             "window_state",
+            category="main",
             default="",
             expected_type=str,
             description=(
@@ -722,6 +735,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.base_dir = TypedOptionField(
             self,
             "base_dir",
+            category="main",
             default="",
             expected_type=str,
             description="Base working directory for file dialogs.",
@@ -734,6 +748,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.console_enabled = TypedOptionField(
             self,
             "console_enabled",
+            category="console",
             default=True,
             expected_type=bool,
             description="If True, show the embedded Python console.",
@@ -741,6 +756,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.show_console_on_error = TypedOptionField(
             self,
             "show_console_on_error",
+            category="console",
             default=False,
             expected_type=bool,
             description=(
@@ -750,6 +766,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.console_max_line_count = TypedOptionField(
             self,
             "console_max_line_count",
+            category="console",
             default=5000,
             expected_type=int,
             description="Maximum number of lines to keep in the console output.",
@@ -757,6 +774,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.external_editor_path = TypedOptionField(
             self,
             "external_editor_path",
+            category="console",
             default="code",
             expected_type=str,
             description=(
@@ -766,6 +784,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.external_editor_args = TypedOptionField(
             self,
             "external_editor_args",
+            category="console",
             default="-g {path}:{line_number}",
             expected_type=str,
             description=(
@@ -781,6 +800,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.h5_clear_workspace = TypedOptionField(
             self,
             "h5_clear_workspace",
+            category="io",
             default=True,
             expected_type=bool,
             description=(
@@ -791,6 +811,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.h5_clear_workspace_ask = TypedOptionField(
             self,
             "h5_clear_workspace_ask",
+            category="io",
             default=True,
             expected_type=bool,
             description=(
@@ -801,6 +822,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.h5_fullpath_in_title = TypedOptionField(
             self,
             "h5_fullpath_in_title",
+            category="io",
             default=False,
             expected_type=bool,
             description=(
@@ -811,6 +833,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.h5_fname_in_title = TypedOptionField(
             self,
             "h5_fname_in_title",
+            category="io",
             default=True,
             expected_type=bool,
             description=("If True, include the HDF5 file name in signal/image title."),
@@ -818,6 +841,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.imageio_formats = ImageIOOptionField(
             self,
             "imageio_formats",
+            category="io",
             default=(),
             description="Supported ImageIO file formats.",
         )
@@ -829,6 +853,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.plot_toolbar_position = EnumOptionField(
             self,
             "plot_toolbar_position",
+            category="view",
             default="left",
             choices=["top", "bottom", "left", "right"],
             description="Position of the plot toolbar.",
@@ -836,6 +861,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.plot_dock_location = EnumOptionField(
             self,
             "plot_dock_location",
+            category="view",
             default="right",
             choices=["top", "bottom", "left", "right"],
             description="Default dock area for plot widgets "
@@ -844,6 +870,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.watermark_image_path = TypedOptionField(
             self,
             "watermark_image_path",
+            category="view",
             default="",
             expected_type=str,
             description="Path to the watermark image displayed on empty plots. "
@@ -853,6 +880,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.sig_format = TypedOptionField(
             self,
             "sig_format",
+            category="view",
             default="",
             expected_type=str,
             description="Format string for signal shape legends.",
@@ -860,6 +888,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.ima_format = TypedOptionField(
             self,
             "ima_format",
+            category="view",
             default="",
             expected_type=str,
             description="Format string for image shape legends.",
@@ -867,6 +896,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.show_label = TypedOptionField(
             self,
             "show_label",
+            category="view",
             default=True,
             expected_type=bool,
             description="If True, show labels on plot items.",
@@ -874,6 +904,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.sig_linewidth = TypedOptionField(
             self,
             "sig_linewidth",
+            category="view",
             default=1.0,
             expected_type=float,
             description="Default line width for signal curves.",
@@ -881,6 +912,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.sig_linewidth_perfs_threshold = TypedOptionField(
             self,
             "sig_linewidth_perfs_threshold",
+            category="view",
             default=1000,
             expected_type=int,
             description=(
@@ -891,6 +923,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.sig_autodownsampling = TypedOptionField(
             self,
             "sig_autodownsampling",
+            category="view",
             default=True,
             expected_type=bool,
             description=(
@@ -901,6 +934,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.sig_autodownsampling_maxpoints = TypedOptionField(
             self,
             "sig_autodownsampling_maxpoints",
+            category="view",
             default=100000,
             expected_type=int,
             description="Maximum number of points before auto-downsampling kicks in.",
@@ -908,6 +942,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.sig_autoscale_margin_percent = TypedOptionField(
             self,
             "sig_autoscale_margin_percent",
+            category="view",
             default=2.0,
             expected_type=float,
             description="Margin percentage for signal plot autoscale.",
@@ -915,6 +950,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.ima_autoscale_margin_percent = TypedOptionField(
             self,
             "ima_autoscale_margin_percent",
+            category="view",
             default=1.0,
             expected_type=float,
             description="Margin percentage for image plot autoscale.",
@@ -922,6 +958,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.ima_eliminate_outliers = TypedOptionField(
             self,
             "ima_eliminate_outliers",
+            category="view",
             default=0.1,
             expected_type=float,
             description=(
@@ -935,6 +972,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.sig_def_shade = TypedOptionField(
             self,
             "sig_def_shade",
+            category="view",
             default=0.0,
             expected_type=float,
             description="Default shade value for signal curves (0.0 = no shade).",
@@ -942,6 +980,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.sig_def_curvestyle = TypedOptionField(
             self,
             "sig_def_curvestyle",
+            category="view",
             default="Lines",
             expected_type=str,
             description=(
@@ -952,6 +991,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.sig_def_baseline = TypedOptionField(
             self,
             "sig_def_baseline",
+            category="view",
             default=0.0,
             expected_type=float,
             description="Default baseline value for signal curves.",
@@ -962,6 +1002,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.ima_def_colormap = TypedOptionField(
             self,
             "ima_def_colormap",
+            category="view",
             default="viridis",
             expected_type=str,
             description="Default colormap for images (e.g., 'viridis', 'gray').",
@@ -969,6 +1010,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.ima_def_invert_colormap = TypedOptionField(
             self,
             "ima_def_invert_colormap",
+            category="view",
             default=False,
             expected_type=bool,
             description="If True, invert the default colormap.",
@@ -976,6 +1018,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.ima_def_interpolation = TypedOptionField(
             self,
             "ima_def_interpolation",
+            category="view",
             default=5,
             expected_type=int,
             description="Default interpolation mode for images (integer index).",
@@ -983,6 +1026,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.ima_def_alpha = TypedOptionField(
             self,
             "ima_def_alpha",
+            category="view",
             default=1.0,
             expected_type=float,
             description="Default alpha (opacity) for images (0.0 to 1.0).",
@@ -990,6 +1034,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.ima_def_alpha_function = TypedOptionField(
             self,
             "ima_def_alpha_function",
+            category="view",
             default=0,
             expected_type=int,
             description=(
@@ -1000,6 +1045,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.ima_def_keep_lut_range = TypedOptionField(
             self,
             "ima_def_keep_lut_range",
+            category="view",
             default=False,
             expected_type=bool,
             description=(
@@ -1015,6 +1061,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.operation_mode = EnumOptionField(
             self,
             "operation_mode",
+            category="proc",
             default="single",
             choices=["single", "pairwise"],
             description=(
@@ -1025,6 +1072,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.extract_roi_singleobj = TypedOptionField(
             self,
             "extract_roi_singleobj",
+            category="proc",
             default=False,
             expected_type=bool,
             description=(
@@ -1035,6 +1083,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.keep_results = TypedOptionField(
             self,
             "keep_results",
+            category="proc",
             default=False,
             expected_type=bool,
             description=(
@@ -1045,6 +1094,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.show_result_dialog = TypedOptionField(
             self,
             "show_result_dialog",
+            category="proc",
             default=True,
             expected_type=bool,
             description=(
@@ -1055,6 +1105,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.use_signal_bounds = TypedOptionField(
             self,
             "use_signal_bounds",
+            category="proc",
             default=False,
             expected_type=bool,
             description=(
@@ -1065,6 +1116,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.use_image_dims = TypedOptionField(
             self,
             "use_image_dims",
+            category="proc",
             default=True,
             expected_type=bool,
             description=(
@@ -1075,6 +1127,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.fft_shift_enabled = TypedOptionField(
             self,
             "fft_shift_enabled",
+            category="proc",
             default=True,
             expected_type=bool,
             description=(
@@ -1085,6 +1138,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.auto_normalize_kernel = TypedOptionField(
             self,
             "auto_normalize_kernel",
+            category="proc",
             default=False,
             expected_type=bool,
             description=(
@@ -1096,6 +1150,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.xarray_compat_behavior = EnumOptionField(
             self,
             "xarray_compat_behavior",
+            category="proc",
             default="ask",
             choices=["ask", "interpolate"],
             description=(
@@ -1131,6 +1186,62 @@ class SigimaXOptions(AppOptionsContainer):
         for name, default in self._defaults.items():
             getattr(self, name).set(default, sync_env=False)
         self.sync_env()
+
+    # -- Option categories (INI sections and settings-UI grouping) --
+
+    def get_option_categories(self) -> list[tuple[str, str]]:
+        """Return ordered option categories as ``(id, label)`` pairs.
+
+        The ``id`` doubles as the INI section name for derived applications and
+        as the persistence/grouping key; the ``label`` is a human-readable,
+        translatable title suitable for a settings dialog tab.
+
+        Derived applications extend this by concatenating their own categories
+        to the result of ``super().get_option_categories()``.
+
+        Returns:
+            Ordered list of ``(category_id, label)`` pairs.
+        """
+        return [
+            ("main", _("General")),
+            ("console", _("Console")),
+            ("io", _("I/O")),
+            ("proc", _("Processing")),
+            ("view", _("Visualization")),
+        ]
+
+    def get_field_category(self, name: str) -> str:
+        """Return the category id of an option field (empty if uncategorized).
+
+        Args:
+            name: The option field name.
+
+        Returns:
+            The category id, or an empty string if the field is uncategorized
+             or unknown.
+        """
+        field = getattr(self, name, None)
+        return getattr(field, "category", "") if field is not None else ""
+
+    def fields_by_category(self) -> dict[str, list[str]]:
+        """Return option field names grouped by category id.
+
+        Categories are keyed in the order returned by
+        :meth:`get_option_categories`; uncategorized fields are omitted.
+
+        Returns:
+            Mapping ``category_id -> [option_field_name, ...]``.
+        """
+        result: dict[str, list[str]] = {
+            cid: [] for cid, _label in self.get_option_categories()
+        }
+        for name in vars(self):
+            field = getattr(self, name)
+            if isinstance(field, OptionField):
+                category = getattr(field, "category", "")
+                if category:
+                    result.setdefault(category, []).append(name)
+        return result
 
     # -- PlotPy INI-based configuration integration --
 
