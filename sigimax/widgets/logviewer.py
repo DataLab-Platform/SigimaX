@@ -12,8 +12,7 @@ from guidata.configtools import get_icon
 from guidata.qthelpers import exec_dialog
 from qtpy import QtWidgets as QW
 
-from sigimax.config import CONF as Conf
-from sigimax.config import _, get_old_log_fname
+from sigimax.config import _, get_conf, get_old_log_fname
 from sigimax.env import execenv
 from sigimax.widgets.fileviewer import FileViewerWidget, get_title_contents
 
@@ -31,8 +30,8 @@ class LogViewerWindow(QW.QDialog):
     def __init__(self, fnames: list[str], parent: QW.QWidget | None = None) -> None:
         super().__init__(parent)
         self.setObjectName("logviewer")
-        self.setWindowTitle(Conf.app_name.get() + " - " + _("Log files"))
-        self.setWindowIcon(get_icon(Conf.app_logo_path.get()))
+        self.setWindowTitle(get_conf().app_name.get() + " - " + _("Log files"))
+        self.setWindowIcon(get_icon(get_conf().app_logo_path.get()))
         self.tabs = QW.QTabWidget(self)
         for fname in fnames:
             if osp.isfile(fname):
@@ -55,11 +54,12 @@ class LogViewerWindow(QW.QDialog):
 
 def get_log_filenames() -> list[str]:
     """Return log filenames"""
+    conf = get_conf()
     return [
-        Conf.traceback_log_path.get(),
-        Conf.faulthandler_log_path.get(),
-        get_old_log_fname(Conf.traceback_log_path.get()),
-        get_old_log_fname(Conf.faulthandler_log_path.get()),
+        conf.traceback_log_path.get(),
+        conf.faulthandler_log_path.get(),
+        get_old_log_fname(conf.traceback_log_path.get()),
+        get_old_log_fname(conf.faulthandler_log_path.get()),
     ]
 
 
@@ -81,7 +81,7 @@ def exec_sigimax_logviewer_dialog(parent: QW.QWidget | None = None) -> None:
     if dlg.is_empty:
         if not execenv.unattended:
             QW.QMessageBox.information(
-                dlg, Conf.app_name.get(), _("Log files are currently empty.")
+                dlg, get_conf().app_name.get(), _("Log files are currently empty.")
             )
         dlg.close()
     else:

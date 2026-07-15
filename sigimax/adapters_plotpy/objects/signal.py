@@ -21,7 +21,7 @@ from sigima.objects import SignalObj
 from sigimax.adapters_plotpy.objects.base import (
     BaseObjPlotPyAdapter,
 )
-from sigimax.config import CONF as Conf
+from sigimax.config import get_conf
 
 
 class CurveStyles:
@@ -107,11 +107,11 @@ def apply_line_width(item: CurveItem) -> None:
     data_size = item.get_data()[0].size
 
     # Get configured line width
-    line_width = Conf.sig_linewidth.get()
+    line_width = get_conf().sig_linewidth.get()
 
     # For large datasets, clamp linewidth to 1.0 for performance
     # (thick lines cause ~10x rendering slowdown due to Qt raster engine)
-    threshold = Conf.sig_linewidth_perfs_threshold.get()
+    threshold = get_conf().sig_linewidth_perfs_threshold.get()
     if data_size > threshold and line_width > 1.0:
         line_width = 1.0
 
@@ -129,9 +129,9 @@ def apply_downsampling(item: CurveItem, do_not_update: bool = False) -> None:
     """
     old_use_dsamp = item.param.use_dsamp
     item.param.use_dsamp = False
-    if Conf.sig_autodownsampling.get():
+    if get_conf().sig_autodownsampling.get():
         nbpoints = item.get_data()[0].size
-        maxpoints = Conf.sig_autodownsampling_maxpoints.get()
+        maxpoints = get_conf().sig_autodownsampling_maxpoints.get()
         if nbpoints > 5 * maxpoints:
             item.param.use_dsamp = True
             item.param.dsamp_factor = nbpoints // maxpoints
@@ -142,8 +142,8 @@ def apply_downsampling(item: CurveItem, do_not_update: bool = False) -> None:
 class SignalObjPlotPyAdapter(BaseObjPlotPyAdapter[SignalObj, CurveItem]):
     """Signal object plot item adapter class"""
 
-    CONF_FMT = Conf.sig_format
     DEFAULT_FMT = "g"
+    # conf_format is inherited from the base adapter (returns get_conf().sig_format)
 
     def update_plot_item_parameters(self, item: CurveItem) -> None:
         """Update plot item parameters from object data/metadata

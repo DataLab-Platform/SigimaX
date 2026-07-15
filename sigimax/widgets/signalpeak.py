@@ -17,8 +17,7 @@ from qtpy import QtWidgets as QW
 from sigima.tools.signal.peakdetection import peak_indices
 
 from sigimax.adapters_plotpy import CURVESTYLES, create_adapter_from_object
-from sigimax.config import CONF as Conf
-from sigimax.config import _
+from sigimax.config import _, get_conf
 from sigimax.utils.qthelpers import resize_widget_to_parent
 
 __all__ = [
@@ -98,7 +97,7 @@ class SignalPeakDetectionDialog(PlotDialog):
         super().__init__(title=_("Signal peak detection"), edit=True, parent=parent)
         self.setObjectName("peakdetection")
         if parent is None:
-            self.setWindowIcon(get_icon(Conf.app_logo_path.get()))
+            self.setWindowIcon(get_icon(get_conf().app_logo_path.get()))
         legend = make.legend("TR")
         self.get_plot().add_item(legend)
         self.__signal = signal.copy()

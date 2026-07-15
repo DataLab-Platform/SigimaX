@@ -13,8 +13,7 @@ from scipy.special import erf  # pylint: disable=no-name-in-module
 from sigima.tools.checks import check_1d_arrays
 from sigima.tools.signal import fitting, fourier, pulse
 
-from sigimax.config import CONF as Conf
-from sigimax.config import _
+from sigimax.config import _, get_conf
 
 __all__ = [
     "cdf_fit",
@@ -66,7 +65,7 @@ def guifit(
             ylabel=ylabel,
             curve_antialiasing=True,
             show_axes_tab=False,
-            autoscale_margin_percent=Conf.sig_autoscale_margin_percent.get(),
+            autoscale_margin_percent=get_conf().sig_autoscale_margin_percent.get(),
         ),
         parent=parent,
         param_cols=param_cols,
@@ -79,7 +78,7 @@ def guifit(
     except ValueError:
         pass
     if parent is None:
-        win.setWindowIcon(get_icon(Conf.app_logo_path.get()))
+        win.setWindowIcon(get_icon(get_conf().app_logo_path.get()))
     if winsize is not None:
         win.resize(*winsize)
     if winpos is not None:

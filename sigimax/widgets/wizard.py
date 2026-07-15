@@ -28,8 +28,7 @@ from qtpy import QtWidgets as QW
 from qtpy.compat import getopenfilename
 from qtpy.QtWidgets import QWidget
 
-from sigimax.config import CONF as Conf
-from sigimax.config import _
+from sigimax.config import _, get_conf
 
 __all__ = [
     "Wizard",
@@ -54,7 +53,7 @@ class WizardPage(QW.QWidget):
     def __init__(self, parent: QW.QWidget | None = None) -> None:
         super().__init__(parent)
         if parent is None:
-            self.setWindowIcon(get_icon(Conf.app_logo_path.get()))
+            self.setWindowIcon(get_icon(get_conf().app_logo_path.get()))
         self.__is_valid: bool = True
         self.wizard: Wizard | None = None
         self._main_layout = QW.QVBoxLayout()

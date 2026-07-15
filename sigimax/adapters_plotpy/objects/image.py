@@ -9,6 +9,8 @@ PlotPy Adapter Image Module
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import numpy as np
 from guidata.dataset import update_dataset
 from plotpy.builder import make
@@ -18,7 +20,10 @@ from sigima.objects import ImageObj
 from sigimax.adapters_plotpy.objects.base import (
     BaseObjPlotPyAdapter,
 )
-from sigimax.config import CONF as Conf
+from sigimax.config import get_conf
+
+if TYPE_CHECKING:
+    from sigima.config import OptionField
 
 
 def get_obj_coords(obj: ImageObj) -> tuple[np.ndarray, np.ndarray]:
@@ -44,8 +49,12 @@ def get_obj_coords(obj: ImageObj) -> tuple[np.ndarray, np.ndarray]:
 class ImageObjPlotPyAdapter(BaseObjPlotPyAdapter[ImageObj, MaskedXYImageItem]):
     """Image object plot item adapter class"""
 
-    CONF_FMT = Conf.ima_format
     DEFAULT_FMT = ".1f"
+
+    @property
+    def conf_format(self) -> OptionField:
+        """Image numeric format option field (resolved at runtime)."""
+        return get_conf().ima_format
 
     def update_plot_item_parameters(self, item: MaskedXYImageItem) -> None:
         """Update plot item parameters from object data/metadata
@@ -116,7 +125,7 @@ class ImageObjPlotPyAdapter(BaseObjPlotPyAdapter[ImageObj, MaskedXYImageItem]):
             self.obj.maskdata,
             title=self.obj.title,
             colormap="viridis",
-            eliminate_outliers=Conf.ima_eliminate_outliers.get(),
+            eliminate_outliers=get_conf().ima_eliminate_outliers.get(),
             interpolation="nearest",
             show_mask=True,
         )

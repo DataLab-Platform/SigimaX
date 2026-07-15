@@ -226,16 +226,17 @@ class TupleOptionField(OptionField):
                 f"got {type(value).__name__}"
             )
 
-    def set(self, value: Any, sync_env: bool = True) -> None:
+    def set(self, value: Any, *, sync_env: bool = True) -> None:
         """Set the value, converting lists to tuples.
 
         Args:
             value: The new value to assign.
-            sync_env: Whether to synchronize the environment variable.
+            sync_env: Whether to synchronize the environment variable
+             (keyword-only).
         """
         if isinstance(value, list):
             value = tuple(value)
-        super().set(value, sync_env)
+        super().set(value, sync_env=sync_env)
 
 
 class FontOptionField(OptionField):
@@ -269,16 +270,17 @@ class FontOptionField(OptionField):
                 f"got {value!r}"
             )
 
-    def set(self, value: Any, sync_env: bool = True) -> None:
+    def set(self, value: Any, *, sync_env: bool = True) -> None:
         """Set the value, converting lists to tuples.
 
         Args:
             value: The new value to assign.
-            sync_env: Whether to synchronize the environment variable.
+            sync_env: Whether to synchronize the environment variable
+             (keyword-only).
         """
         if isinstance(value, list):
             value = tuple(value)
-        super().set(value, sync_env)
+        super().set(value, sync_env=sync_env)
 
 
 # ---------------------------------------------------------------------------
@@ -897,7 +899,7 @@ class SigimaXOptions(AppOptionsContainer):
             self,
             "show_label",
             category="view",
-            default=True,
+            default=False,
             expected_type=bool,
             description="If True, show labels on plot items.",
         )
@@ -1681,3 +1683,69 @@ class SigimaXOptions(AppOptionsContainer):
 #: Global instance of SigimaX options.
 #: Derived applications should create their own instance of their subclass.
 CONF = SigimaXOptions()
+
+#: Names of every option defined by the SigimaX base configuration. A derived
+#: application may add options and override values, but it may **not** remove a
+#: base option (doing so would break SigimaX modules that read it at runtime).
+_BASE_OPTION_NAMES: frozenset[str] = frozenset(
+    name for name in vars(CONF) if isinstance(getattr(CONF, name), OptionField)
+)
+
+#: The currently active options container. Defaults to the SigimaX base
+#: configuration; a derived application installs its own container via
+#: :func:`set_conf`. All SigimaX modules read the active container through
+#: :func:`get_conf` (never by binding ``CONF`` directly), so that a derived
+#: application's configuration is honoured transparently regardless of import
+#: order.
+_active_conf: AppOptionsContainer = CONF
+
+
+def get_conf() -> AppOptionsContainer:
+    """Return the currently active options container.
+
+    SigimaX modules (and derived-application code) should call this at runtime
+    to read configuration options, e.g. ``get_conf().color_mode.get()``.
+
+    Returns:
+        The active options container (the SigimaX base by default, or the
+         container installed by a derived application via :func:`set_conf`).
+    """
+    return _active_conf
+
+
+def set_conf(container: AppOptionsContainer) -> None:
+    """Install a derived application's options container as the active one.
+
+    The container must define **every** SigimaX base option (base options
+    cannot be removed) so that SigimaX modules never fail a runtime lookup. It
+    may freely add new options and override default values.
+
+    Args:
+        container: The options container to activate (typically a subclass of
+         :class:`SigimaXOptions`).
+
+    Raises:
+        ValueError: If the container is missing one or more base SigimaX options.
+    """
+    container_names = {
+        name
+        for name in vars(container)
+        if isinstance(getattr(container, name), OptionField)
+    }
+    missing = _BASE_OPTION_NAMES - container_names
+    if missing:
+        raise ValueError(
+            "Cannot install options container: the following base SigimaX "
+            f"options are missing (base options cannot be removed): {sorted(missing)}"
+        )
+    global _active_conf  # pylint: disable=global-statement
+    _active_conf = container
+
+
+def reset_conf() -> None:
+    """Restore the SigimaX base configuration as the active container.
+
+    Mainly useful for tests that install a derived container and need to revert.
+    """
+    global _active_conf  # pylint: disable=global-statement
+    _active_conf = CONF

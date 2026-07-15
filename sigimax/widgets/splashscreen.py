@@ -104,14 +104,16 @@ class SplashScreenConfig:
             Configuration instance populated from global options.
         """
         # Import here to avoid circular imports
-        from sigimax.config import CONF  # pylint: disable=import-outside-toplevel
+        from sigimax.config import get_conf  # pylint: disable=import-outside-toplevel
+
+        conf = get_conf()
 
         return cls(
-            image_path=CONF.splash_image_path.get() or None,
-            app_name=CONF.app_name.get(),
-            app_version=CONF.app_version.get(),
-            tagline=CONF.app_desc.get(),
-            show_progress=CONF.splash_show_progress.get(),
+            image_path=conf.splash_image_path.get() or None,
+            app_name=conf.app_name.get(),
+            app_version=conf.app_version.get(),
+            tagline=conf.app_desc.get(),
+            show_progress=conf.splash_show_progress.get(),
         )
 
 

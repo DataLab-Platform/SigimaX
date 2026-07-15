@@ -44,13 +44,13 @@ from qtpy import QtWidgets as QW
 from qtpy.compat import getopenfilenames, getsavefilename
 
 from sigimax._metadata import __homeurl__, __version__
-from sigimax.config import CONF as Conf
 from sigimax.config import (
     DEBUG,
     MOD_DESC,
     MOD_TITLE,
     TEST_SEGFAULT_ERROR,
     _,
+    get_conf,
 )
 from sigimax.env import execenv
 from sigimax.h5 import H5Importer
@@ -100,8 +100,9 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         """Initialize main window"""
         SGMXMainWindow.__instance = self
         super().__init__()
-        self.setObjectName(Conf.app_name.get())
-        self.setWindowIcon(get_icon(Conf.app_logo_path.get()))
+        conf = get_conf()
+        self.setObjectName(conf.app_name.get())
+        self.setWindowIcon(get_icon(conf.app_logo_path.get()))
 
         execenv.log(self, "Starting initialization")
 
@@ -138,7 +139,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
 
         # Setup actions and menus
         if console is None:
-            console = Conf.console_enabled.get()
+            console = conf.console_enabled.get()
         self.setup(console)
 
         self.__restore_pos_and_size()
@@ -155,7 +156,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
             True if memory state is ok
         """
         if not execenv.unattended and self.__memory_warning:
-            threshold = Conf.available_memory_threshold.get()
+            threshold = get_conf().available_memory_threshold.get()
             answer = QW.QMessageBox.critical(
                 self,
                 _("Warning"),
@@ -191,7 +192,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
                 "by the developer before it is released."
             )
         txtlist = [
-            f"<b>{Conf.app_name.get()}</b> v{Conf.app_version.get()}:",
+            f"<b>{get_conf().app_name.get()}</b> v{get_conf().app_version.get()}:",
             "",
             _("<i>This is not a stable release.</i>"),
             "",
@@ -199,11 +200,12 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         ]
         if not execenv.unattended:
             QW.QMessageBox.warning(
-                self, Conf.app_name.get(), "<br>".join(txtlist), QW.QMessageBox.Ok
+                self, get_conf().app_name.get(), "<br>".join(txtlist), QW.QMessageBox.Ok
             )
 
     def check_for_previous_crash(self) -> None:  # pragma: no cover
         """Check for previous crash"""
+        conf = get_conf()
         if execenv.unattended and not execenv.do_not_quit:
             # Showing the log viewer for testing purpose (unattended mode) but only
             # if option 'do_not_quit' is not set, to avoid blocking the test suite
@@ -212,9 +214,9 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
             # If 'do_not_quit' is set, we do not show any message box to avoid blocking
             # the test suite
             return
-        elif Conf.faulthandler_log_available.get(
-            False
-        ) or Conf.traceback_log_available.get(False):
+        elif (
+            conf.faulthandler_log_available.get() or conf.traceback_log_available.get()
+        ):
             txt = "<br>".join(
                 [
                     logviewer.get_log_prompt_message(),
@@ -223,7 +225,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
                 ]
             )
             btns = QW.QMessageBox.StandardButton.Yes | QW.QMessageBox.StandardButton.No
-            choice = QW.QMessageBox.warning(self, Conf.app_name.get(), txt, btns)
+            choice = QW.QMessageBox.warning(self, conf.app_name.get(), txt, btns)
             if choice == QW.QMessageBox.StandardButton.Yes:
                 self.__show_logviewer()
 
@@ -259,11 +261,12 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
     # ------GUI setup
     def __restore_pos_and_size(self) -> None:
         """Restore main window position and size from configuration"""
-        pos = Conf.window_position.get(None)
+        conf = get_conf()
+        pos = conf.window_position.get()
         if pos is not None:
             posx, posy = pos
             self.move(QC.QPoint(posx, posy))
-        size = Conf.window_size.get(None)
+        size = conf.window_size.get()
         if size is None:
             sgeo = self.screen().availableGeometry()
             sw, sh = sgeo.width(), sgeo.height()
@@ -288,8 +291,8 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
 
     def __restore_state(self) -> None:
         """Restore main window state from configuration"""
-        state = Conf.window_state.get(None)
-        if state is not None:
+        state = get_conf().window_state.get()
+        if state:
             state = base64.b64decode(state)
             self.restoreState(QC.QByteArray(state))
             for widget in self.children():
@@ -298,17 +301,18 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
 
     def __save_pos_size_and_state(self) -> None:
         """Save main window position, size and state to configuration"""
+        conf = get_conf()
         is_maximized = self.windowState() == QC.Qt.WindowMaximized
-        Conf.window_maximized.set(is_maximized)
+        conf.window_maximized.set(is_maximized)
         if not is_maximized:
             size = self.size()
-            Conf.window_size.set((size.width(), size.height()))
+            conf.window_size.set((size.width(), size.height()))
             pos = self.pos()
-            Conf.window_position.set((pos.x(), pos.y()))
+            conf.window_position.set((pos.x(), pos.y()))
         # Encoding window state into base64 string to avoid sending binary data
         # to the configuration file:
         state = base64.b64encode(self.saveState().data()).decode("ascii")
-        Conf.window_state.set(state)
+        conf.window_state.set(state)
 
     def setup(self, console: bool = False) -> None:
         """Setup main window
@@ -331,13 +335,14 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         Args:
             console: True if console is enabled
         """
-        self.statusBar().showMessage(_("Welcome to %s!") % Conf.app_name.get(), 5000)
+        conf = get_conf()
+        self.statusBar().showMessage(_("Welcome to %s!") % conf.app_name.get(), 5000)
         if console:
             # Console status
             self.consolestatus = status.ConsoleStatus()
             self.statusBar().addPermanentWidget(self.consolestatus)
         # Memory status
-        threshold = Conf.available_memory_threshold.get()
+        threshold = conf.available_memory_threshold.get()
         self.memorystatus = status.MemoryStatus(threshold)
         self.memorystatus.SIG_MEMORY_ALARM.connect(self.__set_low_memory_state)
         self.statusBar().addPermanentWidget(self.memorystatus)
@@ -463,7 +468,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         Returns:
             Resolved file path, or None if not configured / not found.
         """
-        pattern = Conf.app_local_doc_path.get()
+        pattern = get_conf().app_local_doc_path.get()
         if not pattern:
             return None
         if "{lang}" in pattern:
@@ -492,7 +497,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         Console show mode is whether the console is shown or not when an error occurs.
         """
         if self.console is not None:
-            state = Conf.show_console_on_error.get()
+            state = get_conf().show_console_on_error.get()
             cdock = self.docks[self.console]
             if not state and cdock.isVisible():
                 cdock.hide()
@@ -530,7 +535,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         Returns:
             Welcome message string
         """
-        app = Conf.app_name.get()
+        app = get_conf().app_name.get()
         return (
             _(
                 "Welcome to %s console!\n"
@@ -547,7 +552,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         ns = self._get_console_namespace()
         msg = self._get_console_message()
         self.console = DockableConsole(self, namespace=ns, message=msg, debug=DEBUG)
-        self.console.setMaximumBlockCount(Conf.console_max_line_count.get(5000))
+        self.console.setMaximumBlockCount(get_conf().console_max_line_count.get())
         self.console.go_to_error.connect(go_to_error)
         cdock = self.__add_dockwidget(self.console, _("Console"))
         self.docks[self.console] = cdock
@@ -560,9 +565,10 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
     def set_modified(self, state: bool = True) -> None:
         """Set mainwindow modified state"""
         self.__is_modified = state
-        title = Conf.app_name.get() + ("*" if state else "")
-        if not Conf.app_version.get().replace(".", "").isdigit():
-            title += f" [{Conf.app_version.get()}]"
+        conf = get_conf()
+        title = conf.app_name.get() + ("*" if state else "")
+        if not conf.app_version.get().replace(".", "").isdigit():
+            title += f" [{conf.app_version.get()}]"
         self.setWindowTitle(title)
 
     def is_modified(self) -> bool:
@@ -652,7 +658,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
                 self,
                 _("Online documentation"),
                 icon=get_icon("libre-gui-help.svg"),
-                triggered=lambda: webbrowser.open(Conf.app_docurl.get()),
+                triggered=lambda: webbrowser.open(get_conf().app_docurl.get()),
             ),
         ]
         localdocpath = self.__get_local_doc_path()
@@ -685,13 +691,13 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
                 self,
                 _("Project home page"),
                 icon=get_icon("libre-gui-globe.svg"),
-                triggered=lambda: webbrowser.open(Conf.app_homeurl.get()),
+                triggered=lambda: webbrowser.open(get_conf().app_homeurl.get()),
             ),
             create_action(
                 self,
                 _("Bug report or feature request"),
                 icon=get_icon("libre-gui-globe.svg"),
-                triggered=lambda: webbrowser.open(Conf.app_supporturl.get()),
+                triggered=lambda: webbrowser.open(get_conf().app_supporturl.get()),
             ),
             create_action(
                 self,
@@ -709,7 +715,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         bname = osp.basename(filename)
         if operation == "load" and not osp.isfile(filename):
             raise IOError(f'File not found "{bname}"')
-        Conf.base_dir.set(filename)
+        get_conf().base_dir.set(filename)
         return filename
 
     def save_to_h5_file(self, filename=None) -> None:
@@ -722,7 +728,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
             IOError: if filename is invalid or file cannot be saved.
         """
         if filename is None:
-            basedir = Conf.base_dir.get()
+            basedir = get_conf().base_dir.get()
             with qth.save_restore_stds():
                 filename, _fl = getsavefilename(
                     self,
@@ -750,11 +756,12 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         """
         if not self.confirm_memory_state():
             return
+        conf = get_conf()
         if reset_all is None:
             # When workspace is empty, always preserve UUIDs (reset_all=True)
             # since there's no risk of conflicts
-            reset_all = Conf.h5_clear_workspace.get()
-            if Conf.h5_clear_workspace_ask.get():
+            reset_all = conf.h5_clear_workspace.get()
+            if conf.h5_clear_workspace_ask.get():
                 # Build message with optional note for native workspace import
                 msg = _(
                     "Do you want to clear current workspace "
@@ -786,9 +793,9 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
                 elif answer == QW.QMessageBox.No:
                     reset_all = False
                 elif answer == QW.QMessageBox.Ignore:
-                    Conf.h5_clear_workspace_ask.set(False)
+                    conf.h5_clear_workspace_ask.set(False)
         if h5files is None:
-            basedir = Conf.base_dir.get()
+            basedir = conf.base_dir.get()
             with qth.save_restore_stds():
                 h5files, _fl = getopenfilenames(
                     self,
@@ -965,14 +972,15 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         Override this method in subclasses to fully customize the About dialog.
         """
         self.check_stable_release()
-        app_name = Conf.app_name.get()
-        app_version = Conf.app_version.get()
-        app_desc = Conf.app_desc.get()
-        app_homeurl = Conf.app_homeurl.get()
-        app_docurl = Conf.app_docurl.get()
-        app_supporturl = Conf.app_supporturl.get()
-        dev_by = Conf.app_developer.get()
-        cprght = Conf.app_copyright.get()
+        conf = get_conf()
+        app_name = conf.app_name.get()
+        app_version = conf.app_version.get()
+        app_desc = conf.app_desc.get()
+        app_homeurl = conf.app_homeurl.get()
+        app_docurl = conf.app_docurl.get()
+        app_supporturl = conf.app_supporturl.get()
+        dev_by = conf.app_developer.get()
+        cprght = conf.app_copyright.get()
 
         # -- Application header
         about_parts = [f"<b>{app_name}</b> v{app_version}"]
@@ -1019,7 +1027,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
             startup: True if method is called during application startup (in that case,
              color theme is applied only if mode != "auto")
         """
-        mode = Conf.color_mode.get()
+        mode = get_conf().color_mode.get()
         if startup and mode == "auto":
             guidata_qth.win32_fix_title_bar_background(self)
             return

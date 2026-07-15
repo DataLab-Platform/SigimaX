@@ -29,10 +29,11 @@ from sigimax.adapters_plotpy.base import (
     config_annotated_shape,
     set_plot_item_editable,
 )
-from sigimax.config import CONF as Conf
+from sigimax.config import get_conf
 
 if TYPE_CHECKING:
     from plotpy.items import CurveItem, MaskedXYImageItem
+    from sigima.config import OptionField
 
 TypePlotItem = TypeVar("TypePlotItem", bound="CurveItem | MaskedXYImageItem")
 
@@ -41,7 +42,16 @@ class BaseObjPlotPyAdapter(Generic[TypeObj, TypePlotItem]):
     """Object (signal/image) plot item adapter class"""
 
     DEFAULT_FMT = "s"  # This is overriden in children classes
-    CONF_FMT = Conf.sig_format  # This is overriden in children classes
+
+    @property
+    def conf_format(self) -> OptionField:
+        """Config option field holding the numeric format string.
+
+        Overridden in the image adapter to return the image-specific field.
+        Resolved at runtime via ``get_conf()`` so the active (possibly
+        derived-application) configuration is honoured.
+        """
+        return get_conf().sig_format
 
     def __init__(self, obj: TypeObj) -> None:
         """Initialize the adapter with the object.
@@ -50,9 +60,11 @@ class BaseObjPlotPyAdapter(Generic[TypeObj, TypePlotItem]):
             obj: object (signal/image)
         """
         self.obj = obj
+        # An empty format string in the configuration acts as a sentinel meaning
+        # "use the adapter's type-appropriate DEFAULT_FMT".
         self.__default_options = {
-            "format": "%" + self.CONF_FMT.get(self.DEFAULT_FMT),
-            "showlabel": Conf.show_label.get(False),
+            "format": "%" + (self.conf_format.get() or self.DEFAULT_FMT),
+            "showlabel": get_conf().show_label.get(),
         }
         self.annotation_adapter = PlotPyAnnotationAdapter(obj)
 
@@ -179,7 +191,7 @@ class BaseObjPlotPyAdapter(Generic[TypeObj, TypePlotItem]):
         Args:
             item: plot item
         """
-        def_dict = Conf.get_sigima_defaults(self.__class__.__name__[:3].lower())
+        def_dict = get_conf().get_sigima_defaults(self.__class__.__name__[:3].lower())
         self.obj.set_metadata_options_defaults(def_dict, overwrite=False)
 
         # Subclasses have to override this method to update plot item parameters,
@@ -201,7 +213,7 @@ class BaseObjPlotPyAdapter(Generic[TypeObj, TypePlotItem]):
         Args:
             item: plot item
         """
-        def_dict = Conf.get_sigima_defaults(self.__class__.__name__[:3].lower())
+        def_dict = get_conf().get_sigima_defaults(self.__class__.__name__[:3].lower())
         for key in def_dict:
             if hasattr(item.param, key):  # In case the PlotPy version is not up-to-date
                 self.obj.set_metadata_option(key, getattr(item.param, key))

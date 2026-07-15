@@ -33,8 +33,7 @@ from qtpy.compat import getopenfilename
 from sigima import ImageObj, SignalObj
 
 from sigimax.adapters_plotpy import CURVESTYLES, create_adapter_from_object
-from sigimax.config import CONF as Conf
-from sigimax.config import _
+from sigimax.config import _, get_conf
 from sigimax.h5 import H5Importer
 from sigimax.utils.qthelpers import block_signals, qt_handle_error_message
 
@@ -475,7 +474,7 @@ class PlotPreview(QW.QStackedWidget):
                 type="curve",
                 curve_antialiasing=True,
                 show_axes_tab=False,
-                autoscale_margin_percent=Conf.sig_autoscale_margin_percent.get(0.2),
+                autoscale_margin_percent=get_conf().sig_autoscale_margin_percent.get(),
             ),
         )
         self.addWidget(self.curvewidget)
@@ -485,7 +484,7 @@ class PlotPreview(QW.QStackedWidget):
                 type="image",
                 show_contrast=True,
                 show_axes_tab=False,
-                autoscale_margin_percent=Conf.ima_autoscale_margin_percent.get(0.2),
+                autoscale_margin_percent=get_conf().ima_autoscale_margin_percent.get(),
             ),
         )
         self.addWidget(self.imagewidget)
@@ -748,7 +747,7 @@ class H5Browser(QW.QSplitter):
     def __init__(self, parent: QW.QWidget | None = None) -> None:
         super().__init__(parent)
         if parent is None:
-            self.setWindowIcon(get_icon(Conf.app_logo_path.get()))
+            self.setWindowIcon(get_icon(get_conf().app_logo_path.get()))
         self.selector = H5FileSelector(self)
         self.selector.SIG_ADD_FILENAME.connect(self.__add_new_file)
         self.selector.SIG_REMOVE_FILENAME.connect(self.__remove_file)

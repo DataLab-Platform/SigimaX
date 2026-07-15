@@ -58,7 +58,7 @@ from qtpy.QtWidgets import QApplication
 from sigima.tools.signal import pulse
 from skimage import measure
 
-from sigimax.config import CONF as Conf
+from sigimax.config import get_conf
 
 if TYPE_CHECKING:
     from plotpy.items.image.base import BaseImageItem
@@ -242,13 +242,14 @@ class SigimaXPlotWidget(PlotWidget):
 
     def __init__(self, plot_type: PlotType) -> None:
         # Get autoscale margin from configuration based on plot type
+        conf = get_conf()
         if plot_type == PlotType.CURVE:
-            autoscale_margin = Conf.sig_autoscale_margin_percent.get()
+            autoscale_margin = conf.sig_autoscale_margin_percent.get()
         elif plot_type == PlotType.IMAGE:
-            autoscale_margin = Conf.ima_autoscale_margin_percent.get()
+            autoscale_margin = conf.ima_autoscale_margin_percent.get()
         else:
             # For AUTO or MANUAL types, use signal margin as default
-            autoscale_margin = Conf.sig_autoscale_margin_percent.get()
+            autoscale_margin = conf.sig_autoscale_margin_percent.get()
 
         super().__init__(
             options=PlotOptions(
@@ -350,7 +351,7 @@ class DockablePlotWidget(DockableWidget):
 
     def _apply_dock_location(self) -> None:
         """Set dock location from config."""
-        location_str = Conf.plot_dock_location.get()
+        location_str = get_conf().plot_dock_location.get()
         location = _DOCK_LOCATION_MAP.get(location_str, QC.Qt.RightDockWidgetArea)
         self.setup_dockwidget(location=location)
 
@@ -359,7 +360,7 @@ class DockablePlotWidget(DockableWidget):
 
         If ``Conf.watermark_image_path`` is empty, no watermark is created.
         """
-        path = Conf.watermark_image_path.get()
+        path = get_conf().watermark_image_path.get()
         if path:
             self.watermark = QW.QLabel()
             pixmap = QG.QPixmap(path)
@@ -369,7 +370,7 @@ class DockablePlotWidget(DockableWidget):
 
     def __get_toolbar_row_col(self) -> tuple[int, int]:
         """Return toolbar row and column"""
-        tb_pos = Conf.plot_toolbar_position.get()
+        tb_pos = get_conf().plot_toolbar_position.get()
         tb_col, tb_row = 1, 1
         if tb_pos in ("left", "right"):
             self.toolbar.setOrientation(QC.Qt.Vertical)

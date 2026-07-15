@@ -16,8 +16,7 @@ from guidata.widgets.console.shell import PythonShellWidget
 from qtpy import QtCore as QC
 from qtpy import QtWidgets as QW
 
-from sigimax.config import CONF as Conf
-from sigimax.config import _, get_mod_source_dir
+from sigimax.config import _, get_conf, get_mod_source_dir
 
 __all__ = [
     "WarningErrorMessageBox",
@@ -49,8 +48,8 @@ def go_to_error(text: str) -> None:
         if not osp.isfile(path):
             return  # File not found (unhandled case)
         fdict = {"path": path, "line_number": line_number}
-        args = Conf.external_editor_args.get().format(**fdict).split(" ")
-        editor_path = Conf.external_editor_path.get()
+        args = get_conf().external_editor_args.get().format(**fdict).split(" ")
+        editor_path = get_conf().external_editor_path.get()
         subprocess.run([editor_path] + args, shell=True, check=False)
 
 
@@ -107,7 +106,7 @@ class WarningErrorMessageBox(QW.QDialog):
         assert category in ("error", "warning")
         self.setWindowTitle(parent.window().objectName())
         if parent is None:
-            self.setWindowIcon(get_icon(Conf.app_logo_path.get()))
+            self.setWindowIcon(get_icon(get_conf().app_logo_path.get()))
         self.shell = PythonShellWidget(self, read_only=True)
         self.shell.go_to_error.connect(go_to_error)
         font = get_font(CONF, "console")
@@ -205,7 +204,7 @@ class WarningErrorMessageBox(QW.QDialog):
 
     def ignore(self):
         """Ignore warning next time"""
-        Conf.ignore_warnings.set(True)
+        get_conf().ignore_warnings.set(True)
         self.accept()
 
 
@@ -225,7 +224,7 @@ def show_warning_error(
         message (str | None): message. Defaults to None.
         tip (str | None): tip. Defaults to None.
     """
-    if category == "warning" and Conf.ignore_warnings.get():
+    if category == "warning" and get_conf().ignore_warnings.get():
         return
     dlg = WarningErrorMessageBox(parent, category, context, message, tip)
     exec_dialog(dlg)

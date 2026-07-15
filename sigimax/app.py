@@ -36,7 +36,7 @@ from typing import TYPE_CHECKING
 
 from qtpy import QtWidgets as QW
 
-from sigimax.config import CONF as Conf
+from sigimax.config import get_conf
 from sigimax.mainwindow import SGMXMainWindow
 from sigimax.utils.qthelpers import sigimax_app_context
 from sigimax.widgets.splashscreen import SigimaXSplashScreen, SplashScreenConfig
@@ -98,7 +98,7 @@ def create(
     if splashscreen is not None:
         splashscreen.finish(window)
 
-    if Conf.window_maximized.get(None):
+    if get_conf().window_maximized.get():
         window.showMaximized()
     else:
         window.showNormal()

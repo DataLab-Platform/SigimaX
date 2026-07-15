@@ -26,9 +26,9 @@ from guidata.utils.misc import to_string
 from qtpy import QtCore as QC
 from qtpy import QtWidgets as QW
 
-from sigimax.config import CONF as Conf
 from sigimax.config import (
     _,
+    get_conf,
     get_old_log_fname,
 )
 from sigimax.env import execenv
@@ -102,16 +102,18 @@ def sigimax_app_context(
     if QAPP_INSTANCE is None:
         QAPP_INSTANCE = guidata.qapplication()
 
+    conf = get_conf()
+
     # === Set application name and version ---------------------------------------------
     # pylint: disable=import-outside-toplevel
-    QAPP_INSTANCE.setApplicationName(Conf.app_name.get())
-    QAPP_INSTANCE.setApplicationVersion(Conf.app_version.get())
-    QAPP_INSTANCE.setOrganizationName(Conf.app_name.get() + " project")
+    QAPP_INSTANCE.setApplicationName(conf.app_name.get())
+    QAPP_INSTANCE.setApplicationVersion(conf.app_version.get())
+    QAPP_INSTANCE.setOrganizationName(conf.app_name.get() + " project")
 
     if enable_logs:
         # === Create a logger for standard exceptions ----------------------------------
-        tb_log_fname = Conf.traceback_log_path.get()
-        Conf.traceback_log_available.set(initialize_log_file(tb_log_fname))
+        tb_log_fname = conf.traceback_log_path.get()
+        conf.traceback_log_available.set(initialize_log_file(tb_log_fname))
         logger = logging.getLogger(__name__)
         fmt = "[%(asctime)s] {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s"
         logging.basicConfig(
@@ -119,7 +121,7 @@ def sigimax_app_context(
             filemode="w",
             level=logging.ERROR,
             format=fmt,
-            datefmt=Conf.datetime_format.get(),
+            datefmt=conf.datetime_format.get(),
         )
 
         def custom_excepthook(exc_type, exc_value, exc_traceback):
@@ -132,11 +134,11 @@ def sigimax_app_context(
         sys.excepthook = custom_excepthook
 
     # === Use faulthandler for other exceptions ------------------------------------
-    fh_log_fname = Conf.faulthandler_log_path.get()
-    Conf.faulthandler_log_available.set(initialize_log_file(fh_log_fname))
+    fh_log_fname = conf.faulthandler_log_path.get()
+    conf.faulthandler_log_available.set(initialize_log_file(fh_log_fname))
 
     with open(fh_log_fname, "w", encoding="utf-8") as fh_log_fn:
-        if enable_logs and Conf.faulthandler_enabled.get(True):
+        if enable_logs and conf.faulthandler_enabled.get():
             faulthandler.enable(file=fh_log_fn)
         exception_occured = False
         try:
@@ -163,7 +165,7 @@ def sigimax_app_context(
         if exception_occured:
             raise  # pylint: disable=misplaced-bare-raise
 
-    if enable_logs and Conf.faulthandler_enabled.get():
+    if enable_logs and conf.faulthandler_enabled.get():
         faulthandler.disable()
     remove_empty_log_file(fh_log_fname)
     if enable_logs:
@@ -190,7 +192,7 @@ def try_or_log_error(context: str) -> Generator[None, None, None]:
         traceback.print_exc()
         logger = logging.getLogger(__name__)
         logger.error("Error in %s", context, exc_info=traceback.format_exc())
-        Conf.traceback_log_available.set(True)
+        get_conf().traceback_log_available.set(True)
     finally:
         pass
 
@@ -380,7 +382,7 @@ def qt_try_loadsave_file(
             f"</span> (<a href='file:///{url}'>{in_folder}</a>)"
         )
         QW.QMessageBox.critical(
-            parent, Conf.app_name.get(), f"{message}<br><br>{str(msg)}"
+            parent, get_conf().app_name.get(), f"{message}<br><br>{str(msg)}"
         )
     finally:
         pass

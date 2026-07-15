@@ -14,8 +14,7 @@ from plotpy.builder import make
 from plotpy.plot import PlotDialog
 
 from sigimax.adapters_plotpy import CURVESTYLES, create_adapter_from_object
-from sigimax.config import CONF as Conf
-from sigimax.config import _
+from sigimax.config import _, get_conf
 from sigimax.utils.qthelpers import resize_widget_to_parent
 
 __all__ = [
@@ -46,7 +45,7 @@ class SignalBaselineDialog(PlotDialog):
         super().__init__(title=_("Signal baseline selection"), edit=True, parent=parent)
         self.setObjectName("baselineselection")
         if parent is None:
-            self.setWindowIcon(get_icon(Conf.app_logo_path.get()))
+            self.setWindowIcon(get_icon(get_conf().app_logo_path.get()))
         legend = make.legend("TR")
         self.get_plot().add_item(legend)
         self.__signal = signal.copy()
