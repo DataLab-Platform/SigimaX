@@ -18,7 +18,7 @@ from guidata.utils.misc import to_string
 from sigima.io.common.converters import convert_array_to_valid_dtype
 from sigima.objects import ImageObj, SignalObj
 
-from sigimax.config import CONF as Conf
+from sigimax.config import get_conf
 
 
 def data_to_xy(data: np.ndarray) -> list[np.ndarray]:
@@ -144,11 +144,12 @@ class BaseNode(metaclass=abc.ABCMeta):
     @property
     def object_title(self):
         """Return signal/image object title"""
-        if Conf.h5_fullpath_in_title.get():
+        conf = get_conf()
+        if conf.h5_fullpath_in_title.get():
             title = self.id
         else:
             title = self.name
-        if Conf.h5_fname_in_title.get():
+        if conf.h5_fname_in_title.get():
             title += f" ({osp.basename(self.h5file.filename)})"
         return title
 
