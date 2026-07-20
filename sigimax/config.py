@@ -165,6 +165,17 @@ NO_DEFAULT = object()
 class OptionField(_SigimaOptionField):
     """SigimaX option field supporting optional default initialization."""
 
+    def __init__(
+        self,
+        container: OptionsContainer,
+        name: str,
+        default: Any,
+        description: str = "",
+        category: str = "",
+    ) -> None:
+        super().__init__(container, name, default, description, category)
+        self._is_initialized = False
+
     def get(self, default: Any = NO_DEFAULT, *, sync_env: bool = True) -> Any:
         """Return the value, initializing a missing option from ``default``.
 
@@ -178,10 +189,13 @@ class OptionField(_SigimaOptionField):
         """
         if sync_env:
             self._container.ensure_loaded_from_env()
+        is_initialized = getattr(
+            self._container, "is_option_initialized", lambda _name: self._is_initialized
+        )
         if (
             default is not NO_DEFAULT
             and default is not None
-            and not self._container.is_option_initialized(self.name)
+            and not is_initialized(self.name)
         ):
             self.set(default, sync_env=sync_env)
             return default
@@ -190,7 +204,10 @@ class OptionField(_SigimaOptionField):
     def set(self, value: Any, *, sync_env: bool = True) -> None:
         """Set the value and mark the option as initialized."""
         super().set(value, sync_env=False)
-        self._container.mark_option_initialized(self.name)
+        self._is_initialized = True
+        mark_initialized = getattr(self._container, "mark_option_initialized", None)
+        if mark_initialized is not None:
+            mark_initialized(self.name)
         if sync_env:
             self._container.sync_env()
 

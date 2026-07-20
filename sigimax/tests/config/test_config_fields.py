@@ -221,7 +221,7 @@ class TestAppOptionsContainer:
         monkeypatch.setenv(c.ENV_VAR, json.dumps({"my_str": "external"}))
         assert c.my_str.get("fallback") == "external"
 
-    def test_own_env_sync_does_not_initialize_defaults(self, monkeypatch):
+    def test_own_env_sync_does_not_initialize_defaults(self):
         """A container's own JSON snapshot does not initialize constructor defaults."""
         c = _MiniContainer()
         c.sync_env()
