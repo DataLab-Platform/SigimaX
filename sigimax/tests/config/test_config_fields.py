@@ -14,11 +14,12 @@ Covers:
 
 from __future__ import annotations
 
+import json
+import os
 import sys
 import tempfile
 
 import pytest
-from sigima.config import TypedOptionField
 
 from sigimax.config import (
     AppOptionsContainer,
@@ -26,6 +27,7 @@ from sigimax.config import (
     FontOptionField,
     SigimaXOptions,
     TupleOptionField,
+    TypedOptionField,
     get_mod_source_dir,
     get_old_log_fname,
     is_frozen,
@@ -73,6 +75,25 @@ class TestTupleOptionField:
         """Getting the default value should return the initial tuple."""
         c = _MiniContainer()
         assert c.my_tuple.get(sync_env=False) == (10, 20)
+
+    def test_get_optional_default_returns_exact_value(self):
+        """A missing field returns the supplied default before normalization."""
+        c = _MiniContainer()
+        default = [30, 40]
+        assert c.my_tuple.get(default, sync_env=False) is default
+        assert c.my_tuple.get(sync_env=False) == (30, 40)
+
+    def test_get_optional_default_does_not_replace_set_value(self):
+        """An explicitly set value takes precedence over a later default."""
+        c = _MiniContainer()
+        c.my_tuple.set((50, 60), sync_env=False)
+        assert c.my_tuple.get((1, 2), sync_env=False) == (50, 60)
+
+    def test_get_none_does_not_initialize(self):
+        """None is a non-persisting fallback and leaves the field uninitialized."""
+        c = _MiniContainer()
+        assert c.my_tuple.get(None, sync_env=False) == (10, 20)
+        assert not c.is_option_initialized("my_tuple")
 
     def test_set_tuple(self):
         """Setting a new tuple value should update the stored value."""
@@ -187,6 +208,25 @@ class TestAppOptionsContainer:
         c = _MiniContainer()
         c.from_dict({"unknown_key": 999, "my_str": "ok"})
         assert c.my_str.get(sync_env=False) == "ok"
+
+    def test_from_dict_marks_option_initialized(self):
+        """Loaded values take precedence over later optional defaults."""
+        c = _MiniContainer()
+        c.from_dict({"my_str": "loaded"})
+        assert c.my_str.get("fallback", sync_env=False) == "loaded"
+
+    def test_external_env_marks_option_initialized(self, monkeypatch):
+        """An externally supplied JSON value takes precedence over defaults."""
+        c = _MiniContainer()
+        monkeypatch.setenv(c.ENV_VAR, json.dumps({"my_str": "external"}))
+        assert c.my_str.get("fallback") == "external"
+
+    def test_own_env_sync_does_not_initialize_defaults(self, monkeypatch):
+        """A container's own JSON snapshot does not initialize constructor defaults."""
+        c = _MiniContainer()
+        c.sync_env()
+        assert os.environ[c.ENV_VAR] == c.to_env_json()
+        assert c.my_str.get("fallback") == "fallback"
 
     def test_from_dict_invalid_value_warning(self, capsys):
         """Providing an invalid value in from_dict should produce a warning."""

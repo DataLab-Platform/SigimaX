@@ -28,11 +28,10 @@ from plotpy.builder import make
 from plotpy.constants import PlotType
 from qtpy import QtCore as QC
 from qtpy import QtWidgets as QW
-from sigima.config import TypedOptionField
 
 from sigimax.app import create as sigimax_create
 from sigimax.config import CONF as Conf
-from sigimax.config import EnumOptionField, SigimaXOptions, _
+from sigimax.config import EnumOptionField, SigimaXOptions, TypedOptionField, _
 from sigimax.mainwindow import SGMXMainWindow
 from sigimax.utils.qthelpers import sigimax_app_context
 from sigimax.widgets.plotdock import DockablePlotWidget

@@ -20,9 +20,7 @@ It provides:
 # Importing necessary modules
 # ---------------------------
 
-from sigima.config import TypedOptionField
-
-from sigimax.config import EnumOptionField, SigimaXOptions
+from sigimax.config import EnumOptionField, SigimaXOptions, TypedOptionField
 
 # %%
 # Creating a custom configuration

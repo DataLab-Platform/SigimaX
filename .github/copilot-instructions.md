@@ -125,8 +125,7 @@ SigimaX is designed around **subclassing**. Derived applications follow three st
 **Step 1 — Subclass `SigimaXOptions`** for app-specific configuration:
 
 ```python
-from sigima.config import TypedOptionField
-from sigimax.config import EnumOptionField, SigimaXOptions
+from sigimax.config import EnumOptionField, SigimaXOptions, TypedOptionField
 
 class MyAppOptions(SigimaXOptions):
     ENV_VAR = "MYAPP_OPTIONS_JSON"

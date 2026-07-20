@@ -22,11 +22,10 @@ This example creates a minimal "MyApp" with a dockable curve plot widget.
 # ---------------------------
 
 from plotpy.constants import PlotType
-from sigima.config import TypedOptionField
 
 from sigimax.app import create
 from sigimax.config import CONF as Conf
-from sigimax.config import EnumOptionField, SigimaXOptions, _
+from sigimax.config import EnumOptionField, SigimaXOptions, TypedOptionField, _
 from sigimax.mainwindow import SGMXMainWindow
 from sigimax.utils.qthelpers import sigimax_app_context
 from sigimax.widgets.plotdock import DockablePlotWidget

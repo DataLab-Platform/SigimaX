@@ -55,7 +55,7 @@ Build a scientific desktop application in three steps:
     from sigimax.config import CONF as Conf, SigimaXOptions, _
     from sigimax.mainwindow import SGMXMainWindow
     from sigimax.widgets.plotdock import DockablePlotWidget
-    from sigima.config import TypedOptionField
+    from sigimax.config import TypedOptionField
     from plotpy.constants import PlotType
 
     # 1. Custom configuration

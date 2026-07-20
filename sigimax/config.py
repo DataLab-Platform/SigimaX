@@ -14,6 +14,9 @@ Design principles:
 
 - **Simple API**: Options are accessed via ``CONF.color_mode.get()`` and
   ``CONF.color_mode.set("dark")``.
+- **Optional initialization defaults**: ``CONF.color_mode.get("auto")`` sets
+    and returns ``"auto"`` only when the option has not been explicitly
+    initialized or loaded.
 - **Context managers**: Temporarily override options with
   ``with CONF.fft_shift_enabled.context(False): ...``.
 - **Extensible via subclassing**: Derived applications (like DataLab) subclass
@@ -76,12 +79,8 @@ from typing import Any
 from guidata import configtools
 from plotpy.config import CONF as PLOTPY_CONF
 from plotpy.config import MAIN_BG_COLOR, MAIN_FG_COLOR
-from sigima.config import (
-    ImageIOOptionField,
-    OptionField,
-    OptionsContainer,
-    TypedOptionField,
-)
+from sigima.config import OptionField as _SigimaOptionField
+from sigima.config import OptionsContainer
 from sigima.config import options as sigima_options
 from sigima.proc.title_formatting import (
     PlaceholderTitleFormatter,
@@ -158,6 +157,92 @@ def get_mod_source_dir() -> str | None:
 # ---------------------------------------------------------------------------
 # Custom OptionField subclasses for GUI application options
 # ---------------------------------------------------------------------------
+
+
+NO_DEFAULT = object()
+
+
+class OptionField(_SigimaOptionField):
+    """SigimaX option field supporting optional default initialization."""
+
+    def get(self, default: Any = NO_DEFAULT, *, sync_env: bool = True) -> Any:
+        """Return the value, initializing a missing option from ``default``.
+
+        Args:
+            default: Optional value used when the option is not initialized.
+             ``None`` is returned without initializing the option.
+            sync_env: Whether to load externally synchronized values first.
+
+        Returns:
+            The exact supplied default after initialization, or the current value.
+        """
+        if sync_env:
+            self._container.ensure_loaded_from_env()
+        if (
+            default is not NO_DEFAULT
+            and default is not None
+            and not self._container.is_option_initialized(self.name)
+        ):
+            self.set(default, sync_env=sync_env)
+            return default
+        return self._value
+
+    def set(self, value: Any, *, sync_env: bool = True) -> None:
+        """Set the value and mark the option as initialized."""
+        super().set(value, sync_env=False)
+        self._container.mark_option_initialized(self.name)
+        if sync_env:
+            self._container.sync_env()
+
+
+class TypedOptionField(OptionField):
+    """Typed SigimaX option field with optional-default initialization."""
+
+    def __init__(
+        self,
+        container: OptionsContainer,
+        name: str,
+        default: Any,
+        expected_type: type,
+        description: str = "",
+        category: str = "",
+    ) -> None:
+        self.expected_type = expected_type
+        OptionField.__init__(self, container, name, default, description, category)
+
+    def check(self, value: Any) -> None:
+        """Validate the configured value type."""
+        if not isinstance(value, self.expected_type):
+            raise ValueError(
+                f"Expected {self.expected_type.__name__}, got {type(value).__name__}"
+            )
+
+
+class ImageIOOptionField(OptionField):
+    """Image I/O option field with optional-default initialization."""
+
+    def check(self, value: Any) -> None:
+        """Validate image I/O format and description pairs."""
+        if not isinstance(value, (tuple, list)) or not all(
+            isinstance(item, (tuple, list)) and len(item) == 2 for item in value
+        ):
+            raise ValueError(
+                "Expected a tuple of tuples with two elements each "
+                "(format, description)"
+            )
+        for item in value:
+            if not isinstance(item[0], str) or not isinstance(item[1], str):
+                raise ValueError(
+                    "Each item must be a tuple of (format, description) as strings"
+                )
+
+    def set(self, value: Any, *, sync_env: bool = True) -> None:
+        """Set formats, mark initialization, and generate format classes."""
+        OptionField.set(self, value, sync_env=sync_env)
+        # pylint: disable=cyclic-import,import-outside-toplevel
+        from sigima.io.image import formats
+
+        formats.generate_imageio_format_classes(value)
 
 
 class EnumOptionField(OptionField):
@@ -310,7 +395,16 @@ class AppOptionsContainer(OptionsContainer):
         # Intentionally NOT calling super().__init__() because
         # OptionsContainer.__init__ creates Sigima-specific options.
         # We start fresh with our own option fields.
-        pass
+        self._initialized_options: set[str] = set()
+        self._last_synced_env: str | None = None
+
+    def is_option_initialized(self, name: str) -> bool:
+        """Return whether an option was explicitly set or externally loaded."""
+        return name in self._initialized_options
+
+    def mark_option_initialized(self, name: str) -> None:
+        """Mark an option as explicitly initialized."""
+        self._initialized_options.add(name)
 
     # -- Environment variable sync (same pattern as Sigima) --
 
@@ -336,7 +430,7 @@ class AppOptionsContainer(OptionsContainer):
     def ensure_loaded_from_env(self) -> None:
         """Load option values from the environment variable if set."""
         value = self.get_env()
-        if value == "{}":
+        if value in ("{}", self._last_synced_env):
             return
         try:
             values = json.loads(value)
@@ -354,7 +448,9 @@ class AppOptionsContainer(OptionsContainer):
 
     def sync_env(self) -> None:
         """Update the environment variable with current option values."""
-        self.set_env(self.to_env_json())
+        value = self.to_env_json()
+        self.set_env(value)
+        self._last_synced_env = value
 
     # -- Dictionary serialization --
 

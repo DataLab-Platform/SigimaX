@@ -17,7 +17,7 @@ application-specific configuration fields:
 
 .. code-block:: python
 
-    from sigima.config import TypedOptionField
+    from sigimax.config import TypedOptionField
     from sigimax.config import EnumOptionField, SigimaXOptions
 
     class MyAppOptions(SigimaXOptions):
