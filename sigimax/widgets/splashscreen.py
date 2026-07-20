@@ -44,6 +44,7 @@ from __future__ import annotations
 import dataclasses
 from typing import TYPE_CHECKING
 
+from guidata.configtools import get_image_file_path
 from qtpy import QtCore as QC
 from qtpy import QtGui as QG
 from qtpy import QtWidgets as QW
@@ -182,6 +183,12 @@ class SigimaXSplashScreen(QW.QSplashScreen):
         """
         path = self._config.image_path or ""
         pixmap = QG.QPixmap(path)
+        if pixmap.isNull() and path:
+            try:
+                resolved_path = get_image_file_path(path, default=None)
+            except RuntimeError:
+                resolved_path = ""
+            pixmap = QG.QPixmap(resolved_path)
         if pixmap.isNull():
             pixmap = self._create_fallback_pixmap()
         return pixmap

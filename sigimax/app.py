@@ -32,7 +32,7 @@ Basic usage::
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TypeVar
 
 from qtpy import QtWidgets as QW
 
@@ -42,18 +42,17 @@ from sigimax.mainwindow import SGMXMainWindow
 from sigimax.utils.qthelpers import sigimax_app_context
 from sigimax.widgets.splashscreen import SigimaXSplashScreen, SplashScreenConfig
 
-if TYPE_CHECKING:
-    pass
+_WindowT = TypeVar("_WindowT", bound=SGMXMainWindow)
 
 
 def create(
-    window_class: type[SGMXMainWindow] = SGMXMainWindow,
+    window_class: type[_WindowT] = SGMXMainWindow,
     splash: bool = True,
     splash_config: SplashScreenConfig | None = None,
     console: bool | None = None,
     h5files: list[str] | None = None,
     size: tuple[int, int] | None = None,
-) -> SGMXMainWindow:
+) -> _WindowT:
     """Create and show a SigimaX application window.
 
     This is the recommended entry point for derived applications. It handles
@@ -111,7 +110,7 @@ def create(
 
 
 def run(
-    window_class: type[SGMXMainWindow] = SGMXMainWindow,
+    window_class: type[_WindowT] = SGMXMainWindow,
     splash: bool = True,
     splash_config: SplashScreenConfig | None = None,
     console: bool | None = None,
