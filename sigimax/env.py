@@ -156,12 +156,12 @@ class SGMXExecEnv:
     DELAY_ENV = GuiDataExecEnv.DELAY_ENV
     CATCHER_TEST_ENV = "SIGIMAX_CATCHER_TEST"
 
-    def __init__(self):
+    def __init__(self, parse_args: bool = True):
         self.h5files = None
         self.h5browser_file = None
         self.demo_mode = False
         # Check if "pytest" is in the command line arguments:
-        if "pytest" not in sys.argv[0]:
+        if parse_args and "pytest" not in sys.argv[0]:
             # Do not parse command line arguments when running tests with pytest
             # (otherwise, pytest arguments are parsed as SigimaX arguments)
             self.parse_args()
@@ -533,4 +533,4 @@ class SGMXExecEnv:
                 setattr(self, key, value)
 
 
-execenv = SGMXExecEnv()
+execenv = SGMXExecEnv(parse_args=False)

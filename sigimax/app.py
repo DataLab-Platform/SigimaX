@@ -37,6 +37,7 @@ from typing import TYPE_CHECKING
 from qtpy import QtWidgets as QW
 
 from sigimax.config import get_conf
+from sigimax.env import execenv
 from sigimax.mainwindow import SGMXMainWindow
 from sigimax.utils.qthelpers import sigimax_app_context
 from sigimax.widgets.splashscreen import SigimaXSplashScreen, SplashScreenConfig
@@ -130,6 +131,7 @@ def run(
         h5files: Optional list of HDF5 file paths to open.
         size: Optional ``(width, height)`` tuple for the window size.
     """
+    execenv.parse_args()
     with sigimax_app_context(exec_loop=True):
         window = create(
             window_class=window_class,
