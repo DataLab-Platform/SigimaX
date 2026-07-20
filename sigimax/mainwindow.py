@@ -132,7 +132,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         self.view_menu: QW.QMenu | None = None
         self.help_menu: QW.QMenu | None = None
 
-        self.__update_color_mode(startup=True)
+        self._update_color_mode(startup=True)
 
         self.__is_modified = False
         self.set_modified(False)
@@ -140,12 +140,28 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         # Setup actions and menus
         if console is None:
             console = conf.console_enabled.get()
+        self._before_setup(console)
         self.setup(console)
+        self._after_setup(console)
 
-        self.__restore_pos_and_size()
+        self._restore_pos_and_size()
         execenv.log(self, "Initialization done")
 
-    def __set_low_memory_state(self, state: bool) -> None:
+    def _before_setup(self, console: bool) -> None:
+        """Initialize derived-application state before :meth:`setup`.
+
+        Args:
+            console: Whether the internal console will be created.
+        """
+
+    def _after_setup(self, console: bool) -> None:
+        """Finalize derived-application state after :meth:`setup`.
+
+        Args:
+            console: Whether the internal console was created.
+        """
+
+    def _set_low_memory_state(self, state: bool) -> None:
         """Set memory warning state"""
         self.__memory_warning = state
 
@@ -259,7 +275,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
             menu.close()
 
     # ------GUI setup
-    def __restore_pos_and_size(self) -> None:
+    def _restore_pos_and_size(self) -> None:
         """Restore main window position and size from configuration"""
         conf = get_conf()
         pos = conf.window_position.get()
@@ -289,7 +305,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
                 posy = min(max(posy, 0), sgeo.height() - height)
                 self.move(QC.QPoint(posx, posy))
 
-    def __restore_state(self) -> None:
+    def _restore_state(self) -> None:
         """Restore main window state from configuration"""
         state = get_conf().window_state.get()
         if state:
@@ -299,7 +315,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
                 if isinstance(widget, QW.QDockWidget):
                     self.restoreDockWidget(widget)
 
-    def __save_pos_size_and_state(self) -> None:
+    def _save_pos_size_and_state(self) -> None:
         """Save main window position, size and state to configuration"""
         conf = get_conf()
         is_maximized = self.windowState() == QC.Qt.WindowMaximized
@@ -320,16 +336,16 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         Args:
             console: True to setup console
         """
-        self.__configure_statusbar(console)
-        self.__setup_global_actions()
-        self.__setup_central_widget()
-        self.__add_menus()
+        self._configure_statusbar(console)
+        self._setup_global_actions()
+        self._setup_central_widget()
+        self._add_menus()
         if console:
-            self.__setup_console()
+            self._setup_console()
         # Now that everything is set up, we can restore the window state:
-        self.__restore_state()
+        self._restore_state()
 
-    def __configure_statusbar(self, console: bool) -> None:
+    def _configure_statusbar(self, console: bool) -> None:
         """Configure status bar
 
         Args:
@@ -344,10 +360,10 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         # Memory status
         threshold = conf.available_memory_threshold.get()
         self.memorystatus = status.MemoryStatus(threshold)
-        self.memorystatus.SIG_MEMORY_ALARM.connect(self.__set_low_memory_state)
+        self.memorystatus.SIG_MEMORY_ALARM.connect(self._set_low_memory_state)
         self.statusBar().addPermanentWidget(self.memorystatus)
 
-    def __add_toolbar(
+    def _add_toolbar(
         self, title: str, position: Literal["top", "bottom", "left", "right"], name: str
     ) -> QW.QToolBar:
         """Add toolbar to main window
@@ -363,12 +379,10 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         self.addToolBar(area, toolbar)
         return toolbar
 
-    def __setup_global_actions(self) -> None:
+    def _setup_global_actions(self) -> None:
         """Setup global actions"""
         self._create_global_actions()
-        self.main_toolbar = self.__add_toolbar(
-            _("Main Toolbar"), "left", "main_toolbar"
-        )
+        self.main_toolbar = self._add_toolbar(_("Main Toolbar"), "left", "main_toolbar")
         add_actions(self.main_toolbar, self._get_main_toolbar_actions())
 
     def _create_global_actions(self) -> None:
@@ -433,7 +447,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
             self.browseh5_action,
         ]
 
-    def __setup_central_widget(self) -> None:
+    def _setup_central_widget(self) -> None:
         """Setup central widget (main panel)"""
         # Apply enhanced tab bar styling
         self.tabwidget = QW.QTabWidget()
@@ -482,7 +496,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
                 return pattern
         return None
 
-    def __add_menus(self) -> None:
+    def _add_menus(self) -> None:
         """Adding menus"""
         self.file_menu = self.menuBar().addMenu(_("&File"))
         configure_menu_about_to_show(self.file_menu, self._update_file_menu)
@@ -547,14 +561,14 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
             % app
         )
 
-    def __setup_console(self) -> None:
+    def _setup_console(self) -> None:
         """Add an internal console"""
         ns = self._get_console_namespace()
         msg = self._get_console_message()
         self.console = DockableConsole(self, namespace=ns, message=msg, debug=DEBUG)
         self.console.setMaximumBlockCount(get_conf().console_max_line_count.get())
         self.console.go_to_error.connect(go_to_error)
-        cdock = self.__add_dockwidget(self.console, _("Console"))
+        cdock = self._add_dockwidget(self.console, _("Console"))
         self.docks[self.console] = cdock
         cdock.hide()
         self.__update_console_show_mode()
@@ -575,7 +589,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         """Return True if mainwindow is modified"""
         return self.__is_modified
 
-    def __add_dockwidget(self, child, title: str) -> QW.QDockWidget:
+    def _add_dockwidget(self, child, title: str) -> QW.QDockWidget:
         """Add QDockWidget and toggleViewAction"""
         dockwidget, location = child.create_dockwidget(title)
         dockwidget.setObjectName(title)
@@ -849,7 +863,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         """
 
     def browse_h5_files(
-        self, filenames: list[str], _reset_all: bool | None = None
+        self, filenames: list[str], reset_all: bool | None = None
     ) -> None:
         """Browse HDF5 files
 
@@ -862,8 +876,9 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
 
         Args:
             filenames: HDF5 filenames
-            _reset_all: Reset all application data before importing (unused)
+            reset_all: Reset all application data before importing (unused)
         """
+        del reset_all
         for filename in filenames:
             self.__check_h5file(filename, "load")
 
@@ -1020,7 +1035,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
             "".join(about_parts),
         )
 
-    def __update_color_mode(self, startup: bool = False) -> None:
+    def _update_color_mode(self, startup: bool = False) -> None:
         """Update color mode
 
         Args:
@@ -1105,7 +1120,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
                 # configurations only.
                 pass
         self.reset_all()
-        self.__save_pos_size_and_state()
+        self._save_pos_size_and_state()
 
         execenv.log(self, "closed properly")
         return True
