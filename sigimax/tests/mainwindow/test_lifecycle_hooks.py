@@ -56,6 +56,18 @@ class HookWindow(SGMXMainWindow):
         self.hook_calls.append("save")
         super()._save_pos_size_and_state()
 
+    def _close_managed_widgets(self) -> None:
+        self.hook_calls.append("close_widgets")
+        super()._close_managed_widgets()
+
+    def _cleanup_before_reset(self) -> None:
+        self.hook_calls.append("before_reset")
+        super()._cleanup_before_reset()
+
+    def _cleanup_after_state_save(self) -> None:
+        self.hook_calls.append("after_save")
+        super()._cleanup_after_state_save()
+
 
 def test_lifecycle_hooks() -> None:
     """Protected lifecycle hooks are overridable and keep a stable call order."""
@@ -75,4 +87,10 @@ def test_lifecycle_hooks() -> None:
         ]
         window._save_pos_size_and_state()  # pylint: disable=protected-access
         assert window.hook_calls[-1] == "save"
-        window.close()
+        assert window.close_properly()
+        assert window.hook_calls[-4:] == [
+            "close_widgets",
+            "before_reset",
+            "save",
+            "after_save",
+        ]

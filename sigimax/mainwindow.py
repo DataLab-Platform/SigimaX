@@ -185,10 +185,12 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
 
     def check_stable_release(self) -> None:  # pragma: no cover
         """Check if this is a stable release"""
-        if __version__.replace(".", "").isdigit():
+        conf = get_conf()
+        app_version = conf.app_version.get()
+        if app_version.replace(".", "").isdigit():
             # This is a stable release
             return
-        if "b" in __version__:
+        if "b" in app_version:
             # This is a beta release
             rel = _(
                 "This software is in the <b>beta stage</b> of its release cycle. "
@@ -208,7 +210,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
                 "by the developer before it is released."
             )
         txtlist = [
-            f"<b>{get_conf().app_name.get()}</b> v{get_conf().app_version.get()}:",
+            f"<b>{conf.app_name.get()}</b> v{app_version}:",
             "",
             _("<i>This is not a stable release.</i>"),
             "",
@@ -216,7 +218,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         ]
         if not execenv.unattended:
             QW.QMessageBox.warning(
-                self, get_conf().app_name.get(), "<br>".join(txtlist), QW.QMessageBox.Ok
+                self, conf.app_name.get(), "<br>".join(txtlist), QW.QMessageBox.Ok
             )
 
     def check_for_previous_crash(self) -> None:  # pragma: no cover
@@ -225,7 +227,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         if execenv.unattended and not execenv.do_not_quit:
             # Showing the log viewer for testing purpose (unattended mode) but only
             # if option 'do_not_quit' is not set, to avoid blocking the test suite
-            self.__show_logviewer()
+            self._show_logviewer()
         elif execenv.do_not_quit:
             # If 'do_not_quit' is set, we do not show any message box to avoid blocking
             # the test suite
@@ -243,7 +245,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
             btns = QW.QMessageBox.StandardButton.Yes | QW.QMessageBox.StandardButton.No
             choice = QW.QMessageBox.warning(self, conf.app_name.get(), txt, btns)
             if choice == QW.QMessageBox.StandardButton.Yes:
-                self.__show_logviewer()
+                self._show_logviewer()
 
     def execute_post_show_actions(self) -> None:
         """Execute post-show actions"""
@@ -416,7 +418,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         # Quit action for "File menu" (added when populating menu on demand)
         if self.hide_on_close:
             quit_text = _("Hide window")
-            quit_tip = _("Hide window")
+            quit_tip = _("Hide %s window") % get_conf().app_name.get()
         else:
             quit_text = _("Quit")
             quit_tip = _("Quit application")
@@ -505,7 +507,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         self.help_menu = self.menuBar().addMenu("?")
         add_actions(self.help_menu, self._get_help_menu_actions())
 
-    def __update_console_show_mode(self) -> None:
+    def _update_console_show_mode(self) -> None:
         """Update console show mode from configuration option
 
         Console show mode is whether the console is shown or not when an error occurs.
@@ -561,6 +563,9 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
             % app
         )
 
+    def _configure_console(self) -> None:
+        """Configure application-specific console signals after creation."""
+
     def _setup_console(self) -> None:
         """Add an internal console"""
         ns = self._get_console_namespace()
@@ -571,13 +576,19 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         cdock = self._add_dockwidget(self.console, _("Console"))
         self.docks[self.console] = cdock
         cdock.hide()
-        self.__update_console_show_mode()
+        self._update_console_show_mode()
         self.console.exception_occurred.connect(self.consolestatus.exception_occurred)
         cdock.visibilityChanged.connect(self.consolestatus.console_visibility_changed)
         self.consolestatus.SIG_SHOW_CONSOLE.connect(self.console.show_console)
+        self._configure_console()
+
+    def _normalize_modified_state(self, state: bool) -> bool:
+        """Normalize a requested modified state for the application model."""
+        return state
 
     def set_modified(self, state: bool = True) -> None:
         """Set mainwindow modified state"""
+        state = self._normalize_modified_state(state)
         self.__is_modified = state
         conf = get_conf()
         title = conf.app_name.get() + ("*" if state else "")
@@ -698,7 +709,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
                 self,
                 _("Log files") + "...",
                 icon=get_icon("logs.svg"),
-                triggered=self.__show_logviewer,
+                triggered=self._show_logviewer,
             ),
             None,
             create_action(
@@ -1064,7 +1075,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         # Allow Qt to refresh the window:
         self.setUpdatesEnabled(True)
 
-    def __show_logviewer(self) -> None:
+    def _show_logviewer(self) -> None:
         """Show error logs"""
         logviewer.exec_sigimax_logviewer_dialog(self)
 
@@ -1083,6 +1094,29 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
             self.resize(self.__old_size)
 
     # ------Close window
+    def _get_save_before_quit_message(self) -> str:
+        """Return the confirmation message shown before closing modified data."""
+        return _(
+            "Do you want to save all signals and images "
+            "to an HDF5 file before quitting the application?"
+        )
+
+    def _close_managed_widgets(self) -> None:
+        """Close widgets owned by the generic application shell."""
+        if self.console is not None:
+            try:
+                self.console.close()
+            except RuntimeError:
+                # The Qt object may already be deleted when restarting a window
+                # in the same test process.
+                pass
+
+    def _cleanup_before_reset(self) -> None:
+        """Clean up derived services before resetting application data."""
+
+    def _cleanup_after_state_save(self) -> None:
+        """Finalize derived shutdown after saving the window state."""
+
     def close_properly(self) -> bool:
         """Close properly
 
@@ -1093,10 +1127,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
             answer = QW.QMessageBox.warning(
                 self,
                 _("Quit"),
-                _(
-                    "Do you want to save all signals and images "
-                    "to an HDF5 file before quitting the application?"
-                ),
+                self._get_save_before_quit_message(),
                 QW.QMessageBox.Yes | QW.QMessageBox.No | QW.QMessageBox.Cancel,
             )
             if answer == QW.QMessageBox.Yes:
@@ -1106,21 +1137,11 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
             elif answer == QW.QMessageBox.Cancel:
                 return False
         self.hide()  # Avoid showing individual widgets closing one after the other
-        if self.console is not None:
-            try:
-                self.console.close()
-            except RuntimeError:
-                # TODO: [P3] Investigate further why the following error occurs when
-                # restarting the mainwindow (this is *not* a production case):
-                # "RuntimeError: wrapped C/C++ object of type DockableConsole
-                #  has been deleted".
-                # Another solution to avoid this error would be to really restart
-                # the application (run each unit test in a separate process), but
-                # it would represent too much effort for an error occuring in test
-                # configurations only.
-                pass
+        self._close_managed_widgets()
+        self._cleanup_before_reset()
         self.reset_all()
         self._save_pos_size_and_state()
+        self._cleanup_after_state_save()
 
         execenv.log(self, "closed properly")
         return True
