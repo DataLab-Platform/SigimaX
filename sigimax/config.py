@@ -73,6 +73,8 @@ import json
 import os
 import os.path as osp
 import sys
+from collections.abc import Generator
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
 
@@ -204,12 +206,49 @@ class OptionField(_SigimaOptionField):
     def set(self, value: Any, *, sync_env: bool = True) -> None:
         """Set the value and mark the option as initialized."""
         super().set(value, sync_env=False)
+        self.mark_initialized()
+        if sync_env:
+            self._container.sync_env()
+
+    def mark_initialized(self) -> None:
+        """Mark a value assigned outside the standard setter as initialized."""
         self._is_initialized = True
         mark_initialized = getattr(self._container, "mark_option_initialized", None)
         if mark_initialized is not None:
             mark_initialized(self.name)
-        if sync_env:
-            self._container.sync_env()
+
+    def context(self, temp_value: Any) -> Generator[None, None, None]:
+        """Temporarily override the value without changing initialization state."""
+
+        @contextmanager
+        def _ctx():
+            old_value = self._value
+            old_field_initialized = self._is_initialized
+            old_container_initialized = self._container.is_option_initialized(self.name)
+            snapshot_context = getattr(
+                self._container, "snapshot_option_context_state", None
+            )
+            context_state = (
+                snapshot_context(self.name) if snapshot_context is not None else None
+            )
+            self.set(temp_value)
+            try:
+                yield
+            finally:
+                _SigimaOptionField.set(self, old_value, sync_env=False)
+                self._is_initialized = old_field_initialized
+                if old_container_initialized:
+                    self._container.mark_option_initialized(self.name)
+                else:
+                    self._container.unmark_option_initialized(self.name)
+                self._container.sync_env()
+                restore_context = getattr(
+                    self._container, "restore_option_context_state", None
+                )
+                if restore_context is not None:
+                    restore_context(self.name, context_state)
+
+        return _ctx()
 
 
 class TypedOptionField(OptionField):
@@ -422,6 +461,10 @@ class AppOptionsContainer(OptionsContainer):
     def mark_option_initialized(self, name: str) -> None:
         """Mark an option as explicitly initialized."""
         self._initialized_options.add(name)
+
+    def unmark_option_initialized(self, name: str) -> None:
+        """Mark an option as not explicitly initialized."""
+        self._initialized_options.discard(name)
 
     # -- Environment variable sync (same pattern as Sigima) --
 

@@ -95,6 +95,28 @@ class TestTupleOptionField:
         assert c.my_tuple.get(None, sync_env=False) == (10, 20)
         assert not c.is_option_initialized("my_tuple")
 
+    def test_context_restores_uninitialized_state(self):
+        """A temporary override must not persist initialization state."""
+        c = _MiniContainer()
+
+        with c.my_tuple.context((30, 40)):
+            assert c.my_tuple.get(sync_env=False) == (30, 40)
+            assert c.is_option_initialized("my_tuple")
+
+        assert c.my_tuple.get(sync_env=False) == (10, 20)
+        assert not c.is_option_initialized("my_tuple")
+
+    def test_context_restores_state_after_exception(self):
+        """Context restoration also applies when the body raises."""
+        c = _MiniContainer()
+
+        with pytest.raises(RuntimeError, match="stop"):
+            with c.my_tuple.context((30, 40)):
+                raise RuntimeError("stop")
+
+        assert c.my_tuple.get(sync_env=False) == (10, 20)
+        assert not c.is_option_initialized("my_tuple")
+
     def test_set_tuple(self):
         """Setting a new tuple value should update the stored value."""
         c = _MiniContainer()
