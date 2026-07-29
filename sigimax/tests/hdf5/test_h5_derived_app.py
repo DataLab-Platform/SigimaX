@@ -560,6 +560,15 @@ def test_import_specific_dataset_and_save() -> None:
             assert len(win.object_store.images) == 1
             assert win.object_store.images[0].title == "checkerboard"
 
+            # The historical ``filename,dataset`` contract rejects any extra
+            # comma rather than silently changing how the selector is parsed.
+            with pytest.raises(ValueError):
+                win.open_h5_files(
+                    h5files=[f"{src_path},sine,extra"],
+                    import_all=False,
+                    reset_all=False,
+                )
+
             # -- 3. Import all datasets at once (with reset) --
             win.open_h5_files(
                 h5files=[src_path],

@@ -4,7 +4,11 @@
 
 from __future__ import annotations
 
+import pytest
+from qtpy import QtWidgets as QW
+
 from sigimax.config import CONF as Conf
+from sigimax.env import execenv
 from sigimax.mainwindow import SGMXMainWindow
 from sigimax.utils import qthelpers as qth
 
@@ -131,3 +135,18 @@ def test_get_instance_preserves_derived_window_class() -> None:
         assert isinstance(derived_window, DerivedInstanceWindow)
         base_window.close()
         derived_window.close()
+
+
+def test_failed_save_cancels_close(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test that a failed Save choice preserves the modified workspace."""
+    with qth.sigimax_app_context(exec_loop=False):
+        window = SGMXMainWindow(console=False)
+        window.set_modified(True)
+        monkeypatch.setattr(execenv, "unattended", False)
+        monkeypatch.setattr(QW.QMessageBox, "warning", lambda *args: QW.QMessageBox.Yes)
+        monkeypatch.setattr(window, "save_to_h5_file", lambda: None)
+
+        assert not window.close_properly()
+        assert window.is_modified()
+        window.set_modified(False)
+        window.close()

@@ -782,7 +782,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         """Open/import HDF5 files.
 
         Args:
-            h5files: HDF5 filenames (optionally with dataset name, separated by ":")
+            h5files: HDF5 filenames (optionally with dataset name, separated by ",")
             import_all: Import all datasets from HDF5 files
             reset_all: Reset all application data before importing
         """
