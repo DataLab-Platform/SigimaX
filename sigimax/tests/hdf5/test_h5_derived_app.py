@@ -180,9 +180,6 @@ class DerivedAppWindow(SGMXMainWindow):
 
         super().__init__(console=console, hide_on_close=hide_on_close)
 
-        # --- Data model ---
-        self.object_store = SimpleObjectStore()
-
         # --- Wire the signal emitted by browse_h5_files / import_h5_file ---
         self.SIG_SEND_OBJECTLIST.connect(self._on_objects_received)
 
@@ -191,6 +188,11 @@ class DerivedAppWindow(SGMXMainWindow):
         dockwidget, location = self.curve_dock.create_dockwidget("Preview")
         self.addDockWidget(location, dockwidget)
         self.docks[self.curve_dock] = dockwidget
+
+    def _before_setup(self, console: bool) -> None:
+        """Create the data model before generic setup hooks may use it."""
+        super()._before_setup(console)
+        self.object_store = SimpleObjectStore()
 
     # ------------------------------------------------------------------
     # Signal handler

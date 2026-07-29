@@ -73,7 +73,9 @@ Key Concepts
 
 - **Overridable hooks**: The main window provides hooks that derived apps can
   override: ``reset_all()``, ``_is_save_enabled()``, ``_update_file_menu()``,
-  ``_update_view_menu()``, ``_about()``.
+  ``_update_view_menu()``, ``_about()``, ``_before_setup()``, and
+  ``_after_setup()``. See :doc:`lifecycle` for their ordering and
+  initialization contract.
 
 - **Built-in features**: HDF5 GUI and generic dataset import; derived
   applications implement their own workspace persistence. SigimaX also

@@ -89,11 +89,11 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
     SIG_SEND_OBJECTLIST = QC.Signal(object)
     SIG_CLOSING = QC.Signal()
 
-    @staticmethod
-    def get_instance(console=None, hide_on_close=False):
-        """Return singleton instance"""
-        if SGMXMainWindow.__instance is None:
-            return SGMXMainWindow(console, hide_on_close)
+    @classmethod
+    def get_instance(cls, console=None, hide_on_close=False):
+        """Return the singleton instance for this window class."""
+        if not isinstance(SGMXMainWindow.__instance, cls):
+            return cls(console, hide_on_close)
         return SGMXMainWindow.__instance
 
     def __init__(self, console=None, hide_on_close=False):
@@ -132,15 +132,14 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         self.view_menu: QW.QMenu | None = None
         self.help_menu: QW.QMenu | None = None
 
-        self._update_color_mode(startup=True)
-
-        self.__is_modified = False
-        self.set_modified(False)
-
         # Setup actions and menus
         if console is None:
             console = conf.console_enabled.get()
         self._before_setup(console)
+        self._update_color_mode(startup=True)
+
+        self.__is_modified = False
+        self.set_modified(False)
         self.setup(console)
         self._after_setup(console)
 

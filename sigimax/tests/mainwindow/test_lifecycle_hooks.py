@@ -69,14 +69,34 @@ class HookWindow(SGMXMainWindow):
         super()._cleanup_after_state_save()
 
 
+class PreparedColorWindow(SGMXMainWindow):
+    """Window whose color hook requires the documented setup preparation."""
+
+    def __init__(self) -> None:
+        self.color_ready = False
+        super().__init__(console=False)
+
+    def _before_setup(self, console: bool) -> None:
+        self.color_ready = True
+        super()._before_setup(console)
+
+    def _update_color_mode(self, startup: bool = False) -> None:
+        assert self.color_ready
+        super()._update_color_mode(startup=startup)
+
+
+class DerivedInstanceWindow(SGMXMainWindow):
+    """Derived class used to verify class-specific singleton construction."""
+
+
 def test_lifecycle_hooks() -> None:
     """Protected lifecycle hooks are overridable and keep a stable call order."""
     Conf.app_name.set("LifecycleHookTest")
     with qth.sigimax_app_context(exec_loop=False):
         window = HookWindow()
         assert window.hook_calls == [
-            "color",
             "before",
+            "color",
             "statusbar",
             "actions",
             "central",
@@ -94,3 +114,20 @@ def test_lifecycle_hooks() -> None:
             "save",
             "after_save",
         ]
+
+
+def test_before_setup_precedes_color_hook() -> None:
+    """Test that derived setup runs before the color-mode hook."""
+    with qth.sigimax_app_context(exec_loop=False):
+        window = PreparedColorWindow()
+        window.close()
+
+
+def test_get_instance_preserves_derived_window_class() -> None:
+    """Test that get_instance creates the class on which it is called."""
+    with qth.sigimax_app_context(exec_loop=False):
+        base_window = SGMXMainWindow(console=False)
+        derived_window = DerivedInstanceWindow.get_instance(console=False)
+        assert isinstance(derived_window, DerivedInstanceWindow)
+        base_window.close()
+        derived_window.close()
