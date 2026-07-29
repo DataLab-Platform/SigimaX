@@ -590,6 +590,8 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         """Set mainwindow modified state"""
         state = self._normalize_modified_state(state)
         self.__is_modified = state
+        if self.saveh5_action is not None:
+            self.saveh5_action.setEnabled(self._is_save_enabled())
         conf = get_conf()
         title = conf.app_name.get() + ("*" if state else "")
         if not conf.app_version.get().replace(".", "").isdigit():
@@ -610,14 +612,16 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
     def _is_save_enabled(self) -> bool:
         """Return whether the 'Save' action should be enabled.
 
-        The base implementation returns ``True`` when the workspace has been
-        modified.  Override in subclasses to check domain-specific conditions
-        (e.g., whether the workspace contains any objects).
+        The base implementation returns ``True`` only when the workspace has
+        been modified and the derived application overrides
+        :meth:`save_h5_workspace`. Override in subclasses to add
+        domain-specific conditions (e.g., whether the workspace contains any
+        objects).
 
         Returns:
             True if save action should be enabled
         """
-        return self.is_modified()
+        return self._has_h5_workspace_persistence() and self.is_modified()
 
     def _get_file_menu_actions(self) -> list[QW.QAction | None]:
         """Return the list of actions for the file menu.
@@ -734,7 +738,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         return actions
 
     @staticmethod
-    def __check_h5file(filename: str, operation: str) -> str:
+    def _check_h5file(filename: str, operation: str) -> str:
         """Check HDF5 filename"""
         filename = osp.abspath(osp.normpath(filename))
         bname = osp.basename(filename)
@@ -742,6 +746,10 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
             raise IOError(f'File not found "{bname}"')
         get_conf().base_dir.set(filename)
         return filename
+
+    def _has_h5_workspace_persistence(self) -> bool:
+        """Return whether the derived window implements workspace persistence."""
+        return type(self).save_h5_workspace is not SGMXMainWindow.save_h5_workspace
 
     def save_to_h5_file(self, filename=None) -> None:
         """Save to a HDF5 file
@@ -847,7 +855,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
                 self.import_h5_file(filename, reset_all)
             else:
                 with qth.qt_try_loadsave_file(self, filename, "load"):
-                    filename = self.__check_h5file(filename, "load")
+                    filename = self._check_h5file(filename, "load")
                     self.import_dataset_from_file(
                         filename, dsetname, import_all, reset_all
                     )
@@ -891,7 +899,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         """
         del reset_all
         for filename in filenames:
-            self.__check_h5file(filename, "load")
+            self._check_h5file(filename, "load")
 
         dialog = H5BrowserDialog(self)
         dialog.open_files(filenames)
@@ -923,23 +931,22 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
     def save_h5_workspace(self, filename: str) -> None:
         """Save current workspace to an HDF5 file.
 
-        The base implementation is a **no-op**: it validates the filename and
-        clears the modified flag but does not write any data.  Subclasses that
-        manage a data model should override this method to perform the actual
-        serialization (e.g. using :class:`guidata.io.HDF5Writer`).
+        Subclasses that manage a data model must override this method to
+        perform the actual serialization (e.g. using
+        :class:`guidata.io.HDF5Writer`). The base implementation never clears
+        the modified state because it cannot persist an application workspace.
 
         Args:
             filename: HDF5 filename to save to
 
         Raises:
-            IOError: If *filename* is invalid
+            NotImplementedError: Always, because the base window has no
+             application workspace to serialize.
         """
-        filename = self.__check_h5file(filename, "save")
-        execenv.log(
-            self,
-            "save_h5_workspace: no-op — override in subclass to serialize data",
+        del filename
+        raise NotImplementedError(
+            "Override save_h5_workspace() to serialize the application workspace."
         )
-        self.set_modified(False)
 
     def import_h5_file(self, filename: str, _reset_all: bool | None = None) -> None:
         """Import all supported datasets from an HDF5 file (no dialog).
@@ -955,7 +962,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
             _reset_all: Reserved for future use (workspace reset before import) (unused)
         """
         with qth.qt_try_loadsave_file(self, filename, "load"):
-            filename = self.__check_h5file(filename, "load")
+            filename = self._check_h5file(filename, "load")
             importer = H5Importer(filename)
             objects = []
             for node in importer.nodes:

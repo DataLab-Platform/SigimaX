@@ -69,7 +69,8 @@ HDF5 Workspace
     * - Feature
       - Description
     * - Open/Save workspace
-      - Built-in HDF5 workspace management for opening and saving project files.
+      - File actions and workspace-state handling. Derived applications provide
+        their own workspace serialization.
     * - :class:`~sigimax.widgets.h5browser.H5BrowserDialog`
       - Interactive HDF5 file browser with tree view, supporting scalar, array,
         text, and compound datasets.
@@ -78,6 +79,9 @@ HDF5 Workspace
         application-specific HDF5 dataset import.
     * - :class:`~sigimax.h5.H5Importer`
       - Low-level HDF5 import utilities with node factory and data extraction.
+
+See :doc:`hdf5_workspace` for the persistence contract and its complete
+derived-application example.
 
 Scientific Widgets
 ------------------

@@ -36,5 +36,6 @@ User Guide
 
    installation
    getting_started
+    hdf5_workspace
    overview
    features

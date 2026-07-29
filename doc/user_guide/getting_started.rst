@@ -75,8 +75,11 @@ Key Concepts
   override: ``reset_all()``, ``_is_save_enabled()``, ``_update_file_menu()``,
   ``_update_view_menu()``, ``_about()``.
 
-- **Built-in features**: HDF5 workspace (open/save/browse), embedded Python
-  console, status bar with memory monitoring, splash screen support.
+- **Built-in features**: HDF5 GUI and generic dataset import; derived
+  applications implement their own workspace persistence. SigimaX also
+  provides an embedded Python console, status bar with memory monitoring, and
+  splash screen support. See :doc:`hdf5_workspace` for the derived-application
+  contract.
 
 What's Included
 ---------------

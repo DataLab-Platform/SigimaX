@@ -221,7 +221,7 @@ class DerivedAppWindow(SGMXMainWindow):
         Args:
             filename: HDF5 filename to save to
         """
-        filename = self._SGMXMainWindow__check_h5file(filename, "save")
+        filename = self._check_h5file(filename, "save")
         with HDF5Writer(filename) as writer:
             writer.h5.attrs[_VERSION_ATTR] = Conf.app_version.get()
             self.object_store.serialize(writer)
@@ -236,7 +236,7 @@ class DerivedAppWindow(SGMXMainWindow):
         Args:
             filename: HDF5 filename to load from
         """
-        filename = self._SGMXMainWindow__check_h5file(filename, "load")
+        filename = self._check_h5file(filename, "load")
         with HDF5Reader(filename) as reader:
             self.object_store.deserialize(reader)
         self.set_modified(False)
@@ -344,6 +344,19 @@ def _create_h5_with_datasets(path: str) -> None:
 # =============================================================================
 # Tests
 # =============================================================================
+
+
+@pytest.mark.app
+def test_base_window_cannot_acknowledge_workspace_save() -> None:
+    """Test that base save keeps the workspace marked as modified."""
+    with qth.sigimax_app_context(exec_loop=False):
+        win = SGMXMainWindow(console=False)
+        win.set_modified(True)
+        assert not win._is_save_enabled()  # pylint: disable=protected-access
+        with pytest.raises(NotImplementedError, match="save_h5_workspace"):
+            win.save_h5_workspace("workspace.h5")
+        assert win.is_modified()
+        win.close()
 
 
 @pytest.mark.unit
