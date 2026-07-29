@@ -21,8 +21,6 @@ Design principles:
   ``with CONF.fft_shift_enabled.context(False): ...``.
 - **Extensible via subclassing**: Derived applications (like DataLab) subclass
   :class:`SigimaXOptions` to add their own options.
-- **Environment variable sync**: Options are synchronized via a JSON-encoded
-  environment variable for cross-process communication.
 - **Optional JSON file persistence**: For GUI apps that need to persist user
   preferences across sessions.
 
@@ -54,8 +52,6 @@ Extending for a derived application:
     from sigimax.options import SigimaXOptions
 
     class MyAppOptions(SigimaXOptions):
-        ENV_VAR = "MYAPP_OPTIONS_JSON"
-
         def __init__(self):
             super().__init__()
             self.my_custom_option = TypedOptionField(
@@ -178,19 +174,15 @@ class OptionField(_SigimaOptionField):
         super().__init__(container, name, default, description, category)
         self._is_initialized = False
 
-    def get(self, default: Any = NO_DEFAULT, *, sync_env: bool = True) -> Any:
+    def get(self, default: Any = NO_DEFAULT) -> Any:
         """Return the value, initializing a missing option from ``default``.
 
         Args:
             default: Optional value used when the option is not initialized.
              ``None`` is returned without initializing the option.
-            sync_env: Whether to load externally synchronized values first.
-
         Returns:
             The exact supplied default after initialization, or the current value.
         """
-        if sync_env:
-            self._container.ensure_loaded_from_env()
         is_initialized = getattr(
             self._container, "is_option_initialized", lambda _name: self._is_initialized
         )
@@ -199,16 +191,16 @@ class OptionField(_SigimaOptionField):
             and default is not None
             and not is_initialized(self.name)
         ):
-            self.set(default, sync_env=sync_env)
+            self.set(default)
             return default
         return self._value
 
-    def set(self, value: Any, *, sync_env: bool = True) -> None:
+    def set(self, value: Any) -> None:
         """Set the value and mark the option as initialized."""
-        super().set(value, sync_env=False)
+        self.check(value)
+        self._value = value
         self.mark_initialized()
-        if sync_env:
-            self._container.sync_env()
+        self._container.option_changed(self.name)
 
     def mark_initialized(self) -> None:
         """Mark a value assigned outside the standard setter as initialized."""
@@ -235,13 +227,13 @@ class OptionField(_SigimaOptionField):
             try:
                 yield
             finally:
-                _SigimaOptionField.set(self, old_value, sync_env=False)
+                self._value = old_value
                 self._is_initialized = old_field_initialized
                 if old_container_initialized:
                     self._container.mark_option_initialized(self.name)
                 else:
                     self._container.unmark_option_initialized(self.name)
-                self._container.sync_env()
+                self._container.option_changed(self.name)
                 restore_context = getattr(
                     self._container, "restore_option_context_state", None
                 )
@@ -292,9 +284,9 @@ class ImageIOOptionField(OptionField):
                     "Each item must be a tuple of (format, description) as strings"
                 )
 
-    def set(self, value: Any, *, sync_env: bool = True) -> None:
+    def set(self, value: Any) -> None:
         """Set formats, mark initialization, and generate format classes."""
-        OptionField.set(self, value, sync_env=sync_env)
+        OptionField.set(self, value)
         # pylint: disable=cyclic-import,import-outside-toplevel
         from sigima.io.image import formats
 
@@ -367,17 +359,15 @@ class TupleOptionField(OptionField):
                 f"got {type(value).__name__}"
             )
 
-    def set(self, value: Any, *, sync_env: bool = True) -> None:
+    def set(self, value: Any) -> None:
         """Set the value, converting lists to tuples.
 
         Args:
             value: The new value to assign.
-            sync_env: Whether to synchronize the environment variable
-             (keyword-only).
         """
         if isinstance(value, list):
             value = tuple(value)
-        super().set(value, sync_env=sync_env)
+        super().set(value)
 
 
 class FontOptionField(OptionField):
@@ -411,17 +401,15 @@ class FontOptionField(OptionField):
                 f"got {value!r}"
             )
 
-    def set(self, value: Any, *, sync_env: bool = True) -> None:
+    def set(self, value: Any) -> None:
         """Set the value, converting lists to tuples.
 
         Args:
             value: The new value to assign.
-            sync_env: Whether to synchronize the environment variable
-             (keyword-only).
         """
         if isinstance(value, list):
             value = tuple(value)
-        super().set(value, sync_env=sync_env)
+        super().set(value)
 
 
 # ---------------------------------------------------------------------------
@@ -440,11 +428,9 @@ class AppOptionsContainer(OptionsContainer):
     to add their own options as OptionField attributes in ``__init__``.
 
     Class attributes:
-        ENV_VAR: Environment variable name for JSON sync (override in subclass).
         APP_NAME: Application name used for default config directory.
     """
 
-    ENV_VAR = "SIGIMAX_OPTIONS_JSON"
     APP_NAME = "SigimaX"
 
     def __init__(self) -> None:  # pylint: disable=super-init-not-called
@@ -452,7 +438,6 @@ class AppOptionsContainer(OptionsContainer):
         # OptionsContainer.__init__ creates Sigima-specific options.
         # We start fresh with our own option fields.
         self._initialized_options: set[str] = set()
-        self._last_synced_env: str | None = None
 
     def is_option_initialized(self, name: str) -> bool:
         """Return whether an option was explicitly set or externally loaded."""
@@ -466,51 +451,14 @@ class AppOptionsContainer(OptionsContainer):
         """Mark an option as not explicitly initialized."""
         self._initialized_options.discard(name)
 
-    # -- Environment variable sync (same pattern as Sigima) --
+    def option_changed(self, name: str) -> None:
+        """Handle an option value change.
 
-    @classmethod
-    def set_env(cls, value: str) -> None:
-        """Set the environment variable with the given JSON string.
+        Derived applications may override this hook to persist option values.
 
         Args:
-            value: A JSON string representation of the options to set.
+            name: Name of the changed option.
         """
-        os.environ[cls.ENV_VAR] = value
-
-    @classmethod
-    def get_env(cls) -> str:
-        """Get the current value of the environment variable.
-
-        Returns:
-            The JSON string representation of the options from the
-             environment variable.
-        """
-        return os.environ.get(cls.ENV_VAR, "{}")
-
-    def ensure_loaded_from_env(self) -> None:
-        """Load option values from the environment variable if set."""
-        value = self.get_env()
-        if value in ("{}", self._last_synced_env):
-            return
-        try:
-            values = json.loads(value)
-            self.from_dict(values)
-        except Exception as exc:  # pylint: disable=broad-except
-            print(f"[sigimax] Warning: failed to load options from env: {exc}")
-
-    def to_env_json(self) -> str:
-        """Return current options as a JSON string for the environment variable.
-
-        Returns:
-            A JSON string representation of the current options.
-        """
-        return json.dumps(self.to_dict())
-
-    def sync_env(self) -> None:
-        """Update the environment variable with current option values."""
-        value = self.to_env_json()
-        self.set_env(value)
-        self._last_synced_env = value
 
     # -- Dictionary serialization --
 
@@ -521,7 +469,7 @@ class AppOptionsContainer(OptionsContainer):
             A dictionary with option names as keys and their current values.
         """
         return {
-            name: getattr(self, name).get(sync_env=False)
+            name: getattr(self, name).get()
             for name in vars(self)
             if isinstance(getattr(self, name), OptionField)
         }
@@ -540,13 +488,12 @@ class AppOptionsContainer(OptionsContainer):
                 opt = getattr(self, name)
                 if isinstance(opt, OptionField):
                     try:
-                        opt.set(value, sync_env=False)
+                        opt.set(value)
                     except (ValueError, TypeError) as exc:
                         print(
                             f"[sigimax] Warning: invalid value for "
                             f"option '{name}': {exc}"
                         )
-        self.sync_env()
 
     # -- JSON file persistence --
 
@@ -605,7 +552,7 @@ class AppOptionsContainer(OptionsContainer):
         for name in vars(self):
             opt = getattr(self, name)
             if isinstance(opt, OptionField):
-                print(f"{name} = {opt.get(sync_env=False)}  # {opt.description}")
+                print(f"{name} = {opt.get()}  # {opt.description}")
 
     def list_options(self) -> list[str]:
         """Return the sorted list of all option names.
@@ -648,7 +595,6 @@ class SigimaXOptions(AppOptionsContainer):
     .. code-block:: python
 
         class MyAppOptions(SigimaXOptions):
-            ENV_VAR = "MYAPP_OPTIONS_JSON"
             APP_NAME = "MyApp"
             CONF_VERSION = "1.0.0"
 
@@ -1334,7 +1280,7 @@ class SigimaXOptions(AppOptionsContainer):
         # so we can simplify this logic in the future.
         # ===================================================================
         self._defaults = {
-            name: getattr(self, name).get(sync_env=False)
+            name: getattr(self, name).get()
             for name in vars(self)
             if isinstance(getattr(self, name), OptionField)
         }
@@ -1342,8 +1288,10 @@ class SigimaXOptions(AppOptionsContainer):
     def reset_to_defaults(self) -> None:
         """Reset all options to their default values."""
         for name, default in self._defaults.items():
-            getattr(self, name).set(default, sync_env=False)
-        self.sync_env()
+            field = getattr(self, name)
+            field.set(default)
+            field._is_initialized = False  # pylint: disable=protected-access
+        self._initialized_options.clear()
 
     # -- Option categories (INI sections and settings-UI grouping) --
 
@@ -1811,7 +1759,7 @@ class SigimaXOptions(AppOptionsContainer):
             if name.startswith(prefix):
                 opt = getattr(self, name)
                 if isinstance(opt, OptionField):
-                    value = opt.get(sync_env=False)
+                    value = opt.get()
                     if value is not None:
                         result[name[len(prefix) :]] = value
         return result

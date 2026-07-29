@@ -14,7 +14,6 @@ class MyAppOptions(SigimaXOptions):
     Docstring for MyAppOptions
     """
 
-    ENV_VAR = "MYAPP_JSON"
     APP_NAME = "MyApp"
 
     def __init__(self):
@@ -36,10 +35,10 @@ def test_options_subclass():
     """Test that SigimaXOptions can be subclassed with custom options."""
     o = MyAppOptions()
     assert len(o.list_options()) > 0
-    assert o.rpc_enabled.get(sync_env=False) is True
-    assert o.rpc_port.get(sync_env=False) == 8080
+    assert o.rpc_enabled.get() is True
+    assert o.rpc_port.get() == 8080
     # Inherited option from SigimaXOptions must be accessible
-    assert o.color_mode.get(sync_env=False) is not None
+    assert o.color_mode.get() is not None
 
 
 if __name__ == "__main__":

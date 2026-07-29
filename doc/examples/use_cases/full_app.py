@@ -47,13 +47,11 @@ from sigimax.widgets.plotdock import DockablePlotWidget
 class SciAppOptions(SigimaXOptions):
     """Configuration for a scientific analysis application."""
 
-    ENV_VAR = "SCIAPP_OPTIONS_JSON"
-
     def __init__(self):
         super().__init__()
-        self.app_name.set("SciApp", sync_env=False)
-        self.app_version.set("1.0.0", sync_env=False)
-        self.app_desc.set("Scientific analysis app built on SigimaX", sync_env=False)
+        self.app_name.set("SciApp")
+        self.app_version.set("1.0.0")
+        self.app_desc.set("Scientific analysis app built on SigimaX")
 
         self.sample_rate = TypedOptionField(
             self,

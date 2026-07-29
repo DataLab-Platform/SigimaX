@@ -60,10 +60,9 @@ Build a scientific desktop application in three steps:
 
     # 1. Custom configuration
     class MyAppOptions(SigimaXOptions):
-        ENV_VAR = "MYAPP_OPTIONS_JSON"
         def __init__(self):
             super().__init__()
-            self.app_name.set("MyApp", sync_env=False)
+            self.app_name.set("MyApp")
 
     # 2. Custom main window
     class MyAppMainWindow(SGMXMainWindow):

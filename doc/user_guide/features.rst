@@ -49,9 +49,6 @@ Configuration System
       - Font option with validation against available system fonts.
     * - JSON persistence
       - ``save()`` / ``load()`` methods for configuration persistence.
-    * - Environment sync
-      - Options can synchronize to environment variables for cross-process
-        communication.
     * - Context managers
       - Temporary overrides with ``option.context(value)`` pattern.
 

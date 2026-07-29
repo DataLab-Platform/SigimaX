@@ -144,8 +144,6 @@ The configuration system uses typed option fields that support:
   ``EnumOptionField`` (constrained choices), ``TupleOptionField`` (fixed-length tuples),
   ``FontOptionField`` (font validation)
 - **Persistence**: JSON save/load with ``save()`` and ``load()`` methods
-- **Environment sync**: Options can be synced to environment variables for
-  cross-process communication
 - **Context managers**: Temporary overrides with ``option.context(value)``
 - **Defaults**: Built-in reset-to-defaults mechanism
 

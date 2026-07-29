@@ -21,11 +21,9 @@ application-specific configuration fields:
     from sigimax.config import EnumOptionField, SigimaXOptions
 
     class MyAppOptions(SigimaXOptions):
-        ENV_VAR = "MYAPP_OPTIONS_JSON"
-
         def __init__(self):
             super().__init__()
-            self.app_name.set("MyApp", sync_env=False)
+          self.app_name.set("MyApp")
             self.greeting = TypedOptionField(
                 self, "greeting", default="Hello!",
                 expected_type=str, description="Startup message",
@@ -71,7 +69,7 @@ Key Concepts
 
 - **Configuration system**: Options are typed fields (``TypedOptionField``,
   ``EnumOptionField``, ``TupleOptionField``) that support ``get()``/``set()``/
-  ``context()`` API, JSON persistence, and environment variable sync.
+  ``context()`` API and JSON persistence.
 
 - **Overridable hooks**: The main window provides hooks that derived apps can
   override: ``reset_all()``, ``_is_save_enabled()``, ``_update_file_menu()``,

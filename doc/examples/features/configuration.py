@@ -32,11 +32,9 @@ from sigimax.config import EnumOptionField, SigimaXOptions, TypedOptionField
 class DemoOptions(SigimaXOptions):
     """Demo configuration with various option types."""
 
-    ENV_VAR = "DEMO_OPTIONS_JSON"
-
     def __init__(self):
         super().__init__()
-        self.app_name.set("ConfigDemo", sync_env=False)
+        self.app_name.set("ConfigDemo")
 
         self.iterations = TypedOptionField(
             self,
@@ -70,7 +68,7 @@ class DemoOptions(SigimaXOptions):
         # Capture defaults for reset support
         self._defaults.update(
             {
-                name: getattr(self, name).get(sync_env=False)
+                name: getattr(self, name).get()
                 for name in ("iterations", "precision", "algorithm", "verbose")
             }
         )

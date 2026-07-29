@@ -14,8 +14,6 @@ Covers:
 
 from __future__ import annotations
 
-import json
-import os
 import sys
 import tempfile
 
@@ -42,11 +40,11 @@ pytestmark = pytest.mark.unit
 
 
 class _MiniContainer(AppOptionsContainer):
-    ENV_VAR = "_MINI_TEST_JSON"
     APP_NAME = "MiniTest"
 
     def __init__(self):
         super().__init__()
+        self.changed_options = []
         self.my_tuple = TupleOptionField(
             self, "my_tuple", default=(10, 20), description="A tuple option"
         )
@@ -64,6 +62,10 @@ class _MiniContainer(AppOptionsContainer):
             self, "my_str", default="hello", expected_type=str, description="A string"
         )
 
+    def option_changed(self, name):
+        """Record changed options."""
+        self.changed_options.append(name)
+
 
 # ============================== TupleOptionField ==============================
 
@@ -74,25 +76,25 @@ class TestTupleOptionField:
     def test_get_default(self):
         """Getting the default value should return the initial tuple."""
         c = _MiniContainer()
-        assert c.my_tuple.get(sync_env=False) == (10, 20)
+        assert c.my_tuple.get() == (10, 20)
 
     def test_get_optional_default_returns_exact_value(self):
         """A missing field returns the supplied default before normalization."""
         c = _MiniContainer()
         default = [30, 40]
-        assert c.my_tuple.get(default, sync_env=False) is default
-        assert c.my_tuple.get(sync_env=False) == (30, 40)
+        assert c.my_tuple.get(default) is default
+        assert c.my_tuple.get() == (30, 40)
 
     def test_get_optional_default_does_not_replace_set_value(self):
         """An explicitly set value takes precedence over a later default."""
         c = _MiniContainer()
-        c.my_tuple.set((50, 60), sync_env=False)
-        assert c.my_tuple.get((1, 2), sync_env=False) == (50, 60)
+        c.my_tuple.set((50, 60))
+        assert c.my_tuple.get((1, 2)) == (50, 60)
 
     def test_get_none_does_not_initialize(self):
         """None is a non-persisting fallback and leaves the field uninitialized."""
         c = _MiniContainer()
-        assert c.my_tuple.get(None, sync_env=False) == (10, 20)
+        assert c.my_tuple.get(None) == (10, 20)
         assert not c.is_option_initialized("my_tuple")
 
     def test_context_restores_uninitialized_state(self):
@@ -100,10 +102,10 @@ class TestTupleOptionField:
         c = _MiniContainer()
 
         with c.my_tuple.context((30, 40)):
-            assert c.my_tuple.get(sync_env=False) == (30, 40)
+            assert c.my_tuple.get() == (30, 40)
             assert c.is_option_initialized("my_tuple")
 
-        assert c.my_tuple.get(sync_env=False) == (10, 20)
+        assert c.my_tuple.get() == (10, 20)
         assert not c.is_option_initialized("my_tuple")
 
     def test_context_restores_state_after_exception(self):
@@ -114,39 +116,39 @@ class TestTupleOptionField:
             with c.my_tuple.context((30, 40)):
                 raise RuntimeError("stop")
 
-        assert c.my_tuple.get(sync_env=False) == (10, 20)
+        assert c.my_tuple.get() == (10, 20)
         assert not c.is_option_initialized("my_tuple")
 
     def test_set_tuple(self):
         """Setting a new tuple value should update the stored value."""
         c = _MiniContainer()
-        c.my_tuple.set((100, 200), sync_env=False)
-        assert c.my_tuple.get(sync_env=False) == (100, 200)
+        c.my_tuple.set((100, 200))
+        assert c.my_tuple.get() == (100, 200)
 
     def test_set_list_converts_to_tuple(self):
         """Setting a list should convert it to a tuple and store it correctly."""
         c = _MiniContainer()
-        c.my_tuple.set([5, 6], sync_env=False)
-        assert c.my_tuple.get(sync_env=False) == (5, 6)
-        assert isinstance(c.my_tuple.get(sync_env=False), tuple)
+        c.my_tuple.set([5, 6])
+        assert c.my_tuple.get() == (5, 6)
+        assert isinstance(c.my_tuple.get(), tuple)
 
     def test_set_none(self):
         """Setting None should store None without error."""
         c = _MiniContainer()
-        c.my_tuple.set(None, sync_env=False)
-        assert c.my_tuple.get(sync_env=False) is None
+        c.my_tuple.set(None)
+        assert c.my_tuple.get() is None
 
     def test_set_invalid_type_raises(self):
         """Setting a non-iterable or non-list/tuple should raise a ValueError."""
         c = _MiniContainer()
         with pytest.raises(ValueError, match="expected tuple"):
-            c.my_tuple.set("bad", sync_env=False)
+            c.my_tuple.set("bad")
 
     def test_set_invalid_int_raises(self):
         """Setting an integer should raise a ValueError since it's not iterable."""
         c = _MiniContainer()
         with pytest.raises(ValueError, match="expected tuple"):
-            c.my_tuple.set(42, sync_env=False)
+            c.my_tuple.set(42)
 
 
 # ============================== FontOptionField ===============================
@@ -158,45 +160,45 @@ class TestFontOptionField:
     def test_get_default(self):
         """Getting the default value should return the initial font tuple."""
         c = _MiniContainer()
-        assert c.my_font.get(sync_env=False) == ("Arial", 12, False)
+        assert c.my_font.get() == ("Arial", 12, False)
 
     def test_set_tuple(self):
         """Setting a new font tuple should update the stored value."""
         c = _MiniContainer()
-        c.my_font.set(("Courier", 10, True), sync_env=False)
-        assert c.my_font.get(sync_env=False) == ("Courier", 10, True)
+        c.my_font.set(("Courier", 10, True))
+        assert c.my_font.get() == ("Courier", 10, True)
 
     def test_set_list_converts_to_tuple(self):
         """Setting a list should convert it to a tuple and store it correctly."""
         c = _MiniContainer()
-        c.my_font.set(["Mono", 14, False], sync_env=False)
-        result = c.my_font.get(sync_env=False)
+        c.my_font.set(["Mono", 14, False])
+        result = c.my_font.get()
         assert result == ("Mono", 14, False)
         assert isinstance(result, tuple)
 
     def test_set_none(self):
         """Setting None should store None without error."""
         c = _MiniContainer()
-        c.my_font.set(None, sync_env=False)
-        assert c.my_font.get(sync_env=False) is None
+        c.my_font.set(None)
+        assert c.my_font.get() is None
 
     def test_set_invalid_length_raises(self):
         """Setting a tuple/list of incorrect length should raise a ValueError."""
         c = _MiniContainer()
         with pytest.raises(ValueError, match="expected.*family.*size.*bold"):
-            c.my_font.set(("one", "two"), sync_env=False)
+            c.my_font.set(("one", "two"))
 
     def test_set_invalid_first_element_raises(self):
         """Setting a non-string first element should raise a ValueError."""
         c = _MiniContainer()
         with pytest.raises(ValueError, match="expected.*family.*size.*bold"):
-            c.my_font.set((123, 12, False), sync_env=False)
+            c.my_font.set((123, 12, False))
 
     def test_set_invalid_type_raises(self):
         """Setting a non-iterable or non-list/tuple should raise a ValueError."""
         c = _MiniContainer()
         with pytest.raises(ValueError, match="expected.*family.*size.*bold"):
-            c.my_font.set("bad", sync_env=False)
+            c.my_font.set("bad")
 
 
 # ======================== AppOptionsContainer ================================
@@ -211,16 +213,16 @@ class TestAppOptionsContainer:
         loaded back to the same values.
         """
         c = _MiniContainer()
-        c.my_str.set("world", sync_env=False)
-        c.my_tuple.set((1, 2), sync_env=False)
+        c.my_str.set("world")
+        c.my_tuple.set((1, 2))
         d = c.to_dict()
         assert d["my_str"] == "world"
         assert d["my_tuple"] == (1, 2)
 
         c2 = _MiniContainer()
         c2.from_dict(d)
-        assert c2.my_str.get(sync_env=False) == "world"
-        assert c2.my_tuple.get(sync_env=False) == (1, 2)
+        assert c2.my_str.get() == "world"
+        assert c2.my_tuple.get() == (1, 2)
 
     def test_from_dict_ignores_unknown_keys(self):
         """
@@ -229,26 +231,21 @@ class TestAppOptionsContainer:
         """
         c = _MiniContainer()
         c.from_dict({"unknown_key": 999, "my_str": "ok"})
-        assert c.my_str.get(sync_env=False) == "ok"
+        assert c.my_str.get() == "ok"
 
     def test_from_dict_marks_option_initialized(self):
         """Loaded values take precedence over later optional defaults."""
         c = _MiniContainer()
         c.from_dict({"my_str": "loaded"})
-        assert c.my_str.get("fallback", sync_env=False) == "loaded"
+        assert c.my_str.get("fallback") == "loaded"
 
-    def test_external_env_marks_option_initialized(self, monkeypatch):
-        """An externally supplied JSON value takes precedence over defaults."""
+    def test_option_changed_hook_tracks_set_and_context_restore(self):
+        """Option changes and context restoration call the container hook."""
         c = _MiniContainer()
-        monkeypatch.setenv(c.ENV_VAR, json.dumps({"my_str": "external"}))
-        assert c.my_str.get("fallback") == "external"
-
-    def test_own_env_sync_does_not_initialize_defaults(self):
-        """A container's own JSON snapshot does not initialize constructor defaults."""
-        c = _MiniContainer()
-        c.sync_env()
-        assert os.environ[c.ENV_VAR] == c.to_env_json()
-        assert c.my_str.get("fallback") == "fallback"
+        c.my_str.set("set")
+        with c.my_str.context("temporary"):
+            pass
+        assert c.changed_options == ["my_str", "my_str", "my_str"]
 
     def test_from_dict_invalid_value_warning(self, capsys):
         """Providing an invalid value in from_dict should produce a warning."""
@@ -269,8 +266,8 @@ class TestAppOptionsContainer:
     def test_save_load_roundtrip(self):
         """Saving and loading should preserve the values."""
         c = _MiniContainer()
-        c.my_str.set("persisted", sync_env=False)
-        c.my_tuple.set((99, 100), sync_env=False)
+        c.my_str.set("persisted")
+        c.my_tuple.set((99, 100))
 
         with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as tmp:
             path = tmp.name
@@ -278,8 +275,8 @@ class TestAppOptionsContainer:
 
         c2 = _MiniContainer()
         c2.load(path)
-        assert c2.my_str.get(sync_env=False) == "persisted"
-        assert c2.my_tuple.get(sync_env=False) == (99, 100)
+        assert c2.my_str.get() == "persisted"
+        assert c2.my_tuple.get() == (99, 100)
 
 
 # ======================== SigimaXOptions =====================================
@@ -306,11 +303,11 @@ class TestSigimaXOptions:
     def test_reset_to_defaults(self):
         """reset_to_defaults should restore default values for all options."""
         opts = SigimaXOptions()
-        original = opts.ima_def_colormap.get(sync_env=False)
-        opts.ima_def_colormap.set("gray", sync_env=False)
-        assert opts.ima_def_colormap.get(sync_env=False) == "gray"
+        original = opts.ima_def_colormap.get()
+        opts.ima_def_colormap.set("gray")
+        assert opts.ima_def_colormap.get() == "gray"
         opts.reset_to_defaults()
-        assert opts.ima_def_colormap.get(sync_env=False) == original
+        assert opts.ima_def_colormap.get() == original
 
 
 # ======================== Module-level helpers ===============================

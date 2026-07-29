@@ -40,8 +40,7 @@ This release contains the full extraction from DataLab, including:
   `FontOptionField`
 * Added generic application metadata options (`app_name`, `app_version`,
   `app_logo_path`, `app_desc`, `app_docurl`, `app_homeurl`, `app_supporturl`)
-* Configuration supports JSON persistence via `save()` / `load()` and environment
-  variable overrides
+* Configuration supports JSON persistence via `save()` / `load()`
 * Removed `process_isolation_enabled` option (DataLab-specific — the framework only
   used it cosmetically; the actual mechanism stays in DataLab)
 

@@ -20,7 +20,7 @@
 
 ## ✨ Highlights
 
-- **Extensible configuration system** — `OptionField`-based settings with `get()`/`set()`/`context()` API, JSON persistence, and environment variable sync across processes
+- **Extensible configuration system** — `OptionField`-based settings with `get()`/`set()`/`context()` API and JSON persistence
 - **Rich widget catalog** — 15 ready-to-use scientific widgets: curve fitting, peak detection, signal baseline, HDF5 browser, log viewer, wizard dialogs, and more
 - **Complete HDF5 infrastructure** — built-in file browser, importer, and workspace save/load
 - **Embedded Python console** — `DockableConsole` with error-to-console routing and configurable namespace
@@ -37,7 +37,7 @@ SigimaX is meant to be:
 - A **framework for building scientific desktop apps** with Qt
 - A **reusable main window** with menus, toolbars, docks, and HDF5 workspace management
 - A **widget library** for signal/image analysis dialogs (fitting, peak detection, baseline, cursor, delta-X)
-- A **configuration backbone** for apps that need persistent user preferences and cross-process option sync
+- A **configuration backbone** for apps that need persistent user preferences
 
 ---
 
@@ -81,11 +81,9 @@ color_mode = Conf.color_mode.get("auto")
 
 # 1. Define custom options
 class MyAppOptions(SigimaXOptions):
-    ENV_VAR = "MYAPP_OPTIONS_JSON"
-
     def __init__(self):
         super().__init__()
-        self.app_name.set("MyApp", sync_env=False)
+        self.app_name.set("MyApp")
         self.greeting = TypedOptionField(
             self, "greeting", default="Hello!",
             expected_type=str, description="Startup message",

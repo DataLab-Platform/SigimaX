@@ -46,7 +46,6 @@ class MyAppOptions(SigimaXOptions):
     such as a greeting message, max recent files, and a default unit system.
     """
 
-    ENV_VAR = "MYAPP_OPTIONS_JSON"
     APP_NAME = "MyApp"
     CONF_VERSION = "1.0.0"
 
@@ -54,9 +53,9 @@ class MyAppOptions(SigimaXOptions):
         super().__init__()
 
         # Override default application metadata
-        self.app_name.set("MyApp", sync_env=False)
-        self.app_version.set("0.1.0", sync_env=False)
-        self.app_desc.set("A demo application built on SigimaX", sync_env=False)
+        self.app_name.set("MyApp")
+        self.app_version.set("0.1.0")
+        self.app_desc.set("A demo application built on SigimaX")
 
         # --- Application-specific options ---
 
@@ -95,7 +94,7 @@ class MyAppOptions(SigimaXOptions):
         # Recapture defaults after adding custom options
         self._defaults.update(
             {
-                name: getattr(self, name).get(sync_env=False)
+                name: getattr(self, name).get()
                 for name in (
                     "greeting_message",
                     "max_recent_files",

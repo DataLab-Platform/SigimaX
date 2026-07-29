@@ -41,12 +41,10 @@ from sigimax.widgets.plotdock import DockablePlotWidget
 class MyAppOptions(SigimaXOptions):
     """Custom configuration for the demo application."""
 
-    ENV_VAR = "MYAPP_OPTIONS_JSON"
-
     def __init__(self):
         super().__init__()
-        self.app_name.set("MyApp", sync_env=False)
-        self.app_version.set("0.1.0", sync_env=False)
+        self.app_name.set("MyApp")
+        self.app_version.set("0.1.0")
 
         # Add a custom string option
         self.greeting = TypedOptionField(
