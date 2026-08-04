@@ -247,6 +247,17 @@ class TestAppOptionsContainer:
             pass
         assert c.changed_options == ["my_str", "my_str", "my_str"]
 
+    def test_generate_rst_doc_uses_sigimax_option_api(self):
+        """RST generation reads SigimaX options without changing their state."""
+        c = _MiniContainer()
+
+        rst = c.generate_rst_doc()
+
+        assert "``my_str``" in rst
+        assert "``'hello'``" in rst
+        assert c.changed_options == []
+        assert not c.is_option_initialized("my_str")
+
     def test_from_dict_invalid_value_warning(self, capsys):
         """Providing an invalid value in from_dict should produce a warning."""
         c = _MiniContainer()

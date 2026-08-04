@@ -77,7 +77,6 @@ from typing import Any
 from guidata import configtools
 from plotpy.config import CONF as PLOTPY_CONF
 from plotpy.config import MAIN_BG_COLOR, MAIN_FG_COLOR
-from sigima.config import OptionField as _SigimaOptionField
 from sigima.config import OptionsContainer
 from sigima.config import options as sigima_options
 from sigima.proc.title_formatting import (
@@ -160,7 +159,7 @@ def get_mod_source_dir() -> str | None:
 NO_DEFAULT = object()
 
 
-class OptionField(_SigimaOptionField):
+class OptionField:
     """SigimaX option field supporting optional default initialization."""
 
     def __init__(
@@ -171,8 +170,16 @@ class OptionField(_SigimaOptionField):
         description: str = "",
         category: str = "",
     ) -> None:
-        super().__init__(container, name, default, description, category)
+        self._container = container
+        self.name = name
+        self.check(default)
+        self._value = default
+        self.description = description
+        self.category = category
         self._is_initialized = False
+
+    def check(self, value: Any) -> None:  # pylint: disable=unused-argument
+        """Validate the configured value in specialized fields."""
 
     def get(self, default: Any = NO_DEFAULT) -> Any:
         """Return the value, initializing a missing option from ``default``.
@@ -459,6 +466,39 @@ class AppOptionsContainer(OptionsContainer):
         Args:
             name: Name of the changed option.
         """
+
+    def generate_rst_doc(self) -> str:
+        """Generate reStructuredText documentation for all options.
+
+        Returns:
+            A string containing the reStructuredText documentation.
+        """
+        doc = """.. list-table::
+    :header-rows: 1
+    :align: left
+
+    * - Name
+      - Default Value
+      - Description
+"""
+        for name in vars(self):
+            opt = getattr(self, name)
+            if isinstance(opt, OptionField):
+                description_lines = opt.description.strip().split("\n")
+                description = "\n".join(
+                    [description_lines[0]]
+                    + [
+                        "        " + line.strip() if line.strip() else ""
+                        for line in description_lines[1:]
+                    ]
+                )
+                value = repr(opt.get())
+                if len(value) > 200:
+                    value = value[:197] + "..."
+                doc += f"    * - ``{name}``\n"
+                doc += f"      - ``{value}``\n"
+                doc += f"      - {description}\n"
+        return doc
 
     # -- Dictionary serialization --
 

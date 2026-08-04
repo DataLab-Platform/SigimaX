@@ -31,12 +31,12 @@ User Guide
             Key functionalities
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+    :maxdepth: 2
+    :caption: Contents:
 
-   installation
-   getting_started
+    installation
+    getting_started
     hdf5_workspace
     lifecycle
-   overview
-   features
+    overview
+    features

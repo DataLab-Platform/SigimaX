@@ -86,6 +86,8 @@ coverage.xml
 # Sphinx documentation
 docs/_build/
 cdl/data/doc/
+doc/auto_examples/
+doc/sg_execution_times.rst
 
 # PyBuilder
 target/

@@ -13,7 +13,7 @@ This release contains the full extraction from DataLab, including:
 
 * Generic main window (`SGMXMainWindow`) with customizable menus, toolbars, and console
 * Configuration system based on Sigima's typed option fields
-* HDF5 workspace management (open, save, browse, import)
+* HDF5 browsing, generic import, and workspace persistence hooks
 * Splash screen and application launcher (`create()` / `run()`)
 * PlotPy adapters for signal/image plot items
 * Reusable scientific widgets (fit dialogs, baseline, peak detection, cursor, etc.)
@@ -46,8 +46,10 @@ This release contains the full extraction from DataLab, including:
 
 ### HDF5 support ###
 
-* Ported full HDF5 workspace management: open, save, browse files
-* Added `import_dataset_from_file()` no-op hook for derived apps to handle
+* Ported generic HDF5 browsing and dataset import
+* Added workspace persistence hooks for derived applications; SigimaX does not
+  impose a universal workspace format or serializer
+* Added `import_dataset_from_file()` hook for derived apps to handle
   application-specific dataset import from HDF5
 * Ported `H5BrowserDialog` widget for interactive HDF5 file browsing
 
