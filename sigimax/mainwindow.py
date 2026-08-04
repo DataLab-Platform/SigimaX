@@ -1068,6 +1068,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         self.setUpdatesEnabled(False)
 
         plotpy_config.set_plotpy_color_mode(mode)
+        get_conf().apply_plotpy_defaults()
 
         if self.console is not None:
             self.console.update_color_mode()

@@ -75,8 +75,8 @@ from pathlib import Path
 from typing import Any
 
 from guidata import configtools
+from plotpy import config as plotpy_config
 from plotpy.config import CONF as PLOTPY_CONF
-from plotpy.config import MAIN_BG_COLOR, MAIN_FG_COLOR
 from sigima.config import OptionsContainer
 from sigima.config import options as sigima_options
 from sigima.proc.title_formatting import (
@@ -1403,6 +1403,10 @@ class SigimaXOptions(AppOptionsContainer):
         Returns:
             Nested dictionary of PlotPy default settings.
         """
+        # Read at call time: `plotpy.config.set_plotpy_color_mode` rebinds these
+        # module globals when the color theme changes.
+        main_fg = plotpy_config.MAIN_FG_COLOR
+        main_bg = plotpy_config.MAIN_BG_COLOR
         return {
             "plot": {
                 # Overriding default plot settings from PlotPy
@@ -1410,13 +1414,13 @@ class SigimaXOptions(AppOptionsContainer):
                 "title/font/bold": False,
                 "selected_curve_symbol/marker": "Ellipse",
                 "selected_curve_symbol/edgecolor": "#a0a0a4",
-                "selected_curve_symbol/facecolor": MAIN_FG_COLOR,
+                "selected_curve_symbol/facecolor": main_fg,
                 "selected_curve_symbol/alpha": 0.3,
                 "selected_curve_symbol/size": 5,
                 "marker/curve/text/textcolor": "black",
                 # Cross marker style (shown when pressing Alt key on plot)
                 "marker/cross/symbol/marker": "Cross",
-                "marker/cross/symbol/edgecolor": MAIN_FG_COLOR,
+                "marker/cross/symbol/edgecolor": main_fg,
                 "marker/cross/symbol/facecolor": "#ff0000",
                 "marker/cross/symbol/alpha": 1.0,
                 "marker/cross/symbol/size": 8,
@@ -1438,7 +1442,7 @@ class SigimaXOptions(AppOptionsContainer):
                 "marker/cursor/line/width": 1.0,
                 "marker/cursor/symbol/marker": "NoSymbol",
                 "marker/cursor/symbol/size": 11,
-                "marker/cursor/symbol/edgecolor": MAIN_BG_COLOR,
+                "marker/cursor/symbol/edgecolor": main_bg,
                 "marker/cursor/symbol/facecolor": "#ff9393",
                 "marker/cursor/symbol/alpha": 1.0,
                 "marker/cursor/sel_line/style": "SolidLine",
@@ -1446,7 +1450,7 @@ class SigimaXOptions(AppOptionsContainer):
                 "marker/cursor/sel_line/width": 2.0,
                 "marker/cursor/sel_symbol/marker": "NoSymbol",
                 "marker/cursor/sel_symbol/size": 11,
-                "marker/cursor/sel_symbol/edgecolor": MAIN_BG_COLOR,
+                "marker/cursor/sel_symbol/edgecolor": main_bg,
                 "marker/cursor/sel_symbol/facecolor": MARKER_LINE_COLOR,
                 "marker/cursor/sel_symbol/alpha": 0.8,
                 "marker/cursor/text/font/size": 9,
@@ -1487,7 +1491,7 @@ class SigimaXOptions(AppOptionsContainer):
                 "shape/drag/line/color": "#00ff55",
                 "shape/drag/line/width": 1.0,
                 "shape/drag/fill/style": "SolidPattern",
-                "shape/drag/fill/color": MAIN_BG_COLOR,
+                "shape/drag/fill/color": main_bg,
                 "shape/drag/fill/alpha": 0.1,
                 "shape/drag/symbol/marker": "Rect",
                 "shape/drag/symbol/size": 3,
@@ -1498,7 +1502,7 @@ class SigimaXOptions(AppOptionsContainer):
                 "shape/drag/sel_line/color": "#00ff55",
                 "shape/drag/sel_line/width": 2.0,
                 "shape/drag/sel_fill/style": "SolidPattern",
-                "shape/drag/sel_fill/color": MAIN_BG_COLOR,
+                "shape/drag/sel_fill/color": main_bg,
                 "shape/drag/sel_fill/alpha": 0.1,
                 "shape/drag/sel_symbol/marker": "Rect",
                 "shape/drag/sel_symbol/size": 7,
@@ -1513,7 +1517,7 @@ class SigimaXOptions(AppOptionsContainer):
                 "s/annotation/line/color": "#00aa00",
                 "s/annotation/line/width": 2,
                 "s/annotation/fill/style": "NoBrush",
-                "s/annotation/fill/color": MAIN_BG_COLOR,
+                "s/annotation/fill/color": main_bg,
                 "s/annotation/fill/alpha": 0.1,
                 "s/annotation/symbol/marker": "XCross",
                 "s/annotation/symbol/size": 7,
@@ -1524,7 +1528,7 @@ class SigimaXOptions(AppOptionsContainer):
                 "s/annotation/sel_line/color": "#00ff00",
                 "s/annotation/sel_line/width": 1,
                 "s/annotation/sel_fill/style": "SolidPattern",
-                "s/annotation/sel_fill/color": MAIN_BG_COLOR,
+                "s/annotation/sel_fill/color": main_bg,
                 "s/annotation/sel_fill/alpha": 0.1,
                 "s/annotation/sel_symbol/marker": "Rect",
                 "s/annotation/sel_symbol/size": 9,
@@ -1536,7 +1540,7 @@ class SigimaXOptions(AppOptionsContainer):
                 "i/annotation/line/color": "#ffff00",
                 "i/annotation/line/width": 2,
                 "i/annotation/fill/style": "SolidPattern",
-                "i/annotation/fill/color": MAIN_BG_COLOR,
+                "i/annotation/fill/color": main_bg,
                 "i/annotation/fill/alpha": 0.1,
                 "i/annotation/symbol/marker": "Rect",
                 "i/annotation/symbol/size": 3,
@@ -1547,7 +1551,7 @@ class SigimaXOptions(AppOptionsContainer):
                 "i/annotation/sel_line/color": "#00ff00",
                 "i/annotation/sel_line/width": 2,
                 "i/annotation/sel_fill/style": "SolidPattern",
-                "i/annotation/sel_fill/color": MAIN_BG_COLOR,
+                "i/annotation/sel_fill/color": main_bg,
                 "i/annotation/sel_fill/alpha": 0.1,
                 "i/annotation/sel_symbol/marker": "Rect",
                 "i/annotation/sel_symbol/size": 9,
@@ -1561,7 +1565,7 @@ class SigimaXOptions(AppOptionsContainer):
                 "s/marker/cursor/line/width": 1.0,
                 "s/marker/cursor/symbol/marker": "Ellipse",
                 "s/marker/cursor/symbol/size": 11,
-                "s/marker/cursor/symbol/edgecolor": MAIN_BG_COLOR,
+                "s/marker/cursor/symbol/edgecolor": main_bg,
                 "s/marker/cursor/symbol/facecolor": MARKER_LINE_COLOR,
                 "s/marker/cursor/symbol/alpha": 0.7,
                 "s/marker/cursor/sel_line/style": "DashLine",
@@ -1622,8 +1626,8 @@ class SigimaXOptions(AppOptionsContainer):
                 # Style for labels:
                 "label/symbol/marker": "NoSymbol",
                 "label/symbol/size": 0,
-                "label/symbol/edgecolor": MAIN_BG_COLOR,
-                "label/symbol/facecolor": MAIN_BG_COLOR,
+                "label/symbol/edgecolor": main_bg,
+                "label/symbol/facecolor": main_bg,
                 "label/border/style": "SolidLine",
                 "label/border/color": "#cbcbcb",
                 "label/border/width": 1,
@@ -1637,8 +1641,8 @@ class SigimaXOptions(AppOptionsContainer):
                 "label/font/family/mac": "Monaco",
                 "label/font/bold": False,
                 "label/font/italic": False,
-                "label/color": MAIN_FG_COLOR,
-                "label/bgcolor": MAIN_BG_COLOR,
+                "label/color": main_fg,
+                "label/bgcolor": main_bg,
                 "label/bgalpha": 0.8,
                 "label/anchor": "TL",
                 "label/xc": 10,
@@ -1656,7 +1660,7 @@ class SigimaXOptions(AppOptionsContainer):
                 "s/editable/line/color": "#ffff00",
                 "s/editable/line/width": 1,
                 "s/editable/fill/style": "SolidPattern",
-                "s/editable/fill/color": MAIN_BG_COLOR,
+                "s/editable/fill/color": main_bg,
                 "s/editable/fill/alpha": 0.1,
                 "s/editable/symbol/marker": "Rect",
                 "s/editable/symbol/size": 3,
@@ -1667,7 +1671,7 @@ class SigimaXOptions(AppOptionsContainer):
                 "s/editable/sel_line/color": "#00ff00",
                 "s/editable/sel_line/width": 1,
                 "s/editable/sel_fill/style": "SolidPattern",
-                "s/editable/sel_fill/color": MAIN_BG_COLOR,
+                "s/editable/sel_fill/color": main_bg,
                 "s/editable/sel_fill/alpha": 0.1,
                 "s/editable/sel_symbol/marker": "Rect",
                 "s/editable/sel_symbol/size": 9,
@@ -1685,12 +1689,12 @@ class SigimaXOptions(AppOptionsContainer):
                 "s/readonly/shade": 0.10,
                 "s/readonly/symbol/marker": "Ellipse",
                 "s/readonly/symbol/size": 7,
-                "s/readonly/symbol/edgecolor": MAIN_BG_COLOR,
+                "s/readonly/symbol/edgecolor": main_bg,
                 "s/readonly/symbol/facecolor": ROI_LINE_COLOR,
                 "s/readonly/symbol/alpha": 1.0,
                 "s/readonly/sel_symbol/marker": "Ellipse",
                 "s/readonly/sel_symbol/size": 9,
-                "s/readonly/sel_symbol/edgecolor": MAIN_BG_COLOR,
+                "s/readonly/sel_symbol/edgecolor": main_bg,
                 "s/readonly/sel_symbol/facecolor": ROI_SEL_LINE_COLOR,
                 "s/readonly/sel_symbol/alpha": 0.9,
                 "s/readonly/multi/color": "#806060",
@@ -1699,7 +1703,7 @@ class SigimaXOptions(AppOptionsContainer):
                 "i/editable/line/color": "#ffff00",
                 "i/editable/line/width": 1,
                 "i/editable/fill/style": "SolidPattern",
-                "i/editable/fill/color": MAIN_BG_COLOR,
+                "i/editable/fill/color": main_bg,
                 "i/editable/fill/alpha": 0.1,
                 "i/editable/symbol/marker": "Rect",
                 "i/editable/symbol/size": 3,
@@ -1710,7 +1714,7 @@ class SigimaXOptions(AppOptionsContainer):
                 "i/editable/sel_line/color": "#00ff00",
                 "i/editable/sel_line/width": 1,
                 "i/editable/sel_fill/style": "SolidPattern",
-                "i/editable/sel_fill/color": MAIN_BG_COLOR,
+                "i/editable/sel_fill/color": main_bg,
                 "i/editable/sel_fill/alpha": 0.1,
                 "i/editable/sel_symbol/marker": "Rect",
                 "i/editable/sel_symbol/size": 9,
@@ -1722,7 +1726,7 @@ class SigimaXOptions(AppOptionsContainer):
                 "i/readonly/line/color": ROI_LINE_COLOR,
                 "i/readonly/line/width": 1,
                 "i/readonly/fill/style": "SolidPattern",
-                "i/readonly/fill/color": MAIN_BG_COLOR,
+                "i/readonly/fill/color": main_bg,
                 "i/readonly/fill/alpha": 0.1,
                 "i/readonly/symbol/marker": "NoSymbol",
                 "i/readonly/symbol/size": 5,
@@ -1733,7 +1737,7 @@ class SigimaXOptions(AppOptionsContainer):
                 "i/readonly/sel_line/color": "#0000ff",
                 "i/readonly/sel_line/width": 1,
                 "i/readonly/sel_fill/style": "SolidPattern",
-                "i/readonly/sel_fill/color": MAIN_BG_COLOR,
+                "i/readonly/sel_fill/color": main_bg,
                 "i/readonly/sel_fill/alpha": 0.1,
                 "i/readonly/sel_symbol/marker": "Rect",
                 "i/readonly/sel_symbol/size": 8,
@@ -1743,28 +1747,44 @@ class SigimaXOptions(AppOptionsContainer):
             },
         }
 
-    def initialize_plotpy(self, config_app_name: str = "", load: bool = False) -> None:
-        """Initialize PlotPy's INI-based configuration.
+    def apply_plotpy_defaults(self) -> None:
+        """Apply the default PlotPy styles returned by :meth:`get_plotpy_defaults`.
 
-        Applies the default styles from :meth:`get_plotpy_defaults` and
-        optionally sets the application name for the PlotPy INI file.
+        This method is called automatically at the end of ``__init__``. It must
+        also be called again after each color theme change, since the defaults
+        depend on PlotPy's current foreground/background colors.
+        """
+        PLOTPY_CONF.update_defaults(self.get_plotpy_defaults())
 
-        This method is called automatically at the end of ``__init__``.
-        Subclasses can call it again with a different ``config_app_name``
-        after overriding :meth:`get_plotpy_defaults`.
+    def set_plotpy_application(
+        self, config_app_name: str = "", load: bool = False
+    ) -> None:
+        """Set the application name used for PlotPy's INI file.
 
         Args:
             config_app_name: Application name for the PlotPy INI file
              (e.g., ``"MyApp_v1"``). If empty, PlotPy uses its own default.
             load: If True, load existing user settings from the INI file.
         """
-        defaults = self.get_plotpy_defaults()
-        PLOTPY_CONF.update_defaults(defaults)
         PLOTPY_CONF.set_application(
             osp.join(config_app_name, "plotpy") if config_app_name else "plotpy",
             self.CONF_VERSION,
             load=load,
         )
+
+    def initialize_plotpy(self, config_app_name: str = "", load: bool = False) -> None:
+        """Initialize PlotPy's INI-based configuration.
+
+        Convenience wrapper around :meth:`apply_plotpy_defaults` and
+        :meth:`set_plotpy_application`.
+
+        Args:
+            config_app_name: Application name for the PlotPy INI file
+             (e.g., ``"MyApp_v1"``). If empty, PlotPy uses its own default.
+            load: If True, load existing user settings from the INI file.
+        """
+        self.apply_plotpy_defaults()
+        self.set_plotpy_application(config_app_name, load=load)
 
     def sync_with_sigima(self) -> None:
         """Synchronize relevant options with Sigima's options container.
