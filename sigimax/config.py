@@ -72,8 +72,9 @@ import sys
 from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
+import guidata.dataset as gds
 from guidata import configtools
 from plotpy import config as plotpy_config
 from plotpy.config import CONF as PLOTPY_CONF
@@ -85,6 +86,9 @@ from sigima.proc.title_formatting import (
 )
 
 from sigimax.utils import conf as _conf_module  # For config dir resolution
+
+if TYPE_CHECKING:
+    from qtpy import QtGui as QG
 
 # Module-level constants
 MOD_TITLE = "SigimaX"
@@ -358,9 +362,13 @@ class EnumOptionField(OptionField):
         choices: list[str],
         description: str = "",
         category: str = "",
+        storage_key: str = "",
+        runtime: bool = False,
     ) -> None:
         self.choices = choices
-        super().__init__(container, name, default, description, category)
+        super().__init__(
+            container, name, default, description, category, storage_key, runtime
+        )
 
     def check(self, value: Any) -> None:
         """Check if value is one of the allowed choices.
@@ -419,7 +427,9 @@ class TupleOptionField(OptionField):
 class FontOptionField(OptionField):
     """Option field for font specifications.
 
-    Stores fonts as a tuple of (family: str, size: int, bold: bool).
+    Stores fonts as a tuple of (family: str | list[str], size: int, bold: bool).
+    A list of families is a list of *candidate* names, resolved to the first one
+    available on the system by :meth:`get_font`.
 
     Args:
         container: Options container instance to which this option belongs.
@@ -442,7 +452,7 @@ class FontOptionField(OptionField):
         if value is not None and (
             not isinstance(value, (tuple, list))
             or len(value) != 3
-            or not isinstance(value[0], str)
+            or not isinstance(value[0], (str, list, tuple))
         ):
             raise ValueError(
                 f"Option '{self.name}': expected (family, size, bold) tuple, "
@@ -458,6 +468,324 @@ class FontOptionField(OptionField):
         if isinstance(value, list):
             value = tuple(value)
         super().set(value)
+
+    def get_font(self) -> QG.QFont:
+        """Return the font as a ``QFont`` instance.
+
+        Returns:
+            The configured font as a ``QFont``.
+        """
+        # Import here to avoid requiring a Qt application when only manipulating
+        # configuration files.
+        from qtpy import QtGui as QG  # pylint: disable=import-outside-toplevel
+
+        family, size, bold = self.get()
+        if isinstance(family, (list, tuple)):
+            family = configtools.get_family(family)
+        return QG.QFont(family, size, QG.QFont.Bold if bold else QG.QFont.Normal)
+
+
+class ConfigPathOptionField(OptionField):
+    """Option field for a file stored in the configuration directory.
+
+    The raw stored value is a bare file *basename*. :meth:`get` validates the
+    basename and returns the absolute path inside the configuration directory.
+
+    Args:
+        container: Options container instance to which this option belongs.
+        name: Name of the option.
+        default: Default file basename (e.g. ``".MyApp_traceback.log"``).
+        description: Description of the option.
+    """
+
+    def check(self, value: Any) -> None:
+        """Check that the value is a string.
+
+        Args:
+            value: The value to check.
+
+        Raises:
+            ValueError: If the value is not a string.
+        """
+        if not isinstance(value, str):
+            raise ValueError(f"Expected str, got {type(value).__name__}")
+
+    def get(self, default: Any = NO_DEFAULT) -> str:
+        """Return the absolute path inside the configuration directory.
+
+        Args:
+            default: Optional basename used when the option is not initialized.
+        Returns:
+            The absolute path of the file inside the configuration directory.
+
+        Raises:
+            ValueError: If the stored value is not a bare basename.
+        """
+        fname = super().get(default)
+        if osp.basename(fname) != fname:
+            raise ValueError(f"Invalid configuration file name {fname}")
+        return _conf_module.Configuration.get_path(osp.basename(fname))
+
+    def to_storage(self) -> str:
+        """Return the raw stored basename (bypassing path resolution)."""
+        return self._value
+
+    def from_storage(self, value: str) -> None:
+        """Set the raw stored basename without validation or env sync.
+
+        Args:
+            value: The raw basename to store.
+        """
+        self._value = value
+        self.mark_initialized()
+
+
+class WorkingDirOptionField(OptionField):
+    """Option field for a working directory.
+
+    :meth:`set` validates the directory (falling back to its parent when a file
+    path is given) and raises when invalid. :meth:`get` returns an empty string
+    when the stored directory no longer exists.
+
+    Args:
+        container: Options container instance to which this option belongs.
+        name: Name of the option.
+        default: Default directory path (empty string by default).
+        description: Description of the option.
+    """
+
+    def check(self, value: Any) -> None:
+        """Check that the value is a string.
+
+        Args:
+            value: The value to check.
+
+        Raises:
+            ValueError: If the value is not a string.
+        """
+        if not isinstance(value, str):
+            raise ValueError(f"Expected str, got {type(value).__name__}")
+
+    def get(self, default: Any = NO_DEFAULT) -> str:
+        """Return the working directory, or an empty string if it is missing.
+
+        Args:
+            default: Optional path used when the option is not initialized.
+        Returns:
+            The stored directory if it exists, otherwise an empty string.
+        """
+        path = super().get(default)
+        if osp.isdir(path):
+            return path
+        return ""
+
+    def set(self, value: str) -> None:
+        """Set the working directory, validating that it exists.
+
+        Args:
+            value: The directory (or a file whose parent is used) to store.
+        Raises:
+            FileNotFoundError: If neither the value nor its parent is a directory.
+        """
+        if not osp.isdir(value):
+            value = osp.dirname(value)
+            if not osp.isdir(value):
+                raise FileNotFoundError(f"Invalid working directory name {value}")
+        super().set(value)
+
+    def to_storage(self) -> str:
+        """Return the raw stored directory (even if it no longer exists)."""
+        return self._value
+
+    def from_storage(self, value: str) -> None:
+        """Set the raw stored directory without validation or env sync.
+
+        Args:
+            value: The raw directory path to store.
+        """
+        self._value = value
+        self.mark_initialized()
+
+
+class FormatStringOptionField(TypedOptionField):
+    """Option field for a ``strftime``-style format string.
+
+    The value is kept in clean form in memory (e.g. ``%H:%M:%S``);
+    format-string-sensitive backends escape it through :attr:`storage_escape`.
+
+    Args:
+        container: Options container instance to which this option belongs.
+        name: Name of the option.
+        default: Default format string.
+        description: Description of the option.
+        category: Category of the option.
+    """
+
+    storage_escape = True
+
+    def __init__(
+        self,
+        container: AppOptionsContainer,
+        name: str,
+        default: str,
+        description: str = "",
+        category: str = "",
+        storage_key: str = "",
+        runtime: bool = False,
+    ) -> None:
+        super().__init__(
+            container, name, default, str, description, category, storage_key, runtime
+        )
+
+
+class DataSetOptionField(OptionField):
+    """Option field holding a :class:`guidata.dataset.DataSet` instance.
+
+    The default value is provided through a *default instance*, which may be set
+    lazily via :meth:`set_default_instance` (useful when the default depends on
+    PlotPy configuration that is not yet available at construction time).
+
+    JSON (de)serialization helpers (:meth:`to_json`, :meth:`from_json`) are used
+    by the storage backend. Percent-escaping required by ConfigParser is handled
+    by the backend through :attr:`storage_escape`, not here.
+
+    Args:
+        container: Options container instance to which this option belongs.
+        name: Name of the option.
+        default_instance: Default :class:`~guidata.dataset.DataSet` instance
+         (may be ``None`` and set later via :meth:`set_default_instance`).
+        description: Description of the option.
+        category: Category of the option.
+    """
+
+    storage_escape = True
+
+    def __init__(
+        self,
+        container: AppOptionsContainer,
+        name: str,
+        default_instance: gds.DataSet | None = None,
+        description: str = "",
+        category: str = "",
+        storage_key: str = "",
+        runtime: bool = False,
+    ) -> None:
+        self.default_instance = default_instance
+        self._serialized_value: str | None = None
+        # The actively-set value starts as None; get() falls back to the default
+        # instance until an explicit value is assigned.
+        super().__init__(
+            container,
+            name,
+            None,
+            description,
+            category,
+            storage_key,
+            runtime,
+        )
+
+    def check(self, value: Any) -> None:
+        """Check that the value is a DataSet or None.
+
+        Args:
+            value: The value to check.
+
+        Raises:
+            ValueError: If the value is neither a DataSet nor None.
+        """
+        if value is not None and not isinstance(value, gds.DataSet):
+            raise ValueError(
+                f"Option '{self.name}': expected a DataSet instance or None, "
+                f"got {type(value).__name__}"
+            )
+
+    def set_default_instance(self, default_instance: gds.DataSet) -> None:
+        """Set the default instance (for lazy initialization).
+
+        Args:
+            default_instance: The default DataSet instance to use.
+        """
+        self.default_instance = default_instance
+
+    def get(self, default: Any = NO_DEFAULT) -> gds.DataSet | None:
+        """Return the current DataSet instance, or the default instance.
+
+        Args:
+            default: Optional DataSet used when the option is not initialized.
+        Returns:
+            The actively-set DataSet if any, otherwise the default instance.
+        """
+        value = super().get(default)
+        if self._serialized_value is not None:
+            try:
+                value = gds.json_to_dataset(self._serialized_value)
+            except Exception:  # pylint: disable=broad-except
+                value = (
+                    default
+                    if default is not NO_DEFAULT and default is not None
+                    else self.default_instance
+                )
+                self._value = None
+                self._is_initialized = False
+                self._container.unmark_option_initialized(self.name)
+            else:
+                self._value = value
+            self._serialized_value = None
+        return value if value is not None else self.default_instance
+
+    def get_raw(self) -> gds.DataSet | None:
+        """Return the raw actively-set DataSet (``None`` if never set)."""
+        return self._value
+
+    def set(self, value: gds.DataSet | None) -> None:
+        """Set a DataSet instance and discard any pending serialized value."""
+        self._serialized_value = None
+        super().set(value)
+
+    def to_storage(self) -> str | None:
+        """Return the actively-set DataSet as a JSON string (``None`` if unset)."""
+        return self.to_json()
+
+    def from_storage(self, value: str | None) -> None:
+        """Restore the DataSet from a JSON string (``None`` clears the value).
+
+        The JSON is resolved immediately, so that an unusable value (e.g. a
+        DataSet class that no longer exists) is reported back to the caller by
+        :meth:`to_storage` returning ``None``.
+
+        Args:
+            value: The JSON string to deserialize, or ``None``.
+        """
+        if value is None:
+            self._value = None
+            self._serialized_value = None
+            self.mark_initialized()
+        else:
+            self.from_json(value)
+            self.get()
+
+    def to_json(self) -> str | None:
+        """Serialize the actively-set DataSet to a JSON string.
+
+        Returns:
+            The JSON string of the actively-set DataSet, or ``None`` when no
+             value has been explicitly set (so the default instance applies).
+        """
+        if self._serialized_value is not None:
+            return self._serialized_value
+        if self._value is None:
+            return None
+        return gds.dataset_to_json(self._value)
+
+    def from_json(self, json_str: str) -> None:
+        """Deserialize a DataSet from a JSON string and store it.
+
+        Args:
+            json_str: The JSON string to deserialize.
+        """
+        self._value = None
+        self._serialized_value = json_str
+        self.mark_initialized()
 
 
 # ---------------------------------------------------------------------------
@@ -477,6 +805,8 @@ class AppOptionsContainer(OptionsContainer):
 
     Class attributes:
         APP_NAME: Application name used for default config directory.
+        This name can be overridden by derived applications to customize the config
+        path.
     """
 
     APP_NAME = "SigimaX"
@@ -703,7 +1033,7 @@ class SigimaXOptions(AppOptionsContainer):
         self.app_name = TypedOptionField(
             self,
             "app_name",
-            default="SigimaX",
+            default=self.APP_NAME,
             expected_type=str,
             description="Application name.",
         )
@@ -815,13 +1145,12 @@ class SigimaXOptions(AppOptionsContainer):
         # Log and Console state
         # ===================================================================
 
-        self.traceback_log_path = TypedOptionField(
+        self.traceback_log_path = ConfigPathOptionField(
             self,
             "traceback_log_path",
             category="main",
-            default=f".{self.app_name.get()}_traceback.log",
-            expected_type=str,
-            description="Path to the traceback log file (relative to config dir).",
+            default=f".{self.APP_NAME}_traceback.log",
+            description="Traceback log file basename (inside the config dir).",
         )
         self.traceback_log_available = TypedOptionField(
             self,
@@ -839,13 +1168,12 @@ class SigimaXOptions(AppOptionsContainer):
             expected_type=bool,
             description="If True, enable Python faulthandler for crash reporting.",
         )
-        self.faulthandler_log_path = TypedOptionField(
+        self.faulthandler_log_path = ConfigPathOptionField(
             self,
             "faulthandler_log_path",
             category="main",
-            default=f".{self.app_name.get()}_faulthandler.log",
-            expected_type=str,
-            description="Path to the faulthandler log file (relative to config dir).",
+            default=f".{self.APP_NAME}_faulthandler.log",
+            description="Faulthandler log file basename (inside the config dir).",
         )
         self.faulthandler_log_available = TypedOptionField(
             self,
@@ -917,12 +1245,11 @@ class SigimaXOptions(AppOptionsContainer):
                 "dock widget positions and toolbar layout."
             ),
         )
-        self.base_dir = TypedOptionField(
+        self.base_dir = WorkingDirOptionField(
             self,
             "base_dir",
             category="main",
             default="",
-            expected_type=str,
             description="Base working directory for file dialogs.",
         )
 
