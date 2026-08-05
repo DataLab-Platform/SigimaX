@@ -177,6 +177,8 @@ class OptionField:
         default: Any,
         description: str = "",
         category: str = "",
+        storage_key: str = "",
+        runtime: bool = False,
     ) -> None:
         self._container = container
         self.name = name
@@ -184,6 +186,11 @@ class OptionField:
         self._value = default
         self.description = description
         self.category = category
+        #: Storage key overriding the one derived from the option name.
+        self.storage_key = storage_key
+        #: Value shared between processes through the storage backend: its owner
+        #: persists it individually, bulk saves must leave it untouched.
+        self.runtime = runtime
         self._is_initialized = False
 
     def check(self, value: Any) -> None:  # pylint: disable=unused-argument
@@ -289,9 +296,13 @@ class TypedOptionField(OptionField):
         expected_type: type,
         description: str = "",
         category: str = "",
+        storage_key: str = "",
+        runtime: bool = False,
     ) -> None:
         self.expected_type = expected_type
-        OptionField.__init__(self, container, name, default, description, category)
+        OptionField.__init__(
+            self, container, name, default, description, category, storage_key, runtime
+        )
 
     def check(self, value: Any) -> None:
         """Validate the configured value type."""
@@ -943,6 +954,7 @@ class SigimaXOptions(AppOptionsContainer):
             category="console",
             default=5000,
             expected_type=int,
+            storage_key="max_line_count",
             description="Maximum number of lines to keep in the console output.",
         )
         self.external_editor_path = TypedOptionField(
