@@ -162,6 +162,14 @@ NO_DEFAULT = object()
 class OptionField:
     """SigimaX option field supporting optional default initialization."""
 
+    #: Suffixes of the storage keys occupied by the field, for backends storing
+    #: one scalar per key (e.g. INI). Empty means a single key.
+    storage_suffixes: tuple[str, ...] = ()
+
+    #: Whether the serialized value must be escaped by format-string-sensitive
+    #: backends (e.g. ``%`` doubling for ConfigParser).
+    storage_escape: bool = False
+
     def __init__(
         self,
         container: OptionsContainer,
@@ -215,6 +223,26 @@ class OptionField:
         mark_initialized = getattr(self._container, "mark_option_initialized", None)
         if mark_initialized is not None:
             mark_initialized(self.name)
+
+    def to_storage(self) -> Any:
+        """Return the value in a serialization-friendly form.
+
+        Fields whose :meth:`get` transforms the stored value must override this
+        (and :meth:`from_storage`) to avoid a lossy ``get``/``set`` round-trip.
+
+        Returns:
+            A JSON-compatible representation of the value. When
+             :attr:`storage_suffixes` is not empty, a sequence aligned with it.
+        """
+        return self.get()
+
+    def from_storage(self, value: Any) -> None:
+        """Restore the value from its serialized form.
+
+        Args:
+            value: The serialized value, as produced by :meth:`to_storage`.
+        """
+        self.set(value)
 
     def context(self, temp_value: Any) -> Generator[None, None, None]:
         """Temporarily override the value without changing initialization state."""
@@ -389,6 +417,8 @@ class FontOptionField(OptionField):
         description: Description of the option.
     """
 
+    storage_suffixes = ("family", "size", "bold")
+
     def check(self, value: Any) -> None:
         """Check if value is a valid font tuple.
 
@@ -503,19 +533,19 @@ class AppOptionsContainer(OptionsContainer):
     # -- Dictionary serialization --
 
     def to_dict(self) -> dict[str, Any]:
-        """Return all option values as a dictionary.
+        """Return all option values as a JSON-compatible dictionary.
 
         Returns:
-            A dictionary with option names as keys and their current values.
+            A dictionary with option names as keys and their serialized values.
         """
         return {
-            name: getattr(self, name).get()
+            name: getattr(self, name).to_storage()
             for name in vars(self)
             if isinstance(getattr(self, name), OptionField)
         }
 
     def from_dict(self, values: dict[str, Any]) -> None:
-        """Set option values from a dictionary.
+        """Set option values from a JSON-compatible dictionary.
 
         Unknown keys are silently ignored, making this safe for loading
         options from a newer or older version of the application.
@@ -528,7 +558,7 @@ class AppOptionsContainer(OptionsContainer):
                 opt = getattr(self, name)
                 if isinstance(opt, OptionField):
                     try:
-                        opt.set(value)
+                        opt.from_storage(value)
                     except (ValueError, TypeError) as exc:
                         print(
                             f"[sigimax] Warning: invalid value for "
@@ -1319,17 +1349,14 @@ class SigimaXOptions(AppOptionsContainer):
         # # TODO: [P3] Refactor OptionField to store the default value explicitly,
         # so we can simplify this logic in the future.
         # ===================================================================
-        self._defaults = {
-            name: getattr(self, name).get()
-            for name in vars(self)
-            if isinstance(getattr(self, name), OptionField)
-        }
+        self._defaults = self.to_dict()
 
     def reset_to_defaults(self) -> None:
         """Reset all options to their default values."""
-        for name, default in self._defaults.items():
+        self._initialized_options.clear()
+        self.from_dict(self._defaults)
+        for name in self._defaults:
             field = getattr(self, name)
-            field.set(default)
             field._is_initialized = False  # pylint: disable=protected-access
         self._initialized_options.clear()
 
