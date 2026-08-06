@@ -458,11 +458,11 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         font.setPointSize(10)
         tab_bar.setFont(font)
         # Use QTimer to ensure tab bar is properly sized first
-        QC.QTimer.singleShot(0, self.__update_tab_icon_size)
+        QC.QTimer.singleShot(0, self._update_tab_icon_size)
 
         self.setCentralWidget(self.tabwidget)
 
-    def __update_tab_icon_size(self) -> None:
+    def _update_tab_icon_size(self) -> None:
         """Update tab icon size based on tab bar height"""
         if self.tabwidget is not None:
             tab_bar = self.tabwidget.tabBar()
