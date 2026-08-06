@@ -159,9 +159,7 @@ class MyAppMainWindow(SGMXMainWindow):
     def _add_curve_dock(self) -> None:
         """Add a dockable curve plot widget to the main window."""
         self.curve_dock = DockablePlotWidget(self, PlotType.CURVE)
-        dockwidget, location = self.curve_dock.create_dockwidget(_("Curve Viewer"))
-        self.addDockWidget(location, dockwidget)
-        self.docks[self.curve_dock] = dockwidget
+        self._add_dockwidget(self.curve_dock, _("Curve Viewer"), name="curve_viewer")
 
     def _add_tools_menu(self) -> None:
         """Add a custom 'Tools' menu to the menu bar."""

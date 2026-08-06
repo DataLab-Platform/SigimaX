@@ -87,8 +87,7 @@ class SciAppMainWindow(SGMXMainWindow):
 
         # Create a dockable curve plot
         self.curve_dock = DockablePlotWidget(self, PlotType.CURVE)
-        dock, loc = self.curve_dock.create_dockwidget(_("Signal Viewer"))
-        self.addDockWidget(loc, dock)
+        self._add_dockwidget(self.curve_dock, _("Signal Viewer"), name="signal_viewer")
 
         # Add custom menus
         self._setup_analysis_menu()

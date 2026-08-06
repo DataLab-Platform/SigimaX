@@ -84,6 +84,10 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
 
     __instance = None
 
+    #: Bump this whenever dock widget object names change, so that layouts saved
+    #: by an older version are discarded instead of being partially restored.
+    WINDOW_STATE_VERSION = 1
+
     SIG_READY = QC.Signal()
     SIG_SEND_OBJECT = QC.Signal(object)
     SIG_SEND_OBJECTLIST = QC.Signal(object)
@@ -119,7 +123,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         self.main_toolbar: QW.QToolBar | None = None
         self.tabwidget: QW.QTabWidget | None = None
         self.tabmenu: QW.QMenu | None = None
-        self.docks: dict[DockableConsole, QW.QDockWidget] = {}
+        self.docks: dict[QW.QWidget, QW.QDockWidget] = {}
 
         self.openh5_action: QW.QAction | None = None
         self.saveh5_action: QW.QAction | None = None
@@ -311,7 +315,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         state = get_conf().window_state.get()
         if state:
             state = base64.b64decode(state)
-            self.restoreState(QC.QByteArray(state))
+            self.restoreState(QC.QByteArray(state), self.WINDOW_STATE_VERSION)
             for widget in self.children():
                 if isinstance(widget, QW.QDockWidget):
                     self.restoreDockWidget(widget)
@@ -328,8 +332,8 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
             conf.window_position.set((pos.x(), pos.y()))
         # Encoding window state into base64 string to avoid sending binary data
         # to the configuration file:
-        state = base64.b64encode(self.saveState().data()).decode("ascii")
-        conf.window_state.set(state)
+        state = self.saveState(self.WINDOW_STATE_VERSION).data()
+        conf.window_state.set(base64.b64encode(state).decode("ascii"))
 
     def setup(self, console: bool = False) -> None:
         """Setup main window
@@ -572,8 +576,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         self.console = DockableConsole(self, namespace=ns, message=msg, debug=DEBUG)
         self.console.setMaximumBlockCount(get_conf().console_max_line_count.get())
         self.console.go_to_error.connect(go_to_error)
-        cdock = self._add_dockwidget(self.console, _("Console"))
-        self.docks[self.console] = cdock
+        cdock = self._add_dockwidget(self.console, _("Console"), name="console")
         cdock.hide()
         self._update_console_show_mode()
         self.console.exception_occurred.connect(self.consolestatus.exception_occurred)
@@ -601,11 +604,36 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         """Return True if mainwindow is modified"""
         return self.__is_modified
 
-    def _add_dockwidget(self, child, title: str) -> QW.QDockWidget:
-        """Add QDockWidget and toggleViewAction"""
+    def _add_dockwidget(
+        self,
+        child,
+        title: str,
+        *,
+        name: str | None = None,
+        key: QW.QWidget | None = None,
+        tabify_with: QW.QWidget | None = None,
+    ) -> QW.QDockWidget:
+        """Add a dock widget to the main window and register it in ``self.docks``.
+
+        Args:
+            child: dockable widget, providing a ``create_dockwidget`` method
+            title: dock widget title, displayed to the user (translated)
+            name: stable Qt object name used to persist the dock layout. Defaults
+             to ``title``, but a non-translated name should be passed so that the
+             layout survives a language change.
+            key: key used to register the dock in ``self.docks``, when the logical
+             owner differs from the dockable widget itself. Defaults to ``child``.
+            tabify_with: key of an already registered dock to tabify with
+
+        Returns:
+            Created dock widget
+        """
         dockwidget, location = child.create_dockwidget(title)
-        dockwidget.setObjectName(title)
+        dockwidget.setObjectName(title if name is None else name)
         self.addDockWidget(location, dockwidget)
+        if tabify_with is not None:
+            self.tabifyDockWidget(self.docks[tabify_with], dockwidget)
+        self.docks[child if key is None else key] = dockwidget
         return dockwidget
 
     def _is_save_enabled(self) -> bool:

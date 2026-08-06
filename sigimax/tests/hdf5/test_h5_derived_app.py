@@ -185,9 +185,7 @@ class DerivedAppWindow(SGMXMainWindow):
 
         # --- Optional: a curve dock for visual feedback ---
         self.curve_dock = DockablePlotWidget(self, PlotType.CURVE)
-        dockwidget, location = self.curve_dock.create_dockwidget("Preview")
-        self.addDockWidget(location, dockwidget)
-        self.docks[self.curve_dock] = dockwidget
+        self._add_dockwidget(self.curve_dock, "Preview", name="preview")
 
     def _before_setup(self, console: bool) -> None:
         """Create the data model before generic setup hooks may use it."""
