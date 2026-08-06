@@ -105,7 +105,6 @@ def sigimax_app_context(
     conf = get_conf()
 
     # === Set application name and version ---------------------------------------------
-    # pylint: disable=import-outside-toplevel
     QAPP_INSTANCE.setApplicationName(conf.app_name.get())
     QAPP_INSTANCE.setApplicationVersion(conf.app_version.get())
     QAPP_INSTANCE.setOrganizationName(conf.app_name.get() + " project")

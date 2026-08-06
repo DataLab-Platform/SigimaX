@@ -408,6 +408,8 @@ class SGMXExecEnv:
         if args.h5browser:
             self.h5browser_file = args.h5browser
         if args.version:
+            # Local import: `sigimax.config` pulls in the PlotPy/Qt stack, which
+            # this module must not require just to parse command line arguments.
             # pylint: disable=import-outside-toplevel
             from sigimax.config import CONF as Conf
 
@@ -419,6 +421,7 @@ class SGMXExecEnv:
             )
             sys.exit()
         if args.reset:
+            # Local import: see the `--version` branch above.
             # pylint: disable=import-outside-toplevel
             from sigimax.config import CONF as Conf
 
