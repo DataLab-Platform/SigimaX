@@ -34,7 +34,7 @@ msgid "Configuration system based on Sigima's typed option fields"
 msgstr "Système de configuration basé sur les champs d'options typés de Sigima"
 
 msgid "HDF5 browsing, generic import, and workspace persistence hooks"
-msgstr ""
+msgstr "Navigation HDF5, import générique et points d'extension de persistance de l'espace de travail"
 
 msgid "Splash screen and application launcher (`create()` / `run()`)"
 msgstr "Écran de démarrage et lanceur d'application (`create()` / `run()`)"
@@ -49,10 +49,10 @@ msgid "Comprehensive test suite with 155+ tests across unit, GUI, and app catego
 msgstr "Suite de tests complète avec plus de 155 tests répartis dans les catégories unitaire, GUI et application"
 
 msgid "Full Sphinx documentation with API reference and gallery examples"
-msgstr ""
+msgstr "Documentation Sphinx complète avec référence API et exemples de galerie"
 
 msgid "Complete French translation (189 strings)"
-msgstr ""
+msgstr "Traduction française complète (189 chaînes)"
 
 msgid "Application framework"
 msgstr "Framework applicatif"
@@ -92,10 +92,10 @@ msgid "HDF5 support"
 msgstr "Support HDF5"
 
 msgid "Ported generic HDF5 browsing and dataset import"
-msgstr ""
+msgstr "Portage de la navigation HDF5 générique et de l'import de jeux de données"
 
 msgid "Added workspace persistence hooks for derived applications; SigimaX does not impose a universal workspace format or serializer"
-msgstr ""
+msgstr "Ajout de points d'extension de persistance de l'espace de travail pour les applications dérivées ; SigimaX n'impose pas de format ou de sérialiseur d'espace de travail universel"
 
 #, fuzzy
 msgid "Added `import_dataset_from_file()` hook for derived apps to handle application-specific dataset import from HDF5"
@@ -195,31 +195,31 @@ msgid "PlotPy adapter tests cover factory dispatch, make/update item roundtrips,
 msgstr "Les tests des adaptateurs PlotPy couvrent la répartition des fabriques, les allers-retours de création/mise à jour d'éléments, les allers-retours de coordonnées ROI et l'intégration des annotations"
 
 msgid "Documentation"
-msgstr ""
+msgstr "Documentation"
 
 msgid "Added full Sphinx documentation with API reference pages for all public modules (`app`, `config`, `env`, `mainwindow`, `widgets`, `h5`, `adapters_plotpy`, `utils`)"
-msgstr ""
+msgstr "Ajout d'une documentation Sphinx complète avec des pages de référence API pour tous les modules publics (`app`, `config`, `env`, `mainwindow`, `widgets`, `h5`, `adapters_plotpy`, `utils`)"
 
 msgid "Added Sphinx-Gallery examples: getting started (`minimal_app.py`), features (`configuration.py`, `plot_widget.py`), and use cases (`full_app.py`)"
-msgstr ""
+msgstr "Ajout d'exemples Sphinx-Gallery : premiers pas (`minimal_app.py`), fonctionnalités (`configuration.py`, `plot_widget.py`) et cas d'usage (`full_app.py`)"
 
 msgid "Added user guide pages: overview, installation, contributing"
-msgstr ""
+msgstr "Ajout de pages du manuel utilisateur : aperçu, installation, contribution"
 
 msgid "Documentation builds cleanly with `-W` (warnings-as-errors)"
-msgstr ""
+msgstr "La documentation se construit sans erreur avec `-W` (avertissements traités comme des erreurs)"
 
 msgid "Internationalization"
-msgstr ""
+msgstr "Internationalisation"
 
 msgid "Added complete French translation of all 189 UI strings (`sigimax/locale/fr/LC_MESSAGES/sigimax.po`)"
-msgstr ""
+msgstr "Ajout de la traduction française complète des 189 chaînes de l'interface (`sigimax/locale/fr/LC_MESSAGES/sigimax.po`)"
 
 msgid "Translations cover menus, toolbar, HDF5 browser, fit dialogs, signal widgets, status bar, error/warning dialogs, wizard, and about/help"
-msgstr ""
+msgstr "Les traductions couvrent les menus, la barre d'outils, le navigateur HDF5, les boîtes de dialogue d'ajustement, les widgets de signaux, la barre d'état, les boîtes de dialogue d'erreur/avertissement, l'assistant et la boîte à propos/aide"
 
 msgid "Terminology aligned with DataLab's existing French translations for consistency"
-msgstr ""
+msgstr "Terminologie alignée avec les traductions françaises existantes de DataLab pour la cohérence"
 
 msgid "Project infrastructure"
 msgstr "Infrastructure du projet"
@@ -237,5 +237,5 @@ msgid "Changed maintainer email to `datalab@codra.fr`"
 msgstr "Changement de l'adresse e-mail du mainteneur vers `datalab@codra.fr`"
 
 msgid "Fixed `run_with_env.py` to substitute `sys.executable` when command starts with `python`, ensuring the correct venv interpreter is used"
-msgstr ""
+msgstr "Correction de `run_with_env.py` pour substituer `sys.executable` lorsque la commande commence par `python`, garantissant l'utilisation du bon interpréteur du venv"
 

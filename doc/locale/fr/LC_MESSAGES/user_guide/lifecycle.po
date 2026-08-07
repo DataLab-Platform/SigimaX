@@ -13,53 +13,53 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 msgid "Main-Window Lifecycle"
-msgstr ""
+msgstr "Cycle de vie de la fenêtre principale"
 
 msgid "SigimaX creates a derived main window in a predictable sequence. Use the protected hooks instead of relying on incidental constructor ordering."
-msgstr ""
+msgstr "SigimaX crée une fenêtre principale dérivée selon une séquence prévisible. Utilisez les points d'extension protégés plutôt que de vous fier à l'ordre accidentel du constructeur."
 
 msgid "Initialization Order"
-msgstr ""
+msgstr "Ordre d'initialisation"
 
 msgid "When a :class:`~sigimax.mainwindow.SGMXMainWindow` is created, SigimaX:"
-msgstr ""
+msgstr "Lorsqu'une :class:`~sigimax.mainwindow.SGMXMainWindow` est créée, SigimaX :"
 
 msgid "initializes its own non-virtual state;"
-msgstr ""
+msgstr "initialise son propre état non virtuel ;"
 
 msgid "calls ``_before_setup(console)``;"
-msgstr ""
+msgstr "appelle ``_before_setup(console)`` ;"
 
 msgid "applies the color mode through ``_update_color_mode(startup=True)``;"
-msgstr ""
+msgstr "applique le mode de couleur via ``_update_color_mode(startup=True)`` ;"
 
 msgid "creates the generic status bar, actions, central widget, menus, and restored window state;"
-msgstr ""
+msgstr "crée la barre d'état générique, les actions, le widget central, les menus et restaure l'état de la fenêtre ;"
 
 msgid "calls ``_after_setup(console)``; and"
-msgstr ""
+msgstr "appelle ``_after_setup(console)`` ; et"
 
 msgid "restores the window geometry."
-msgstr ""
+msgstr "restaure la géométrie de la fenêtre."
 
 msgid "Use ``_before_setup`` for derived state that another protected hook may need during startup. Use ``_after_setup`` for work that requires generic widgets such as actions, menus, or the status bar."
-msgstr ""
+msgstr "Utilisez ``_before_setup`` pour l'état dérivé dont un autre point d'extension protégé pourrait avoir besoin au démarrage. Utilisez ``_after_setup`` pour les travaux nécessitant les widgets génériques tels que les actions, les menus ou la barre d'état."
 
 msgid "The HDF5 reference application follows this rule by creating its data model in ``_before_setup``:"
-msgstr ""
+msgstr "L'application de référence HDF5 suit cette règle en créant son modèle de données dans ``_before_setup`` :"
 
 msgid "Singleton Access"
-msgstr ""
+msgstr "Accès au singleton"
 
 msgid "Call ``MyMainWindow.get_instance()`` on the concrete derived class. It returns the current instance of that class or creates one of the same class. This keeps the base framework from accidentally constructing ``SGMXMainWindow`` when an application requested its own window subclass."
-msgstr ""
+msgstr "Appelez ``MyMainWindow.get_instance()`` sur la classe dérivée concrète. Elle retourne l'instance courante de cette classe ou en crée une de la même classe. Cela évite que le framework de base ne construise accidentellement ``SGMXMainWindow`` alors qu'une application avait demandé sa propre sous-classe de fenêtre."
 
 msgid "Shutdown Order"
-msgstr ""
+msgstr "Ordre d'arrêt"
 
 msgid "For a modified workspace, the close flow asks the user to save first. A successful application save clears the modified state; cancellation or failure leaves it set and stops the close. Once closing proceeds, SigimaX calls ``_close_managed_widgets()``, ``_cleanup_before_reset()``, ``reset_all()``, ``_save_pos_size_and_state()``, and ``_cleanup_after_state_save()`` in that order."
-msgstr ""
+msgstr "Pour un espace de travail modifié, le flux de fermeture demande d'abord à l'utilisateur d'enregistrer. Un enregistrement applicatif réussi efface l'état modifié ; une annulation ou un échec le laisse actif et arrête la fermeture. Une fois la fermeture engagée, SigimaX appelle ``_close_managed_widgets()``, ``_cleanup_before_reset()``, ``reset_all()``, ``_save_pos_size_and_state()``, puis ``_cleanup_after_state_save()``, dans cet ordre."
 
 msgid "Derived applications should use these hooks for their own managed resources and call ``super()`` when preserving the generic behavior is required."
-msgstr ""
+msgstr "Les applications dérivées doivent utiliser ces points d'extension pour leurs propres ressources gérées et appeler ``super()`` lorsque la préservation du comportement générique est requise."
 

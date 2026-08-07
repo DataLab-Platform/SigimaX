@@ -49,7 +49,7 @@ msgid "**Overridable hooks**: The main window provides hooks that derived apps c
 msgstr "**Hooks redéfinissables** : la fenêtre principale fournit des hooks que les applications dérivées peuvent redéfinir : ``reset_all()``, ``_is_save_enabled()``, ``_update_file_menu()``, ``_update_view_menu()``, ``_about()``."
 
 msgid "**Built-in features**: HDF5 GUI and generic dataset import; derived applications implement their own workspace persistence. SigimaX also provides an embedded Python console, status bar with memory monitoring, and splash screen support. See :doc:`hdf5_workspace` for the derived-application contract."
-msgstr ""
+msgstr "**Fonctionnalités intégrées** : interface HDF5 et import générique de jeux de données ; les applications dérivées implémentent leur propre persistance de l'espace de travail. SigimaX fournit également une console Python intégrée, une barre d'état avec surveillance mémoire et la prise en charge d'un écran de démarrage. Voir :doc:`hdf5_workspace` pour le contrat des applications dérivées."
 
 msgid "What's Included"
 msgstr "Contenu inclus"
@@ -64,79 +64,79 @@ msgid "Purpose"
 msgstr "Objectif"
 
 msgid ":class:`~sigimax.widgets.plotdock.DockablePlotWidget`"
-msgstr ""
+msgstr ":class:`~sigimax.widgets.plotdock.DockablePlotWidget`"
 
 msgid "Embeddable PlotPy plot in dock widgets"
 msgstr "Tracé PlotPy intégrable dans des widgets ancrables"
 
 msgid ":class:`~sigimax.widgets.h5browser.H5BrowserDialog`"
-msgstr ""
+msgstr ":class:`~sigimax.widgets.h5browser.H5BrowserDialog`"
 
 msgid "Interactive HDF5 file browser"
 msgstr "Explorateur interactif de fichiers HDF5"
 
 msgid ":class:`~sigimax.widgets.fitdialog`"
-msgstr ""
+msgstr ":class:`~sigimax.widgets.fitdialog`"
 
 msgid "Curve fitting dialogs (Gaussian, polynomial, etc.)"
 msgstr "Dialogues d'ajustement de courbe (gaussien, polynomial, etc.)"
 
 msgid ":class:`~sigimax.widgets.signalpeak`"
-msgstr ""
+msgstr ":class:`~sigimax.widgets.signalpeak`"
 
 msgid "Signal peak detection dialog"
 msgstr "Dialogue de détection de pics de signal"
 
 msgid ":class:`~sigimax.widgets.signalbaseline`"
-msgstr ""
+msgstr ":class:`~sigimax.widgets.signalbaseline`"
 
 msgid "Signal baseline selection dialog"
 msgstr "Dialogue de sélection de ligne de base"
 
 msgid ":class:`~sigimax.widgets.signalcursor`"
-msgstr ""
+msgstr ":class:`~sigimax.widgets.signalcursor`"
 
 msgid "Signal cursor selection dialog"
 msgstr "Dialogue de sélection par curseur"
 
 msgid ":class:`~sigimax.widgets.signaldeltax`"
-msgstr ""
+msgstr ":class:`~sigimax.widgets.signaldeltax`"
 
 msgid "Signal delta-X measurement dialog"
 msgstr "Dialogue de mesure de delta-X"
 
 msgid ":class:`~sigimax.widgets.imagebackground`"
-msgstr ""
+msgstr ":class:`~sigimax.widgets.imagebackground`"
 
 msgid "Image background selection dialog"
 msgstr "Dialogue de sélection du fond d'image"
 
 msgid ":class:`~sigimax.widgets.logviewer.LogViewerWindow`"
-msgstr ""
+msgstr ":class:`~sigimax.widgets.logviewer.LogViewerWindow`"
 
 msgid "Log viewer dialog"
 msgstr "Dialogue de visualisation des journaux"
 
 msgid ":class:`~sigimax.widgets.wizard.Wizard`"
-msgstr ""
+msgstr ":class:`~sigimax.widgets.wizard.Wizard`"
 
 msgid "Multi-page wizard dialog"
 msgstr "Dialogue assistant multi-pages"
 
 msgid ":class:`~sigimax.widgets.splashscreen.SigimaXSplashScreen`"
-msgstr ""
+msgstr ":class:`~sigimax.widgets.splashscreen.SigimaXSplashScreen`"
 
 msgid "Configurable splash screen"
 msgstr "Écran de démarrage configurable"
 
 msgid ":class:`~sigimax.widgets.status.MemoryStatus`"
-msgstr ""
+msgstr ":class:`~sigimax.widgets.status.MemoryStatus`"
 
 msgid "Status bar memory usage widget"
 msgstr "Widget de barre d'état d'utilisation mémoire"
 
 msgid ":class:`~sigimax.widgets.warningerror.WarningErrorMessageBox`"
-msgstr ""
+msgstr ":class:`~sigimax.widgets.warningerror.WarningErrorMessageBox`"
 
 msgid "Warning/error display dialog"
 msgstr "Dialogue d'affichage des avertissements et erreurs"

@@ -40,7 +40,7 @@ msgid "Package manager ``pip``"
 msgstr "Gestionnaire de paquets ``pip``"
 
 msgid ":octicon:`info;1em;sd-text-info` :bdg-info-line:`GNU/Linux` :bdg-info-line:`Windows` :bdg-info-line:`macOS`"
-msgstr ""
+msgstr ":octicon:`info;1em;sd-text-info` :bdg-info-line:`GNU/Linux` :bdg-info-line:`Windows` :bdg-info-line:`macOS`"
 
 msgid "SigimaX's package ``sigimax`` is available on the Python Package Index (PyPI) at: https://pypi.python.org/pypi/sigimax."
 msgstr "Le paquet ``sigimax`` de SigimaX est disponible sur le Python Package Index (PyPI) à l'adresse : https://pypi.python.org/pypi/sigimax."
@@ -97,46 +97,46 @@ msgid "Summary"
 msgstr "Description"
 
 msgid "Python"
-msgstr ""
+msgstr "Python"
 
 msgid ">=3.9, <4"
-msgstr ""
+msgstr ">=3.9, <4"
 
 msgid "Python programming language"
 msgstr "Langage de programmation Python"
 
 msgid "guidata"
-msgstr ""
+msgstr "guidata"
 
 msgid ">= 3.13.4"
-msgstr ""
+msgstr ">= 3.13.4"
 
 msgid "Automatic GUI generation for easy dataset editing and display"
-msgstr ""
+msgstr "Génération automatique d'interface graphique pour une édition et un affichage facile des jeux de données"
 
 msgid "PlotPy"
-msgstr ""
+msgstr "PlotPy"
 
 msgid ">= 2.8.2"
-msgstr ""
+msgstr ">= 2.8.2"
 
 msgid "Curve and image plotting tools for Python/Qt applications"
 msgstr "Outils de tracé de courbes et d'images pour les applications Python/Qt"
 
 msgid "psutil"
-msgstr ""
+msgstr "psutil"
 
 msgid ">= 5.7"
-msgstr ""
+msgstr ">= 5.7"
 
 msgid "Cross-platform lib for process and system monitoring."
 msgstr "Bibliothèque multiplateforme pour la surveillance des processus et du système."
 
 msgid "Sigima"
-msgstr ""
+msgstr "Sigima"
 
 msgid ">= 1.1.0"
-msgstr ""
+msgstr ">= 1.1.0"
 
 msgid "Scientific computing engine for 1D signals and 2D images, part of the DataLab open-source platform."
 msgstr "Moteur de calcul scientifique pour les signaux 1D et les images 2D, partie de la plateforme open-source DataLab."
@@ -145,10 +145,10 @@ msgid "Optional modules for GUI support (Qt):"
 msgstr "Modules optionnels pour le support de l'interface graphique (Qt) :"
 
 msgid "PyQt5"
-msgstr ""
+msgstr "PyQt5"
 
 msgid ">= 5.15.6"
-msgstr ""
+msgstr ">= 5.15.6"
 
 msgid "Python bindings for the Qt cross platform application toolkit"
 msgstr "Liaisons Python pour la boîte à outils d'applications multiplateformes Qt"
@@ -157,19 +157,19 @@ msgid "Optional modules for development:"
 msgstr "Modules optionnels pour le développement :"
 
 msgid "ruff"
-msgstr ""
+msgstr "ruff"
 
 msgid "An extremely fast Python linter and code formatter, written in Rust."
 msgstr "Un linter et formateur de code Python extrêmement rapide, écrit en Rust."
 
 msgid "pylint"
-msgstr ""
+msgstr "pylint"
 
 msgid "python code static checker"
 msgstr "Vérificateur statique de code Python"
 
 msgid "Coverage"
-msgstr ""
+msgstr "Coverage"
 
 msgid "Code coverage measurement for Python"
 msgstr "Mesure de la couverture de code pour Python"
@@ -178,55 +178,55 @@ msgid "Optional modules for building the documentation:"
 msgstr "Modules optionnels pour la construction de la documentation :"
 
 msgid "sphinx"
-msgstr ""
+msgstr "sphinx"
 
 msgid "Python documentation generator"
 msgstr "Générateur de documentation Python"
 
 msgid "sphinx_intl"
-msgstr ""
+msgstr "sphinx_intl"
 
 msgid "Sphinx utility that make it easy to translate and to apply translation."
 msgstr "Utilitaire Sphinx qui facilite la traduction et l'application des traductions."
 
 msgid "sphinx-sitemap"
-msgstr ""
+msgstr "sphinx-sitemap"
 
 msgid "Sitemap generator for Sphinx"
 msgstr "Générateur de plan de site pour Sphinx"
 
 msgid "myst_parser"
-msgstr ""
+msgstr "myst_parser"
 
 msgid "An extended [CommonMark](https://spec.commonmark.org/) compliant parser,"
 msgstr "Un analyseur étendu conforme à [CommonMark](https://spec.commonmark.org/),"
 
 msgid "myst-nb"
-msgstr ""
+msgstr "myst-nb"
 
 msgid "A Jupyter Notebook Sphinx reader built on top of the MyST markdown parser."
 msgstr "Un lecteur Sphinx de Jupyter Notebook construit au-dessus de l'analyseur Markdown MyST."
 
 msgid "sphinx_design"
-msgstr ""
+msgstr "sphinx_design"
 
 msgid "A sphinx extension for designing beautiful, view size responsive web components."
 msgstr "Une extension Sphinx pour concevoir de beaux composants web adaptatifs."
 
 msgid "sphinx_gallery"
-msgstr ""
+msgstr "sphinx_gallery"
 
 msgid "A Sphinx extension that builds an HTML gallery of examples from any set of Python scripts."
 msgstr "Une extension Sphinx qui construit une galerie HTML d'exemples à partir d'un ensemble de scripts Python."
 
 msgid "sphinx-copybutton"
-msgstr ""
+msgstr "sphinx-copybutton"
 
 msgid "Add a copy button to each of your code cells."
 msgstr "Ajoute un bouton de copie à chacune de vos cellules de code."
 
 msgid "pydata-sphinx-theme"
-msgstr ""
+msgstr "pydata-sphinx-theme"
 
 msgid "Bootstrap-based Sphinx theme from the PyData community"
 msgstr "Thème Sphinx basé sur Bootstrap de la communauté PyData"
@@ -235,13 +235,13 @@ msgid "Optional modules for running test suite:"
 msgstr "Modules optionnels pour l'exécution de la suite de tests :"
 
 msgid "pytest"
-msgstr ""
+msgstr "pytest"
 
 msgid "pytest: simple powerful testing with Python"
 msgstr "pytest : tests simples et puissants avec Python"
 
 msgid "pytest-xvfb"
-msgstr ""
+msgstr "pytest-xvfb"
 
 msgid "A pytest plugin to run Xvfb (or Xephyr/Xvnc) for tests."
 msgstr "Un plugin pytest pour exécuter Xvfb (ou Xephyr/Xvnc) pour les tests."

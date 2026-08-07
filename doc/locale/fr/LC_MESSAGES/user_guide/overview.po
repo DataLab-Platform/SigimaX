@@ -70,7 +70,7 @@ msgid "End-user apps"
 msgstr "Applications utilisateur"
 
 msgid "DataLab"
-msgstr ""
+msgstr "DataLab"
 
 msgid "Signal/image processing GUI application"
 msgstr "Application d'interface graphique de traitement de signaux et d'images"
@@ -79,7 +79,7 @@ msgid "GUI framework"
 msgstr "Framework d'interface graphique"
 
 msgid "**SigimaX**"
-msgstr ""
+msgstr "**SigimaX**"
 
 msgid "Reusable application skeleton"
 msgstr "Squelette d'application réutilisable"
@@ -88,7 +88,7 @@ msgid "Computation"
 msgstr "Calcul"
 
 msgid "Sigima"
-msgstr ""
+msgstr "Sigima"
 
 msgid "Headless scientific computing (signals & images)"
 msgstr "Calcul scientifique sans interface graphique (signaux et images)"
@@ -97,7 +97,7 @@ msgid "Plotting"
 msgstr "Tracé"
 
 msgid "PlotPy + PythonQwt"
-msgstr ""
+msgstr "PlotPy + PythonQwt"
 
 msgid "Interactive plot widgets"
 msgstr "Widgets de tracé interactifs"
@@ -106,7 +106,7 @@ msgid "GUI toolkit"
 msgstr "Boîte à outils d'interface graphique"
 
 msgid "guidata"
-msgstr ""
+msgstr "guidata"
 
 msgid "Dataset/parameter framework with automatic GUI generation"
 msgstr "Framework de jeux de données/paramètres avec génération automatique d'interface graphique"
@@ -115,7 +115,7 @@ msgid "Foundation"
 msgstr "Fondation"
 
 msgid "NumPy + SciPy + Qt"
-msgstr ""
+msgstr "NumPy + SciPy + Qt"
 
 msgid "Core scientific and GUI libraries"
 msgstr "Bibliothèques scientifiques et d'interface graphique fondamentales"
@@ -133,25 +133,25 @@ msgid "Purpose"
 msgstr "Fonction"
 
 msgid ":mod:`sigimax.app`"
-msgstr ""
+msgstr ":mod:`sigimax.app`"
 
 msgid "Application launcher — ``create()`` and ``run()`` functions"
 msgstr "Lanceur d'application — fonctions ``create()`` et ``run()``"
 
 msgid ":mod:`sigimax.config`"
-msgstr ""
+msgstr ":mod:`sigimax.config`"
 
 msgid "Configuration system — ``SigimaXOptions``, ``CONF`` singleton, option fields"
 msgstr "Système de configuration — ``SigimaXOptions``, singleton ``CONF``, champs d'options"
 
 msgid ":mod:`sigimax.env`"
-msgstr ""
+msgstr ":mod:`sigimax.env`"
 
 msgid "Runtime environment — ``SGMXExecEnv``, verbosity levels, unattended mode"
 msgstr "Environnement d'exécution — ``SGMXExecEnv``, niveaux de verbosité, mode non interactif"
 
 msgid ":mod:`sigimax.mainwindow`"
-msgstr ""
+msgstr ":mod:`sigimax.mainwindow`"
 
 msgid "``SGMXMainWindow`` — generic main window with menus, console, HDF5 workspace"
 msgstr "``SGMXMainWindow`` — fenêtre principale générique avec menus, console, espace de travail HDF5"

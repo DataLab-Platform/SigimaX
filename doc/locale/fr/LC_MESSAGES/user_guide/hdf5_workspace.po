@@ -13,83 +13,83 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 msgid "HDF5 Workspace"
-msgstr ""
+msgstr "Espace de travail HDF5"
 
 msgid "SigimaX provides the HDF5 user interface and generic dataset import. A derived application owns its workspace model and its workspace file format. SigimaX does not define a universal workspace schema."
-msgstr ""
+msgstr "SigimaX fournit l'interface utilisateur HDF5 et l'import générique de jeux de données. Une application dérivée possède son propre modèle d'espace de travail et son propre format de fichier d'espace de travail. SigimaX ne définit pas de schéma d'espace de travail universel."
 
 msgid "Responsibilities"
-msgstr ""
+msgstr "Responsabilités"
 
 msgid "SigimaX provides:"
-msgstr ""
+msgstr "SigimaX fournit :"
 
 msgid "File, Open/Import, Browse, and Save actions;"
-msgstr ""
+msgstr "les actions Fichier, Ouvrir/Importer, Parcourir et Enregistrer ;"
 
 msgid "the HDF5 browser and :class:`sigimax.h5.H5Importer` for arbitrary datasets;"
-msgstr ""
+msgstr "le navigateur HDF5 et :class:`sigimax.h5.H5Importer` pour des jeux de données arbitraires ;"
 
 msgid ":meth:`sigimax.mainwindow.SGMXMainWindow.set_modified`, the save prompt, and the close workflow;"
-msgstr ""
+msgstr ":meth:`sigimax.mainwindow.SGMXMainWindow.set_modified`, l'invite d'enregistrement et le flux de fermeture ;"
 
 msgid "protected HDF5 hooks for derived applications."
-msgstr ""
+msgstr "des points d'extension HDF5 protégés pour les applications dérivées."
 
 msgid "A derived application provides:"
-msgstr ""
+msgstr "Une application dérivée fournit :"
 
 msgid "its data model;"
-msgstr ""
+msgstr "son modèle de données ;"
 
 msgid "workspace serialization and deserialization;"
-msgstr ""
+msgstr "la sérialisation et la désérialisation de l'espace de travail ;"
 
 msgid "the mutation points that mark the workspace modified;"
-msgstr ""
+msgstr "les points de mutation qui marquent l'espace de travail comme modifié ;"
 
 msgid "optional application-specific dataset import."
-msgstr ""
+msgstr "l'import de jeux de données spécifique à l'application, optionnel."
 
 msgid "A base :class:`~sigimax.mainwindow.SGMXMainWindow` has no data model. Its Save action remains disabled and a direct call to ``save_h5_workspace`` raises :class:`NotImplementedError`. This prevents a successful-looking save from silently discarding a modified workspace."
-msgstr ""
+msgstr "Une :class:`~sigimax.mainwindow.SGMXMainWindow` de base n'a pas de modèle de données. Son action Enregistrer reste désactivée et un appel direct à ``save_h5_workspace`` lève :class:`NotImplementedError`. Cela évite qu'un enregistrement apparemment réussi ne rejette silencieusement un espace de travail modifié."
 
 msgid "Minimal Derived Application"
-msgstr ""
+msgstr "Application dérivée minimale"
 
 msgid "The SigimaX test suite contains an executable reference application. It is both an integration test and a complete minimal example: it stores signals and images, imports generic HDF5 datasets, and writes a small workspace format."
-msgstr ""
+msgstr "La suite de tests de SigimaX contient une application de référence exécutable. C'est à la fois un test d'intégration et un exemple minimal complet : elle stocke des signaux et des images, importe des jeux de données HDF5 génériques et écrit un petit format d'espace de travail."
 
 msgid "Its data model deliberately remains application code. It uses two collections and knows how to serialize them with ``guidata``:"
-msgstr ""
+msgstr "Son modèle de données reste délibérément du code applicatif. Elle utilise deux collections et sait les sérialiser avec ``guidata`` :"
 
 msgid "The derived window validates paths through the protected hook, writes its model, and only clears the modified flag after a successful write:"
-msgstr ""
+msgstr "La fenêtre dérivée valide les chemins via le point d'extension protégé, écrit son modèle, et ne réinitialise l'indicateur modifié qu'après une écriture réussie :"
 
 msgid "The matching loader is equally application-specific:"
-msgstr ""
+msgstr "Le chargeur correspondant est tout aussi spécifique à l'application :"
 
 msgid "Workspace State and Save"
-msgstr ""
+msgstr "État de l'espace de travail et enregistrement"
 
 msgid "Call ``set_modified(True)`` whenever an application mutation changes the workspace. The framework adds an asterisk to the window title, enables Save for windows that implement ``save_h5_workspace``, and asks for confirmation when the user closes a modified window."
-msgstr ""
+msgstr "Appelez ``set_modified(True)`` chaque fois qu'une mutation applicative modifie l'espace de travail. Le framework ajoute un astérisque au titre de la fenêtre, active Enregistrer pour les fenêtres qui implémentent ``save_h5_workspace``, et demande confirmation lorsque l'utilisateur ferme une fenêtre modifiée."
 
 msgid "A successful ``save_h5_workspace`` implementation must call ``set_modified(False)`` only after its writer closes without an exception. An exception or a cancelled save leaves the workspace modified, so the close flow remains safe."
-msgstr ""
+msgstr "Une implémentation réussie de ``save_h5_workspace`` ne doit appeler ``set_modified(False)`` qu'après que son writer se soit fermé sans exception. Une exception ou un enregistrement annulé laisse l'espace de travail modifié, ce qui garde le flux de fermeture sûr."
 
 msgid "Generic Dataset Import"
-msgstr ""
+msgstr "Import générique de jeux de données"
 
 msgid "``open_h5_files`` and :class:`~sigimax.widgets.h5browser.H5BrowserDialog` are for importing arbitrary HDF5 datasets. They are independent from an application's workspace loader. The reference application connects ``SIG_SEND_OBJECTLIST`` to its model and implements ``import_dataset_from_file`` for programmatic selection of a dataset."
-msgstr ""
+msgstr "``open_h5_files`` et :class:`~sigimax.widgets.h5browser.H5BrowserDialog` servent à importer des jeux de données HDF5 arbitraires. Ils sont indépendants du chargeur d'espace de travail d'une application. L'application de référence connecte ``SIG_SEND_OBJECTLIST`` à son modèle et implémente ``import_dataset_from_file`` pour la sélection programmatique d'un jeu de données."
 
 msgid "The generic import layer can create :class:`sigima.objects.SignalObj` and :class:`sigima.objects.ImageObj`; a derived application decides how these objects enter its own model."
-msgstr ""
+msgstr "La couche d'import générique peut créer des :class:`sigima.objects.SignalObj` et :class:`sigima.objects.ImageObj` ; une application dérivée décide comment ces objets entrent dans son propre modèle."
 
 msgid "DataLab"
-msgstr ""
+msgstr "DataLab"
 
 msgid "DataLab keeps its native workspace format, panel serialization, metadata, ROI, and analysis-result handling. Its ``save_h5_workspace`` override remains the owner of that format. The SigimaX HDF5 GUI and generic import infrastructure do not change DataLab's native HDF5 layout."
-msgstr ""
+msgstr "DataLab conserve son format d'espace de travail natif, la sérialisation de ses panneaux, ses métadonnées, ses ROI et la gestion des résultats d'analyse. Sa surcharge de ``save_h5_workspace`` reste propriétaire de ce format. L'interface HDF5 et l'infrastructure d'import générique de SigimaX ne modifient pas la disposition HDF5 native de DataLab."
 
