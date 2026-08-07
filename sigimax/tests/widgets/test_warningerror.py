@@ -12,8 +12,10 @@ Covers:
 from __future__ import annotations
 
 import pytest
+from guidata.qthelpers import exec_dialog, qt_app_context
+from qtpy import QtWidgets as QW
 
-from sigimax.widgets.warningerror import insert_spaces
+from sigimax.widgets.warningerror import WarningErrorMessageBox, insert_spaces
 
 pytestmark = pytest.mark.unit
 
@@ -56,6 +58,40 @@ class TestInsertSpaces:
         result = insert_spaces(text, 5)
         # With exactly nbchars, one iteration adds space
         assert "abcde" in result
+
+
+def _show_message_box(category: str) -> None:
+    """Construct and show a WarningErrorMessageBox for the given category."""
+    with qt_app_context():
+        win = QW.QMainWindow()
+        win.setWindowTitle(f"SigimaX {category.capitalize()} Message Box test")
+        win.show()
+        if category == "error":
+            try:
+                raise ValueError("Test error message box")
+            except ValueError:
+                context = "Test_error_message_box." * 5
+                tip = "This error may occured when testing the error message box. " * 10
+                dlg = WarningErrorMessageBox(win, "error", context, tip=tip)
+                exec_dialog(dlg)
+        else:
+            context = "Test_warning_message_box." * 5
+            message = "Test warning message box" * 10
+            dlg = WarningErrorMessageBox(win, "warning", context, message)
+            exec_dialog(dlg)
+
+
+@pytest.mark.gui
+class TestWarningErrorMessageBox:
+    """Tests for the WarningErrorMessageBox dialog construction."""
+
+    def test_error_message_box(self):
+        """An error message box can be constructed and shown."""
+        _show_message_box("error")
+
+    def test_warning_message_box(self):
+        """A warning message box can be constructed and shown."""
+        _show_message_box("warning")
 
 
 if __name__ == "__main__":

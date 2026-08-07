@@ -14,24 +14,35 @@ Covers:
 
 from __future__ import annotations
 
+import os.path as osp
 import sys
 import tempfile
 
+import guidata.dataset as gds
 import pytest
 
 from sigimax.config import (
     AppOptionsContainer,
+    ConfigPathOptionField,
+    DataSetOptionField,
     EnumOptionField,
     FontOptionField,
     SigimaXOptions,
     TupleOptionField,
     TypedOptionField,
+    WorkingDirOptionField,
     get_mod_source_dir,
     get_old_log_fname,
     is_frozen,
 )
 
 pytestmark = pytest.mark.unit
+
+
+class _SampleParam(gds.DataSet):
+    """Simple DataSet used to exercise DataSetOptionField."""
+
+    value = gds.IntItem("Value", default=3)
 
 
 # ---------------------------------------------------------------------------
@@ -199,6 +210,134 @@ class TestFontOptionField:
         c = _MiniContainer()
         with pytest.raises(ValueError, match="expected.*family.*size.*bold"):
             c.my_font.set("bad")
+
+    def test_get_font_builds_qfont(self):
+        """get_font returns a QFont matching the stored specification."""
+        from qtpy.QtWidgets import (
+            QApplication,  # pylint: disable=import-outside-toplevel
+        )
+
+        _app = QApplication.instance() or QApplication([])
+        c = _MiniContainer()
+        c.my_font.set(["Courier New", 10, True])
+        font = c.my_font.get_font()
+        assert font.family() == "Courier New"
+        assert font.pointSize() == 10
+        assert font.bold() is True
+
+
+# ======================== ConfigPathOptionField ===============================
+
+
+class TestConfigPathOptionField:
+    """Tests for ConfigPathOptionField."""
+
+    def test_resolves_basename_and_roundtrips_raw_value(self):
+        """ConfigPathOptionField resolves basenames and round-trips raw values."""
+        container = _MiniContainer()
+        field = ConfigPathOptionField(
+            container, "traceback_log_path", ".SigimaX_tb.log"
+        )
+
+        resolved = field.get()
+        assert osp.basename(resolved) == ".SigimaX_tb.log"
+        assert osp.isabs(resolved)
+
+        # Storage accessors expose the bare basename (no path resolution).
+        assert field.to_storage() == ".SigimaX_tb.log"
+        field.from_storage(".Other.log")
+        assert field.to_storage() == ".Other.log"
+        assert osp.basename(field.get()) == ".Other.log"
+
+        # A full path (not a bare basename) is rejected on get().
+        field.from_storage(osp.join("sub", "dir", "file.log"))
+        with pytest.raises(ValueError):
+            field.get()
+
+
+# ======================== WorkingDirOptionField ===============================
+
+
+class TestWorkingDirOptionField:
+    """Tests for WorkingDirOptionField."""
+
+    def test_validates_directories_and_tolerates_missing_ones(self, tmp_path):
+        """WorkingDirOptionField validates directories and tolerates missing ones."""
+        container = _MiniContainer()
+        field = WorkingDirOptionField(container, "base_dir", "")
+
+        # Setting an existing directory stores it and get() returns it.
+        field.set(str(tmp_path))
+        assert field.get() == str(tmp_path)
+
+        # Setting a file path stores its parent directory.
+        a_file = tmp_path / "data.txt"
+        a_file.write_text("x", encoding="utf-8")
+        field.set(str(a_file))
+        assert field.get() == str(tmp_path)
+
+        # Setting an invalid directory raises.
+        with pytest.raises(FileNotFoundError):
+            field.set(str(tmp_path / "does_not_exist" / "child"))
+
+        # get() returns "" when the stored directory no longer exists, but the raw
+        # value is preserved.
+        missing = str(tmp_path / "gone")
+        field.from_storage(missing)
+        assert field.get() == ""
+        assert field.to_storage() == missing
+
+
+# ======================== DataSetOptionField ===================================
+
+
+class TestDataSetOptionField:
+    """Tests for DataSetOptionField."""
+
+    def test_falls_back_to_default_and_roundtrips_json(self):
+        """DataSetOptionField falls back to the default instance and round-trips JSON."""
+        container = _MiniContainer()
+        default = _SampleParam()
+        default.value = 7
+        field = DataSetOptionField(container, "sample_param", default_instance=default)
+
+        # Without an explicit value, get() returns the default instance.
+        assert field.get() is default
+        assert field.get_raw() is None
+        assert field.to_json() is None
+
+        # Setting an explicit value takes precedence.
+        param = _SampleParam()
+        param.value = 42
+        field.set(param)
+        assert field.get() is param
+        assert field.get_raw() is param
+
+        # JSON round-trip restores the stored value.
+        json_str = field.to_json()
+        assert json_str is not None
+        field.from_storage(None)
+        field.from_json(json_str)
+        assert field.get().value == 42
+
+        # set_default_instance updates the fallback used when no value is set.
+        field.from_storage(None)
+        new_default = _SampleParam()
+        new_default.value = 99
+        field.set_default_instance(new_default)
+        assert field.get() is new_default
+
+    def test_invalid_json_uses_default(self):
+        """An unresolved DataSet class is discarded and falls back to the default."""
+        container = _MiniContainer()
+        default = _SampleParam()
+        field = DataSetOptionField(container, "sample_param", default_instance=default)
+        field.from_json(
+            '{"class_module": "missing_module", "class_name": "MissingParam"}'
+        )
+
+        assert field.get() is default
+        assert not container.is_option_initialized("sample_param")
 
 
 # ======================== AppOptionsContainer ================================

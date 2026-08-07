@@ -7,12 +7,13 @@ Tests for HDF5 utility modules
 Covers:
 - h5/common.py: data_to_xy with various shaped arrays
 - h5/generic.py: safe_decode_bytes, format_text_data
-- h5/utils.py: fix_ldata, fix_ndata, is_supported_num_dtype,
+- h5/utils.py: fix_ldata, fix_ndata, is_single_str_array, is_supported_num_dtype,
   is_supported_str_dtype, process_scalar_value, process_label, process_xy_values
 """
 
 from __future__ import annotations
 
+import h5py
 import numpy as np
 import pytest
 
@@ -21,7 +22,12 @@ from sigimax.h5.generic import format_text_data, safe_decode_bytes
 from sigimax.h5.utils import (
     fix_ldata,
     fix_ndata,
+    is_single_str_array,
     is_supported_num_dtype,
+    is_supported_str_dtype,
+    process_label,
+    process_scalar_value,
+    process_xy_values,
 )
 
 pytestmark = pytest.mark.unit
@@ -213,6 +219,103 @@ class TestDtypeChecks:
         """Unsigned integer dtype should be supported."""
         data = np.array([1, 2], dtype=np.uint16)
         assert is_supported_num_dtype(data) is True
+
+    def test_is_single_str_array_false_for_generic_scalar(self):
+        """An ``ndarray`` (not a numpy generic) is rejected."""
+        scalar = np.array(["x"], dtype=str)[0:1]  # ndarray, not generic
+        assert is_single_str_array(scalar) is False
+
+    def test_is_single_str_array_false_for_ndarray(self):
+        """A multi-element ndarray of strings is not a single string array."""
+        arr = np.array(["a", "b"])
+        assert is_single_str_array(arr) is False
+
+    def test_supported_str_dtype_false_for_bytes_array(self):
+        """NumPy bytes-dtype arrays are not classified as string-supported."""
+        arr = np.array([b"x", b"y"], dtype="S2")
+        # numpy bytes dtype name starts with "bytes" not "string" -> expected False
+        assert is_supported_str_dtype(arr) is False
+
+    def test_supported_str_dtype_false_for_int(self):
+        """Numeric arrays are not string-supported."""
+        assert is_supported_str_dtype(np.zeros(3, dtype=np.int32)) is False
+
+
+# ======================== process_scalar_value / process_label / process_xy ==
+
+
+@pytest.fixture(name="h5_with_datasets")
+def _h5_with_datasets(tmp_path):
+    """Build a small in-memory HDF5 file containing typical layouts."""
+    path = tmp_path / "fixture.h5"
+    with h5py.File(path, "w") as f:
+        # Scalar value as a 1-element array (the common LMJ layout)
+        f.create_dataset("scalar", data=np.array([42.5]))
+        # Label as a 2-element string list
+        f.create_dataset("label2", data=np.array([b"X-Axis", b"Y-Axis"], dtype="S20"))
+        # Label as a 3-element string list
+        f.create_dataset("label3", data=np.array([b"X", b"Y", b"Z"], dtype="S20"))
+        # x/y pair
+        f.create_dataset("xy", data=np.array([1.5, 2.5]))
+    yield path
+
+
+class TestProcessScalarValue:
+    """Tests for process_scalar_value."""
+
+    def test_returns_callback_result(self, h5_with_datasets):
+        """The callback is applied to the dataset's first element."""
+        with h5py.File(h5_with_datasets, "r") as f:
+            result = process_scalar_value(f, "scalar", float)
+        assert result == pytest.approx(42.5)
+
+    def test_missing_dataset_returns_none(self, h5_with_datasets):
+        """A missing dataset path yields None."""
+        with h5py.File(h5_with_datasets, "r") as f:
+            result = process_scalar_value(f, "missing", float)
+        assert result is None
+
+
+class TestProcessLabel:
+    """Tests for process_label."""
+
+    def test_two_element_label(self, h5_with_datasets):
+        """A two-element label dataset fills (x, y, "")."""
+        with h5py.File(h5_with_datasets, "r") as f:
+            xl, yl, zl = process_label(f, "label2")
+        assert xl == "X-Axis"
+        assert yl == "Y-Axis"
+        assert zl == ""
+
+    def test_three_element_label(self, h5_with_datasets):
+        """A three-element label dataset fills (x, y, z)."""
+        with h5py.File(h5_with_datasets, "r") as f:
+            xl, yl, zl = process_label(f, "label3")
+        assert (xl, yl, zl) == ("X", "Y", "Z")
+
+    def test_missing_returns_empty_strings(self, h5_with_datasets):
+        """A missing label dataset returns three empty strings."""
+        with h5py.File(h5_with_datasets, "r") as f:
+            result = process_label(f, "missing")
+        assert result == ("", "", "")
+
+
+class TestProcessXyValues:
+    """Tests for process_xy_values."""
+
+    def test_returns_pair(self, h5_with_datasets):
+        """A two-element dataset is returned as a (x, y) pair."""
+        with h5py.File(h5_with_datasets, "r") as f:
+            x, y = process_xy_values(f, "xy")
+        assert x == pytest.approx(1.5)
+        assert y == pytest.approx(2.5)
+
+    def test_missing_returns_none_pair(self, h5_with_datasets):
+        """A missing dataset returns (None, None)."""
+        with h5py.File(h5_with_datasets, "r") as f:
+            x, y = process_xy_values(f, "missing")
+        assert x is None
+        assert y is None
 
 
 if __name__ == "__main__":
