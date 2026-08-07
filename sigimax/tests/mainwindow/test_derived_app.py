@@ -124,7 +124,8 @@ class MyAppMainWindow(SGMXMainWindow):
     1. Configure the global ``Conf`` options (app_name, app_version, etc.)
        **before** calling ``super().__init__()``, because :class:`SGMXMainWindow`
        reads from the module-level ``Conf`` reference.
-    2. Add custom UI elements (menus, docks, toolbars) after initialization.
+    2. Add custom UI elements by overriding the ``setup()`` hooks, so that docks
+       exist before the persisted window state is restored.
     """
 
     def __init__(
@@ -138,21 +139,21 @@ class MyAppMainWindow(SGMXMainWindow):
         Conf.app_version.set("0.1.0")
         Conf.app_desc.set("A demo application built on SigimaX")
 
-        super().__init__(console=console, hide_on_close=hide_on_close)
-
         # --- Custom widgets ---
         self.curve_dock: DockablePlotWidget | None = None
 
-        # --- Build custom UI ---
-        self._setup_custom_ui()
+        super().__init__(console=console, hide_on_close=hide_on_close)
 
     # ------------------------------------------------------------------
     # Custom UI setup
     # ------------------------------------------------------------------
 
-    def _setup_custom_ui(self) -> None:
-        """Set up MyApp-specific menus, toolbars, and dock widgets."""
+    def _setup_docks(self) -> None:
+        """Add MyApp-specific dock widgets."""
         self._add_curve_dock()
+
+    def _post_setup(self, console: bool) -> None:
+        """Add MyApp-specific menus and toolbars."""
         self._add_tools_menu()
         self._add_custom_toolbar()
 

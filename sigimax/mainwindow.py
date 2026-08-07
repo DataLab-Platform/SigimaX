@@ -338,17 +338,48 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
     def setup(self, console: bool = False) -> None:
         """Setup main window
 
+        The sequence is fixed: derived applications extend it by overriding the
+        hooks it calls, not by overriding this method. :meth:`_restore_state`
+        must stay last, since dock widgets added afterwards keep their default
+        geometry instead of the persisted one.
+
         Args:
             console: True to setup console
         """
         self._configure_statusbar(console)
         self._setup_global_actions()
+        self._setup_panels()
         self._setup_central_widget()
         self._add_menus()
         if console:
             self._setup_console()
+        self._setup_docks()
+        self._post_setup(console)
         # Now that everything is set up, we can restore the window state:
         self._restore_state()
+
+    def _setup_panels(self) -> None:
+        """Create the application panels and views.
+
+        Called after the global actions, so that panel toolbars are added after
+        the main toolbar, and before the central widget is set up.
+        """
+
+    def _setup_docks(self) -> None:
+        """Add the application dock widgets.
+
+        Called before :meth:`_restore_state`, so that the persisted layout is
+        applied to them.
+        """
+
+    def _post_setup(self, console: bool) -> None:
+        """Finalize the user interface.
+
+        Called once panels, central widget, menus, console and docks all exist.
+
+        Args:
+            console: Whether the internal console was created.
+        """
 
     def _configure_statusbar(self, console: bool) -> None:
         """Configure status bar

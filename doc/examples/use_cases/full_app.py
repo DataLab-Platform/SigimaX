@@ -83,13 +83,16 @@ class SciAppMainWindow(SGMXMainWindow):
     def __init__(self, console=None, hide_on_close=False):
         Conf.app_name.set("SciApp")
         Conf.app_version.set("1.0.0")
+        self.curve_dock = None
         super().__init__(console=console, hide_on_close=hide_on_close)
 
-        # Create a dockable curve plot
+    def _setup_docks(self):
+        """Add the dockable curve plot."""
         self.curve_dock = DockablePlotWidget(self, PlotType.CURVE)
         self._add_dockwidget(self.curve_dock, _("Signal Viewer"), name="signal_viewer")
 
-        # Add custom menus
+    def _post_setup(self, console):
+        """Add custom menus and toolbar."""
         self._setup_analysis_menu()
         self._setup_toolbar()
 

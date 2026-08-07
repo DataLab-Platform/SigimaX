@@ -178,12 +178,15 @@ class DerivedAppWindow(SGMXMainWindow):
         Conf.app_name.set("DerivedH5App")
         Conf.app_version.set("0.1.0")
 
+        self.curve_dock = None
+
         super().__init__(console=console, hide_on_close=hide_on_close)
 
         # --- Wire the signal emitted by browse_h5_files / import_h5_file ---
         self.SIG_SEND_OBJECTLIST.connect(self._on_objects_received)
 
-        # --- Optional: a curve dock for visual feedback ---
+    def _setup_docks(self) -> None:
+        """Add a curve dock for visual feedback."""
         self.curve_dock = DockablePlotWidget(self, PlotType.CURVE)
         self._add_dockwidget(self.curve_dock, "Preview", name="preview")
 
