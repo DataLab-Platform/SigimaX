@@ -532,13 +532,24 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
                 return pattern
         return None
 
+    def _get_menubar_layout(self) -> list[tuple[str, str]]:
+        """Return the menu bar layout, as ``(attribute name, title)`` pairs.
+
+        Each pair creates a menu stored as ``self.<attribute name>_menu``.
+        Override in subclasses to insert application menus while keeping the
+        standard ones, which the base implementation relies on.
+
+        Returns:
+            Ordered list of (attribute name, menu title)
+        """
+        return [("file", _("&File")), ("view", _("&View")), ("help", "?")]
+
     def _add_menus(self) -> None:
         """Adding menus"""
-        self.file_menu = self.menuBar().addMenu(_("&File"))
+        for name, title in self._get_menubar_layout():
+            setattr(self, f"{name}_menu", self.menuBar().addMenu(title))
         configure_menu_about_to_show(self.file_menu, self._update_file_menu)
-        self.view_menu = self.menuBar().addMenu(_("&View"))
         configure_menu_about_to_show(self.view_menu, self._update_view_menu)
-        self.help_menu = self.menuBar().addMenu("?")
         add_actions(self.help_menu, self._get_help_menu_actions())
 
     def _update_console_show_mode(self) -> None:
@@ -732,10 +743,11 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         """
         add_actions(self.view_menu, self._get_view_menu_actions())
 
-    def _get_help_menu_actions(self) -> list[QW.QAction | None]:
-        """Return the list of actions for the help menu.
+    def _get_help_doc_actions(self) -> list[QW.QAction | None]:
+        """Return the documentation actions of the help menu.
 
-        Override in subclasses to add, remove, or reorder help actions.
+        Override in subclasses to append application-specific entries such as
+        a tour or a demo.
 
         Returns:
             List of actions and separators
@@ -758,6 +770,18 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
                     triggered=lambda: webbrowser.open(localdocpath),
                 ),
             )
+        return actions
+
+    def _get_help_support_actions(self) -> list[QW.QAction | None]:
+        """Return the troubleshooting actions of the help menu.
+
+        Override in subclasses to append application-specific entries such as
+        an installation and configuration viewer.
+
+        Returns:
+            List of actions and separators
+        """
+        actions: list[QW.QAction | None] = []
         if TEST_SEGFAULT_ERROR:
             actions.append(
                 create_action(
@@ -766,13 +790,23 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
                     triggered=self.test_segfault_error,
                 )
             )
-        actions += [
+        actions.append(
             create_action(
                 self,
                 _("Log files") + "...",
                 icon=get_icon("logs.svg"),
                 triggered=self._show_logviewer,
-            ),
+            )
+        )
+        return actions
+
+    def _get_help_about_actions(self) -> list[QW.QAction | None]:
+        """Return the project and about actions of the help menu.
+
+        Returns:
+            List of actions and separators
+        """
+        return [
             None,
             create_action(
                 self,
@@ -793,7 +827,22 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
                 triggered=self._about,
             ),
         ]
-        return actions
+
+    def _get_help_menu_actions(self) -> list[QW.QAction | None]:
+        """Return the list of actions for the help menu.
+
+        Override in subclasses to wrap the standard groups, which are returned
+        by :meth:`_get_help_doc_actions`, :meth:`_get_help_support_actions` and
+        :meth:`_get_help_about_actions`.
+
+        Returns:
+            List of actions and separators
+        """
+        return (
+            self._get_help_doc_actions()
+            + self._get_help_support_actions()
+            + self._get_help_about_actions()
+        )
 
     @staticmethod
     def _check_h5file(filename: str, operation: str) -> str:
