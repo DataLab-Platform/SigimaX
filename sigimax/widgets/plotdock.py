@@ -30,7 +30,6 @@ import warnings
 from typing import TYPE_CHECKING
 
 import numpy as np
-import scipy.integrate as spt
 from guidata.qthelpers import is_dark_theme
 from guidata.widgets.dockable import DockableWidget
 from plotpy.constants import PlotType
@@ -70,69 +69,29 @@ class CurveStatsToolFunctions:
     """Statistical functions for `CurveStatsTool` and `YRangeCursorTool`"""
 
     @classmethod
-    def set_labelfuncs(cls, statstool: CurveStatsTool) -> None:
+    def set_labelfuncs(cls, statstool: CurveStatsTool | YRangeCursorTool) -> None:
         """Set label functions for the statistics tool"""
         if isinstance(statstool, CurveStatsTool):
-            labelfuncs = (
-                ("%g &lt; x &lt; %g", lambda *args: cls.nan_min_max(args[0])),
-                ("%g &lt; y &lt; %g", lambda *args: cls.nan_min_max(args[1])),
-                ("∆x=%g", lambda *args: cls.nan_delta(args[0])),
-                ("∆y=%g", lambda *args: cls.nan_delta(args[1])),
-                ("&lt;y&gt;=%g", lambda *args: cls.nan_mean(args[1])),
-                ("σ(y)=%g", lambda *args: cls.nan_std(args[1])),
-                ("∑(y)=%g", lambda *args: spt.trapezoid(args[1])),
-                ("∫ydx=%g<br>", lambda *args: spt.trapezoid(args[1], args[0])),
-                ("FWHM=%s", cls.fwhm_info),
-                ("∆x<sub>RISE 10-90</sub>=%s", cls.rise_time_info),
-                (
-                    "∆x<sub>RISE 20-80</sub>=%s",
-                    lambda x, y: cls.rise_time_info(x, y, 0.2, 0.8),
-                ),
-                ("∆x<sub>FALL 90-10</sub>=%s", cls.fall_time_info),
-                (
-                    "∆x<sub>FALL 80-20</sub>=%s",
-                    lambda x, y: cls.fall_time_info(x, y, 0.8, 0.2),
-                ),
+            labelfuncs = list(CurveStatsTool.LABELFUNCS)
+            labelfuncs[-1] = (labelfuncs[-1][0] + "<br>", labelfuncs[-1][1])
+            labelfuncs.extend(
+                [
+                    ("FWHM=%s", cls.fwhm_info),
+                    ("∆x<sub>RISE 10-90</sub>=%s", cls.rise_time_info),
+                    (
+                        "∆x<sub>RISE 20-80</sub>=%s",
+                        lambda x, y: cls.rise_time_info(x, y, 0.2, 0.8),
+                    ),
+                    ("∆x<sub>FALL 90-10</sub>=%s", cls.fall_time_info),
+                    (
+                        "∆x<sub>FALL 80-20</sub>=%s",
+                        lambda x, y: cls.fall_time_info(x, y, 0.8, 0.2),
+                    ),
+                ]
             )
-        else:  # YRangeCursorTool
-            labelfuncs = (
-                ("%g &lt; y &lt; %g", lambda ymin, ymax: (ymin, ymax)),
-                ("∆y=%g", lambda ymin, ymax: ymax - ymin),
-            )
-        statstool.set_labelfuncs(labelfuncs)
-
-    @staticmethod
-    def nan_min_max(arr: np.ndarray) -> tuple[float, float]:
-        """Return min/max tuple"""
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", RuntimeWarning)
-            min_val = np.nanmin(arr)
-            max_val = np.nanmax(arr)
-        return (min_val, max_val)
-
-    @staticmethod
-    def nan_delta(arr: np.ndarray) -> float:
-        """Return delta value, ignoring NaNs"""
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", RuntimeWarning)
-            delta_val = np.nanmax(arr) - np.nanmin(arr)
-        return delta_val
-
-    @staticmethod
-    def nan_mean(arr: np.ndarray) -> float:
-        """Return mean value, ignoring NaNs"""
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", RuntimeWarning)
-            mean_val = np.nanmean(arr)
-        return mean_val
-
-    @staticmethod
-    def nan_std(arr: np.ndarray) -> float:
-        """Return standard deviation, ignoring NaNs"""
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", RuntimeWarning)
-            std_val = np.nanstd(arr)
-        return std_val
+            statstool.set_labelfuncs(tuple(labelfuncs))
+        else:  # YRangeCursorTool - use PlotPy's defaults as-is
+            statstool.set_labelfuncs(YRangeCursorTool.LABELFUNCS)
 
     @staticmethod
     def fwhm_info(x, y):
@@ -303,12 +262,20 @@ class SigimaXPlotWidget(PlotWidget):
             # Customizing the ImageStatsTool
             statstool = mgr.get_tool(ImageStatsTool)
             statstool.set_stats_func(get_more_image_stats, replace=True)
+            self._customize_image_panels()
 
         mgr.add_separator_tool()
         mgr.register_other_tools()
         mgr.add_separator_tool()
         mgr.update_tools_status()
         mgr.get_default_tool().activate()
+
+    def _customize_image_panels(self) -> None:
+        """Customize the X and Y cross section panels.
+
+        Called once the image tools are registered, so that the panels and their
+        toolbars exist. The base implementation is a no-op.
+        """
 
     def register_tools(self) -> None:
         """Register the plotting tools according to the plot type"""
@@ -335,6 +302,10 @@ class DockablePlotWidget(DockableWidget):
 
     LOCATION = QC.Qt.RightDockWidgetArea
 
+    #: Plot widget class instantiated by this dock: override in subclasses to
+    #: provide an application-specific one.
+    PLOTWIDGET_CLASS: type[SigimaXPlotWidget] = SigimaXPlotWidget
+
     def __init__(
         self,
         parent: QW.QWidget,
@@ -342,7 +313,7 @@ class DockablePlotWidget(DockableWidget):
     ) -> None:
         super().__init__(parent)
         self._apply_dock_location()
-        self.plotwidget = SigimaXPlotWidget(plot_type)
+        self.plotwidget = self.PLOTWIDGET_CLASS(plot_type)
         self.toolbar = self.plotwidget.get_toolbar()
         self.watermark: QW.QLabel | None = None
         self._setup_watermark()

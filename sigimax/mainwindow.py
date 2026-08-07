@@ -1187,8 +1187,17 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
                 if isinstance(widget, DockablePlotWidget):
                     widget.update_color_mode()
 
+        self._update_extra_color_mode()
+
         # Allow Qt to refresh the window:
         self.setUpdatesEnabled(True)
+
+    def _update_extra_color_mode(self) -> None:
+        """Update the color mode of application-specific widgets.
+
+        Called with window updates disabled, after the console and the plot docks
+        have been updated. The base implementation is a no-op.
+        """
 
     def _show_logviewer(self) -> None:
         """Show error logs"""
