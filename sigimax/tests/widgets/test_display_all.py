@@ -188,7 +188,7 @@ def display_h5import() -> None:
         if fnames:
             fname = fnames[-1]
             execenv.print(f"  Importing HDF5 file: {fname}")
-            win.import_h5_file(fname)
+            win.import_all_from_h5_file(fname)
 
 
 def display_all_widgets() -> None:

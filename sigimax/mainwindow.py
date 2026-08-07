@@ -900,40 +900,23 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         if reset_all is None:
             # When workspace is empty, always preserve UUIDs (reset_all=True)
             # since there's no risk of conflicts
-            reset_all = conf.h5_clear_workspace.get()
-            if conf.h5_clear_workspace_ask.get():
-                # Build message with optional note for native workspace import
-                msg = _(
-                    "Do you want to clear current workspace "
-                    "before importing data from "
-                    "HDF5 files?"
-                )
-                if import_all:
-                    msg += "<br><br>" + _(
-                        "<u>Note:</u> If you choose <i>No</i>, when importing "
-                        "workspace files, objects with conflicting "
-                        "identifiers will have their processing history lost "
-                        "(features like 'Show source' and 'Recompute' will not "
-                        "work for those objects). Non-conflicting objects will "
-                        "preserve their processing history."
+            if self._is_workspace_empty():
+                reset_all = True
+            else:
+                reset_all = conf.h5_clear_workspace.get()
+                if conf.h5_clear_workspace_ask.get():
+                    answer = QW.QMessageBox.question(
+                        self,
+                        _("Warning"),
+                        self._get_clear_workspace_message(import_all, reset_all),
+                        QW.QMessageBox.Yes | QW.QMessageBox.No | QW.QMessageBox.Ignore,
                     )
-                msg += "<br><br>" + _(
-                    "Choosing to ignore this message will prevent it "
-                    "from being displayed again, and will use the "
-                    "current setting (%s)."
-                ) % (_("Yes") if reset_all else _("No"))
-                answer = QW.QMessageBox.question(
-                    self,
-                    _("Warning"),
-                    msg,
-                    QW.QMessageBox.Yes | QW.QMessageBox.No | QW.QMessageBox.Ignore,
-                )
-                if answer == QW.QMessageBox.Yes:
-                    reset_all = True
-                elif answer == QW.QMessageBox.No:
-                    reset_all = False
-                elif answer == QW.QMessageBox.Ignore:
-                    conf.h5_clear_workspace_ask.set(False)
+                    if answer == QW.QMessageBox.Yes:
+                        reset_all = True
+                    elif answer == QW.QMessageBox.No:
+                        reset_all = False
+                    elif answer == QW.QMessageBox.Ignore:
+                        conf.h5_clear_workspace_ask.set(False)
         if h5files is None:
             basedir = conf.base_dir.get()
             with qth.save_restore_stds():
@@ -959,7 +942,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
             return
         for filename, dsetname in zip(filenames, dsetnames):
             if import_all is None and dsetname is None:
-                self.import_h5_file(filename, reset_all)
+                self.import_all_from_h5_file(filename, reset_all)
             else:
                 with qth.qt_try_loadsave_file(self, filename, "load"):
                     filename = self._check_h5file(filename, "load")
@@ -967,6 +950,76 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
                         filename, dsetname, import_all, reset_all
                     )
             reset_all = False
+
+    def _is_workspace_empty(self) -> bool:
+        """Return whether the application workspace holds no object.
+
+        When the workspace is empty, importing cannot cause any identifier
+        conflict, so the user is not asked whether it should be cleared. The
+        base window has no data model, so the base implementation returns False.
+
+        Returns:
+            True if the workspace holds no object
+        """
+        return False
+
+    def _get_clear_workspace_message(
+        self, import_all: bool | None, reset_all: bool
+    ) -> str:
+        """Return the confirmation message shown before clearing the workspace.
+
+        Override in subclasses to use application-specific wording.
+
+        Args:
+            import_all: Whether all datasets are imported without browsing
+            reset_all: Current default answer, taken from the configuration
+
+        Returns:
+            HTML message
+        """
+        msg = _(
+            "Do you want to clear current workspace "
+            "before importing data from "
+            "HDF5 files?"
+        )
+        if import_all:
+            msg += "<br><br>" + _(
+                "<u>Note:</u> If you choose <i>No</i>, when importing "
+                "workspace files, objects with conflicting "
+                "identifiers will have their processing history lost "
+                "(features like 'Show source' and 'Recompute' will not "
+                "work for those objects). Non-conflicting objects will "
+                "preserve their processing history."
+            )
+        msg += "<br><br>" + _(
+            "Choosing to ignore this message will prevent it "
+            "from being displayed again, and will use the "
+            "current setting (%s)."
+        ) % (_("Yes") if reset_all else _("No"))
+        return msg
+
+    def _handle_imported_objects(self, objects: list, reset_all: bool) -> None:
+        """Handle the objects imported from an HDF5 file.
+
+        Single convergence point of the import primitives. The base
+        implementation clears the workspace when requested, then emits
+        :data:`SIG_SEND_OBJECTLIST`. Override in subclasses to insert the
+        objects into an application data model directly.
+
+        Args:
+            objects: Imported native objects
+            reset_all: Whether the workspace must be cleared beforehand
+        """
+        if not objects:
+            return
+        if reset_all:
+            self.reset_all()
+        self.SIG_SEND_OBJECTLIST.emit(objects)
+        self.set_modified(True)
+        self.statusBar().showMessage(
+            _("%d object(s) imported successfully") % len(objects),
+            5000,
+        )
 
     def import_dataset_from_file(
         self,
@@ -997,14 +1050,13 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         pre-loaded with the given *filenames*, lets the user check datasets to
         import, converts the checked nodes into native objects
         (:class:`SignalObj <sigima.objects.SignalObj>` /
-        :class:`ImageObj <sigima.objects.ImageObj>`), and emits them via
-        :data:`SIG_SEND_OBJECTLIST`.
+        :class:`ImageObj <sigima.objects.ImageObj>`), and hands them over to
+        :meth:`_handle_imported_objects`.
 
         Args:
             filenames: HDF5 filenames
-            reset_all: Reset all application data before importing (unused)
+            reset_all: Reset all application data before importing
         """
-        del reset_all
         for filename in filenames:
             self._check_h5file(filename, "load")
 
@@ -1025,13 +1077,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
                 except (OSError, ValueError) as exc:
                     qt_handle_error_message(self, exc)
             dialog.cleanup()
-            if objects:
-                self.SIG_SEND_OBJECTLIST.emit(objects)
-                self.set_modified(True)
-                self.statusBar().showMessage(
-                    _("%d object(s) imported successfully") % len(objects),
-                    5000,
-                )
+            self._handle_imported_objects(objects, bool(reset_all))
         else:
             dialog.cleanup()
 
@@ -1055,18 +1101,23 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
             "Override save_h5_workspace() to serialize the application workspace."
         )
 
-    def import_h5_file(self, filename: str, _reset_all: bool | None = None) -> None:
-        """Import all supported datasets from an HDF5 file (no dialog).
+    def import_all_from_h5_file(
+        self, filename: str, reset_all: bool | None = None
+    ) -> None:
+        """Import every supported dataset of an HDF5 file, without any dialog.
 
         Uses :class:`H5Importer <sigimax.h5.H5Importer>` to scan the file,
         converts every supported node into a native object
         (:class:`SignalObj <sigima.objects.SignalObj>` /
-        :class:`ImageObj <sigima.objects.ImageObj>`), and emits the list via
-        :data:`SIG_SEND_OBJECTLIST`.
+        :class:`ImageObj <sigima.objects.ImageObj>`), and hands them over to
+        :meth:`_handle_imported_objects`.
+
+        Override in subclasses that import through their own browser or
+        progress dialog.
 
         Args:
             filename: HDF5 filename
-            _reset_all: Reserved for future use (workspace reset before import) (unused)
+            reset_all: Reset all application data before importing
         """
         with qth.qt_try_loadsave_file(self, filename, "load"):
             filename = self._check_h5file(filename, "load")
@@ -1082,13 +1133,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
                 except Exception as exc:  # pylint: disable=broad-except
                     qt_handle_error_message(self, exc)
             importer.close()
-            if objects:
-                self.SIG_SEND_OBJECTLIST.emit(objects)
-                self.set_modified(True)
-                self.statusBar().showMessage(
-                    _("%d object(s) imported successfully") % len(objects),
-                    5000,
-                )
+            self._handle_imported_objects(objects, bool(reset_all))
 
     def reset_all(self) -> None:
         """Reset all application data.

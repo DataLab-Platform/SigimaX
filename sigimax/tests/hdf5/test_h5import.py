@@ -19,7 +19,7 @@ def test_hdf5_import():
     with sigimax_test_app_context(console=False) as win:
         fname = helpers.get_test_fnames("*.h5")[-1]
         execenv.print(f"Importing HDF5 file: {fname}")
-        win.import_h5_file(fname)
+        win.import_all_from_h5_file(fname)
 
 
 if __name__ == "__main__":

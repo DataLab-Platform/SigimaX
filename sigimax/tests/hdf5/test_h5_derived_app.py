@@ -182,7 +182,7 @@ class DerivedAppWindow(SGMXMainWindow):
 
         super().__init__(console=console, hide_on_close=hide_on_close)
 
-        # --- Wire the signal emitted by browse_h5_files / import_h5_file ---
+        # --- Wire the signal emitted by browse_h5_files / import_all_from_h5_file ---
         self.SIG_SEND_OBJECTLIST.connect(self._on_objects_received)
 
     def _setup_docks(self) -> None:
@@ -497,7 +497,7 @@ def test_derived_app_import_and_save() -> None:
 
         # Import objects from a real HDF5 file
         execenv.print(f"Importing HDF5 file: {fname}")
-        win.import_h5_file(fname)
+        win.import_all_from_h5_file(fname)
 
         initial_count = win.object_store.count
         execenv.print(f"Imported {initial_count} object(s)")
