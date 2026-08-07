@@ -24,10 +24,9 @@ from sigima.objects import (
     SegmentROI,
 )
 
-from sigimax.adapters_plotpy.factories import create_adapter_from_object
-from sigimax.adapters_plotpy.roi.image import (
-    PolygonalROIPlotPyAdapter,
-    RectangularROIPlotPyAdapter,
+from sigimax.adapters_plotpy.factories import (
+    create_adapter_from_object,
+    get_adapter_factory,
 )
 
 if TYPE_CHECKING:
@@ -50,24 +49,7 @@ def plotitem_to_singleroi(
     Returns:
         A single ROI instance
     """
-    # pylint: disable=import-outside-toplevel
-    from sigimax.adapters_plotpy.roi.image import (
-        CircularROIPlotPyAdapter,
-    )
-    from sigimax.adapters_plotpy.roi.signal import (
-        SegmentROIPlotPyAdapter,
-    )
-
-    if isinstance(plot_item, AnnotatedXRange):
-        adapter = SegmentROIPlotPyAdapter
-    elif isinstance(plot_item, AnnotatedRectangle):
-        adapter = RectangularROIPlotPyAdapter
-    elif isinstance(plot_item, AnnotatedCircle):
-        adapter = CircularROIPlotPyAdapter
-    elif isinstance(plot_item, AnnotatedPolygon):
-        adapter = PolygonalROIPlotPyAdapter
-    else:
-        raise TypeError(f"Unsupported PlotPy item type: {type(plot_item)}")
+    adapter = get_adapter_factory().get_adapter_class_for_plot_item(plot_item)
     return adapter.from_plot_item(plot_item, obj)
 
 

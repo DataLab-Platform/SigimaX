@@ -25,40 +25,9 @@ def create_roi_adapter(roi):
         ROI adapter instance
     """
     # pylint: disable=import-outside-toplevel
-    from sigima.objects import (
-        CircularROI,
-        ImageROI,
-        PolygonalROI,
-        RectangularROI,
-        SegmentROI,
-        SignalROI,
-    )
+    from sigimax.adapters_plotpy.factories import create_adapter_from_object
 
-    if isinstance(roi, SignalROI):
-        from sigimax.adapters_plotpy.roi.signal import SignalROIPlotPyAdapter
-
-        return SignalROIPlotPyAdapter(roi)
-    if isinstance(roi, RectangularROI):
-        from sigimax.adapters_plotpy.roi.image import RectangularROIPlotPyAdapter
-
-        return RectangularROIPlotPyAdapter(roi)
-    if isinstance(roi, CircularROI):
-        from sigimax.adapters_plotpy.roi.image import CircularROIPlotPyAdapter
-
-        return CircularROIPlotPyAdapter(roi)
-    if isinstance(roi, PolygonalROI):
-        from sigimax.adapters_plotpy.roi.image import PolygonalROIPlotPyAdapter
-
-        return PolygonalROIPlotPyAdapter(roi)
-    if isinstance(roi, ImageROI):
-        from sigimax.adapters_plotpy.roi.image import ImageROIPlotPyAdapter
-
-        return ImageROIPlotPyAdapter(roi)
-    if isinstance(roi, SegmentROI):
-        from sigimax.adapters_plotpy.roi.signal import SegmentROIPlotPyAdapter
-
-        return SegmentROIPlotPyAdapter(roi)
-    raise TypeError(f"Unsupported ROI type: {type(roi)}")
+    return create_adapter_from_object(roi)
 
 
 def create_single_roi_plot_item(single_roi, obj: TypeObj):
@@ -72,22 +41,6 @@ def create_single_roi_plot_item(single_roi, obj: TypeObj):
         Plot item
     """
     # pylint: disable=import-outside-toplevel
-    from sigima.objects import (
-        CircularROI,
-        PolygonalROI,
-        RectangularROI,
-    )
+    from sigimax.adapters_plotpy.factories import create_adapter_from_object
 
-    if isinstance(single_roi, RectangularROI):
-        from sigimax.adapters_plotpy.roi.image import RectangularROIPlotPyAdapter
-
-        return RectangularROIPlotPyAdapter(single_roi).to_plot_item(obj)
-    if isinstance(single_roi, CircularROI):
-        from sigimax.adapters_plotpy.roi.image import CircularROIPlotPyAdapter
-
-        return CircularROIPlotPyAdapter(single_roi).to_plot_item(obj)
-    if isinstance(single_roi, PolygonalROI):
-        from sigimax.adapters_plotpy.roi.image import PolygonalROIPlotPyAdapter
-
-        return PolygonalROIPlotPyAdapter(single_roi).to_plot_item(obj)
-    raise TypeError(f"Unsupported ROI type: {type(single_roi)}")
+    return create_adapter_from_object(single_roi).to_plot_item(obj)

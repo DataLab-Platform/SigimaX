@@ -15,6 +15,12 @@ from .converters import (
     plotitem_to_singleroi,
     singleroi_to_plotitem,
 )
+from .factories import (
+    PlotPyAdapterFactory,
+    get_adapter_factory,
+    reset_adapter_factory,
+    set_adapter_factory,
+)
 from .objects.base import TypePlotItem
 from .objects.image import (
     ImageObjPlotPyAdapter,
@@ -32,6 +38,7 @@ __all__ = [
     "CURVESTYLES",
     "CircularROIPlotPyAdapter",
     "ImageObjPlotPyAdapter",
+    "PlotPyAdapterFactory",
     "PolygonalROIPlotPyAdapter",
     "RectangularROIPlotPyAdapter",
     "SegmentROIPlotPyAdapter",
@@ -41,8 +48,11 @@ __all__ = [
     "TypeROIItem",
     "configure_roi_item",
     "create_adapter_from_object",
+    "get_adapter_factory",
     "items_to_json",
     "json_to_items",
     "plotitem_to_singleroi",
+    "reset_adapter_factory",
+    "set_adapter_factory",
     "singleroi_to_plotitem",
 ]
