@@ -393,11 +393,23 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
             # Console status
             self.consolestatus = status.ConsoleStatus()
             self.statusBar().addPermanentWidget(self.consolestatus)
+        for widget in self._get_extra_status_widgets():
+            self.statusBar().addPermanentWidget(widget)
         # Memory status
         threshold = conf.available_memory_threshold.get()
         self.memorystatus = status.MemoryStatus(threshold)
         self.memorystatus.SIG_MEMORY_ALARM.connect(self._set_low_memory_state)
         self.statusBar().addPermanentWidget(self.memorystatus)
+
+    def _get_extra_status_widgets(self) -> list[QW.QWidget]:
+        """Return the application-specific status bar widgets.
+
+        They are added between the console status and the memory status.
+
+        Returns:
+            List of widgets
+        """
+        return []
 
     def _add_toolbar(
         self, title: str, position: Literal["top", "bottom", "left", "right"], name: str
@@ -1226,11 +1238,10 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         if self.console is not None:
             self.console.update_color_mode()
 
-        if self.docks is not None:
-            for dock in self.docks.values():
-                widget = dock.widget()
-                if isinstance(widget, DockablePlotWidget):
-                    widget.update_color_mode()
+        for dock in self.docks.values():
+            widget = dock.widget()
+            if isinstance(widget, DockablePlotWidget):
+                widget.update_color_mode()
 
         self._update_extra_color_mode()
 
