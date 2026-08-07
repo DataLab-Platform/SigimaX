@@ -1,6 +1,22 @@
 # Copyright (c) DataLab Platform Developers, BSD 3-Clause license, see LICENSE file.
 
-"""Curve fitting dialog widgets"""
+"""Curve fitting dialog widgets
+
+.. autofunction:: guifit
+.. autofunction:: linear_fit
+.. autofunction:: polynomial_fit
+.. autofunction:: gaussian_fit
+.. autofunction:: lorentzian_fit
+.. autofunction:: voigt_fit
+.. autofunction:: multigaussian_fit
+.. autofunction:: multilorentzian_fit
+.. autofunction:: exponential_fit
+.. autofunction:: sinusoidal_fit
+.. autofunction:: cdf_fit
+.. autofunction:: planckian_fit
+.. autofunction:: twohalfgaussian_fit
+.. autofunction:: piecewiseexponential_fit
+"""
 
 # pylint: disable=invalid-name  # Allows short reference names like x, y, ...
 

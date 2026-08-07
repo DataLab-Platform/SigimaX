@@ -2,6 +2,13 @@
 
 """
 SigimaX HDF5 browser module
+
+.. autoclass:: H5Browser
+    :members:
+.. autoclass:: H5BrowserDialog
+    :members:
+.. autoclass:: H5TreeWidget
+    :members:
 """
 
 # pylint: disable=invalid-name  # Allows short reference names like x, y, ...

@@ -6,16 +6,11 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: SigimaX \n"
-"Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Language: fr\n"
-"Language-Team: fr <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.18.0\n"
 
 msgid ":ref:`Go to the end <sphx_glr_download_auto_examples_features_configuration.py>` to download the full example code."
 msgstr ":ref:`Aller à la fin <sphx_glr_download_auto_examples_features_configuration.py>` pour télécharger le code complet de l'exemple."
@@ -71,6 +66,12 @@ msgstr "Aller-retour de sérialisation"
 msgid "Options can be serialized to a dictionary (and from there to JSON)."
 msgstr "Les options peuvent être sérialisées en dictionnaire (puis en JSON)."
 
+msgid "Persisting options to a JSON file"
+msgstr "Persister les options dans un fichier JSON"
+
+msgid ":meth:`~sigimax.config.SigimaXOptions.save`/ :meth:`~sigimax.config.SigimaXOptions.load` go one step further than ``to_dict()``/``from_dict()``: they read/write an actual ``options.json`` file. Called without arguments, they resolve a per-application directory under the user's config directory (the same one used by the legacy INI-based system, via :func:`guidata.configtools`). Here we pass an explicit path (a temporary directory) to keep the example self-contained."
+msgstr ":meth:`~sigimax.config.SigimaXOptions.save`/ :meth:`~sigimax.config.SigimaXOptions.load` vont plus loin que ``to_dict()``/``from_dict()`` : elles lisent/écrivent un véritable fichier ``options.json``. Appelées sans argument, elles résolvent un répertoire propre à l'application sous le répertoire de configuration de l'utilisateur (le même que celui utilisé par l'ancien système basé sur INI, via :func:`guidata.configtools`). Ici, nous passons un chemin explicite (un répertoire temporaire) pour garder l'exemple autonome."
+
 msgid "Reset to defaults"
 msgstr "Réinitialisation aux valeurs par défaut"
 
@@ -92,8 +93,11 @@ msgstr "**Champs typés** : ``TypedOptionField`` pour int/float/str/bool, ``Enum
 msgid "**Context managers**: ``option.context(value)`` for scoped overrides"
 msgstr "**Gestionnaires de contexte** : ``option.context(value)`` pour des surcharges avec portée limitée"
 
-msgid "**Serialization**: ``to_dict()`` / ``from_dict()`` for JSON persistence"
-msgstr "**Sérialisation** : ``to_dict()`` / ``from_dict()`` pour la persistance JSON"
+msgid "**Serialization**: ``to_dict()`` / ``from_dict()`` for in-memory JSON round-trips"
+msgstr "**Sérialisation** : ``to_dict()`` / ``from_dict()`` pour des allers-retours JSON en mémoire"
+
+msgid "**File persistence**: ``save()`` / ``load()`` for JSON files, defaulting to a per-application directory under the user's config directory"
+msgstr "**Persistance fichier** : ``save()`` / ``load()`` pour des fichiers JSON, avec par défaut un répertoire propre à l'application sous le répertoire de configuration de l'utilisateur"
 
 msgid "**Validation**: Type checking and enum constraint enforcement"
 msgstr "**Validation** : vérification de type et application des contraintes d'énumération"

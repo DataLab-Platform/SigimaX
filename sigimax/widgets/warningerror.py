@@ -2,6 +2,10 @@
 
 """
 Module providing a warning/error message box
+
+.. autoclass:: WarningErrorMessageBox
+    :members:
+.. autofunction:: show_warning_error
 """
 
 import os.path as osp

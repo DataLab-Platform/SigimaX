@@ -1,0 +1,73 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2025, DataLab Platform Developers
+# This file is distributed under the same license as the SigimaX package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Language: fr\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid ":ref:`Go to the end <sphx_glr_download_auto_examples_features_adapters_plotpy_factory.py>` to download the full example code."
+msgstr ":ref:`Aller à la fin <sphx_glr_download_auto_examples_features_adapters_plotpy_factory.py>` pour télécharger le code complet de l'exemple."
+
+msgid "PlotPy Adapter Factory"
+msgstr "Fabrique d'adaptateurs PlotPy"
+
+msgid "SigimaX converts Sigima objects (:class:`~sigima.objects.SignalObj`, :class:`~sigima.objects.ImageObj`, ROIs) to/from PlotPy plot items through a small set of adapter classes. Which adapter class is used for a given object is resolved by :class:`~sigimax.adapters_plotpy.factories.PlotPyAdapterFactory` — a single, overridable indirection point."
+msgstr "SigimaX convertit les objets Sigima (:class:`~sigima.objects.SignalObj`, :class:`~sigima.objects.ImageObj`, ROI) vers/depuis des items PlotPy via un petit ensemble de classes d'adaptateurs. La classe d'adaptateur utilisée pour un objet donné est résolue par :class:`~sigimax.adapters_plotpy.factories.PlotPyAdapterFactory` — un unique point d'indirection surchargeable."
+
+msgid "This is useful when a derived application:"
+msgstr "Ceci est utile lorsqu'une application dérivée :"
+
+msgid "adds a **new object type** that needs its own PlotPy rendering, or"
+msgstr "ajoute un **nouveau type d'objet** qui nécessite son propre rendu PlotPy, ou"
+
+msgid "wants to **substitute** one of SigimaX's built-in adapters (e.g. to draw images with a custom colormap policy) without touching SigimaX itself."
+msgstr "souhaite **remplacer** l'un des adaptateurs intégrés de SigimaX (par exemple pour dessiner des images avec une politique de palette de couleurs personnalisée) sans toucher à SigimaX lui-même."
+
+msgid "Importing necessary modules"
+msgstr "Import des modules nécessaires"
+
+msgid "Default resolution"
+msgstr "Résolution par défaut"
+
+msgid ":func:`~sigimax.adapters_plotpy.create_adapter_from_object` asks the *currently active* factory (:func:`~sigimax.adapters_plotpy.factories.get_adapter_factory`) for the right adapter class, then instantiates it. Out of the box, this is a :class:`~sigimax.adapters_plotpy.factories.PlotPyAdapterFactory` that dispatches on the Sigima object type."
+msgstr ":func:`~sigimax.adapters_plotpy.create_adapter_from_object` demande à la factory *actuellement active* (:func:`~sigimax.adapters_plotpy.factories.get_adapter_factory`) la bonne classe d'adaptateur, puis l'instancie. Par défaut, il s'agit d'une :class:`~sigimax.adapters_plotpy.factories.PlotPyAdapterFactory` qui répartit selon le type d'objet Sigima."
+
+msgid "Overriding the factory"
+msgstr "Surcharger la factory"
+
+msgid "Subclass :class:`~sigimax.adapters_plotpy.factories.PlotPyAdapterFactory` and override :meth:`~sigimax.adapters_plotpy.factories.PlotPyAdapterFactory.get_adapter_class`, delegating to ``super()`` for the types you don't need to change. Install it with :func:`~sigimax.adapters_plotpy.factories.set_adapter_factory` so that every SigimaX component (dock widgets, HDF5 browser preview, ROI editing) picks it up transparently."
+msgstr "Sous-classez :class:`~sigimax.adapters_plotpy.factories.PlotPyAdapterFactory` et surchargez :meth:`~sigimax.adapters_plotpy.factories.PlotPyAdapterFactory.get_adapter_class`, en déléguant à ``super()`` pour les types que vous n'avez pas besoin de modifier. Installez-la avec :func:`~sigimax.adapters_plotpy.factories.set_adapter_factory` afin que chaque composant SigimaX (widgets ancrables, aperçu du navigateur HDF5, édition de ROI) l'utilise de façon transparente."
+
+msgid "Summary"
+msgstr "Résumé"
+
+msgid ":func:`~sigimax.adapters_plotpy.create_adapter_from_object` is the single entry point application code should use to go from a Sigima object to a PlotPy adapter"
+msgstr ":func:`~sigimax.adapters_plotpy.create_adapter_from_object` est l'unique point d'entrée que le code applicatif doit utiliser pour passer d'un objet Sigima à un adaptateur PlotPy"
+
+msgid ":func:`~sigimax.adapters_plotpy.factories.get_adapter_factory` / :func:`~sigimax.adapters_plotpy.factories.set_adapter_factory` let a derived application install its own factory once, globally"
+msgstr ":func:`~sigimax.adapters_plotpy.factories.get_adapter_factory` / :func:`~sigimax.adapters_plotpy.factories.set_adapter_factory` permettent à une application dérivée d'installer sa propre factory une fois, globalement"
+
+msgid "Override :meth:`~sigimax.adapters_plotpy.factories.PlotPyAdapterFactory.get_adapter_class` for object-to-item resolution and ``get_adapter_class_for_plot_item()`` for the reverse (item-to-ROI) direction"
+msgstr "Surchargez :meth:`~sigimax.adapters_plotpy.factories.PlotPyAdapterFactory.get_adapter_class` pour la résolution objet-vers-item et ``get_adapter_class_for_plot_item()`` pour le sens inverse (item-vers-ROI)"
+
+msgid "Call :func:`~sigimax.adapters_plotpy.factories.reset_adapter_factory` to restore the SigimaX base factory (mostly useful in tests)"
+msgstr "Appelez :func:`~sigimax.adapters_plotpy.factories.reset_adapter_factory` pour restaurer la factory de base de SigimaX (surtout utile dans les tests)"
+
+msgid ":download:`Download Jupyter notebook: adapters_plotpy_factory.ipynb <adapters_plotpy_factory.ipynb>`"
+msgstr ":download:`Télécharger le notebook Jupyter : adapters_plotpy_factory.ipynb <adapters_plotpy_factory.ipynb>`"
+
+msgid ":download:`Download Python source code: adapters_plotpy_factory.py <adapters_plotpy_factory.py>`"
+msgstr ":download:`Télécharger le code source Python : adapters_plotpy_factory.py <adapters_plotpy_factory.py>`"
+
+msgid ":download:`Download zipped: adapters_plotpy_factory.zip <adapters_plotpy_factory.zip>`"
+msgstr ":download:`Télécharger l'archive : adapters_plotpy_factory.zip <adapters_plotpy_factory.zip>`"
+
+msgid "`Gallery generated by Sphinx-Gallery <https://sphinx-gallery.github.io>`_"
+msgstr "`Galerie générée par Sphinx-Gallery <https://sphinx-gallery.github.io>`_"

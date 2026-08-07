@@ -1,6 +1,10 @@
 # Copyright (c) DataLab Platform Developers, BSD 3-Clause license, see LICENSE file.
 
-"""Signal peak detection feature"""
+"""Signal peak detection feature
+
+.. autoclass:: SignalPeakDetectionDialog
+    :members:
+"""
 
 # pylint: disable=invalid-name  # Allows short reference names like x, y, ...
 

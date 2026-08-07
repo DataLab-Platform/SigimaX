@@ -1,6 +1,10 @@
 # Copyright (c) DataLab Platform Developers, BSD 3-Clause license, see LICENSE file.
 
-"""Signal base line selection dialog."""
+"""Signal base line selection dialog.
+
+.. autoclass:: SignalBaselineDialog
+    :members:
+"""
 
 # pylint: disable=invalid-name  # Allows short reference names like x, y, ...
 

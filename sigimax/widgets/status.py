@@ -2,6 +2,13 @@
 
 """
 SigimaX main window status bar widgets
+
+.. autoclass:: BaseStatus
+    :members:
+.. autoclass:: ConsoleStatus
+    :members:
+.. autoclass:: MemoryStatus
+    :members:
 """
 
 from __future__ import annotations

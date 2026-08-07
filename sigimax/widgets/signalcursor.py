@@ -1,6 +1,10 @@
 # Copyright (c) DataLab Platform Developers, BSD 3-Clause license, see LICENSE file.
 
-"""Signal horizontal or vertical cursor selection dialog."""
+"""Signal horizontal or vertical cursor selection dialog.
+
+.. autoclass:: SignalCursorDialog
+    :members:
+"""
 
 # pylint: disable=invalid-name  # Allows short reference names like x, y, ...
 

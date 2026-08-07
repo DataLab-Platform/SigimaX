@@ -295,7 +295,9 @@ class TestDataSetOptionField:
     """Tests for DataSetOptionField."""
 
     def test_falls_back_to_default_and_roundtrips_json(self):
-        """DataSetOptionField falls back to the default instance and round-trips JSON."""
+        """
+        DataSetOptionField falls back to the default instance and round-trips JSON.
+        """
         container = _MiniContainer()
         default = _SampleParam()
         default.value = 7

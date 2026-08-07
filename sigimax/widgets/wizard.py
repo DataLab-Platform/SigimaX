@@ -18,6 +18,11 @@ This module is strongly inspired from Qt's `QWizard` and `QWizardPage` classes.
     The only motivation for reimplementing the wizard widget is to
     support complete styling with `QPalette` and `QStyle` (e.g. `guidata`'s
     dark mode is not supported on Windows).
+
+.. autoclass:: Wizard
+    :members:
+.. autoclass:: WizardPage
+    :members:
 """
 
 from __future__ import annotations

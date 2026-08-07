@@ -3,6 +3,11 @@
 """
 SigimaX environment utilities (:mod:`sigimax.env`)
 ==================================================
+
+.. autoclass:: VerbosityLevels
+    :members:
+.. autoclass:: SGMXExecEnv
+    :members:
 """
 
 from __future__ import annotations

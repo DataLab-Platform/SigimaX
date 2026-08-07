@@ -11,6 +11,7 @@ new panels, actions, menus and toolbars.
 It also provides a set of signals to communicate with other parts of the application.
 
 .. autoclass:: SGMXMainWindow
+    :members:
 """
 
 # pylint: disable=invalid-name  # Allows short reference names like x, y, ...

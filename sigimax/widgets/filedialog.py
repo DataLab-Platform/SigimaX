@@ -4,6 +4,8 @@
 Module providing a file dialog widget based on Qt's QFileDialog.getOpenFileNames
 but supporting multiple file preselection (Qt original dialog only supports single file
 selection).
+
+.. autofunction:: get_open_file_names
 """
 
 from __future__ import annotations

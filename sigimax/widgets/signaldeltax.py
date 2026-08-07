@@ -2,6 +2,9 @@
 
 """
 GUI dialog for analyzing signals and calculating full width at Y.
+
+.. autoclass:: SignalDeltaXDialog
+    :members:
 """
 
 # pylint: disable=invalid-name  # Allows short reference names like x, y, ...

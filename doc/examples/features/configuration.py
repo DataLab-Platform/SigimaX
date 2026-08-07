@@ -20,6 +20,9 @@ It provides:
 # Importing necessary modules
 # ---------------------------
 
+import os.path as osp
+import tempfile
+
 from sigimax.config import EnumOptionField, SigimaXOptions, TypedOptionField
 
 # %%
@@ -134,6 +137,33 @@ print(f"Restored iterations: {conf2.iterations.get()}")
 print(f"Restored algorithm:  {conf2.algorithm.get()}")
 
 # %%
+# Persisting options to a JSON file
+# ------------------------------------
+#
+# :meth:`~sigimax.config.SigimaXOptions.save`/
+# :meth:`~sigimax.config.SigimaXOptions.load` go one step further than
+# ``to_dict()``/``from_dict()``: they read/write an actual ``options.json``
+# file. Called without arguments, they resolve a per-application directory
+# under the user's config directory (the same one used by the legacy
+# INI-based system, via :func:`guidata.configtools`). Here we pass an
+# explicit path (a temporary directory) to keep the example self-contained.
+
+print("\n=== JSON file persistence ===")
+with tempfile.TemporaryDirectory() as tmpdir:
+    json_path = osp.join(tmpdir, "options.json")
+
+    conf.iterations.set(42)
+    conf.save(json_path)
+    print(f"Saved to {json_path}")
+
+    conf3 = DemoOptions()
+    conf3.load(json_path)
+    print(f"Loaded iterations: {conf3.iterations.get()}")
+
+# Calling conf.save() / conf.load() with no argument targets the default,
+# per-application user config directory instead of an explicit path.
+
+# %%
 # Reset to defaults
 # ------------------
 
@@ -162,6 +192,8 @@ for name in sorted(conf.list_options()):
 # - **Typed fields**: ``TypedOptionField`` for int/float/str/bool,
 #   ``EnumOptionField`` for constrained choices
 # - **Context managers**: ``option.context(value)`` for scoped overrides
-# - **Serialization**: ``to_dict()`` / ``from_dict()`` for JSON persistence
+# - **Serialization**: ``to_dict()`` / ``from_dict()`` for in-memory JSON round-trips
+# - **File persistence**: ``save()`` / ``load()`` for JSON files, defaulting to a
+#   per-application directory under the user's config directory
 # - **Validation**: Type checking and enum constraint enforcement
 # - **Reset**: ``reset_to_defaults()`` to restore initial values

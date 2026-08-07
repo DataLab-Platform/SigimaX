@@ -5,6 +5,39 @@ Adapters for PlotPy
 
 The :mod:`sigimax.adapters_plotpy` package provides adapters for
 PlotPy to integrate with SigimaX's data model and GUI.
+
+Each Sigima object (:class:`~sigima.objects.SignalObj`,
+:class:`~sigima.objects.ImageObj`, ROI classes) is converted to/from PlotPy
+plot items by a dedicated adapter class. :class:`PlotPyAdapterFactory`
+resolves which adapter class to use for a given object; derived applications
+subclass the factory to override or extend this resolution and install it
+with :func:`set_adapter_factory`.
+
+.. autoclass:: PlotPyAdapterFactory
+    :members:
+.. autofunction:: get_adapter_factory
+.. autofunction:: set_adapter_factory
+.. autofunction:: reset_adapter_factory
+.. autofunction:: create_adapter_from_object
+.. autoclass:: SignalObjPlotPyAdapter
+    :members:
+.. autoclass:: ImageObjPlotPyAdapter
+    :members:
+.. autoclass:: SegmentROIPlotPyAdapter
+    :members:
+.. autoclass:: SignalROIPlotPyAdapter
+    :members:
+.. autoclass:: RectangularROIPlotPyAdapter
+    :members:
+.. autoclass:: CircularROIPlotPyAdapter
+    :members:
+.. autoclass:: PolygonalROIPlotPyAdapter
+    :members:
+.. autofunction:: items_to_json
+.. autofunction:: json_to_items
+.. autofunction:: plotitem_to_singleroi
+.. autofunction:: singleroi_to_plotitem
+.. autofunction:: configure_roi_item
 """
 
 from __future__ import annotations

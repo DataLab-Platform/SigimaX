@@ -1,0 +1,65 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2025, DataLab Platform Developers
+# This file is distributed under the same license as the SigimaX package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Language: fr\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Main-Window Lifecycle"
+msgstr ""
+
+msgid "SigimaX creates a derived main window in a predictable sequence. Use the protected hooks instead of relying on incidental constructor ordering."
+msgstr ""
+
+msgid "Initialization Order"
+msgstr ""
+
+msgid "When a :class:`~sigimax.mainwindow.SGMXMainWindow` is created, SigimaX:"
+msgstr ""
+
+msgid "initializes its own non-virtual state;"
+msgstr ""
+
+msgid "calls ``_before_setup(console)``;"
+msgstr ""
+
+msgid "applies the color mode through ``_update_color_mode(startup=True)``;"
+msgstr ""
+
+msgid "creates the generic status bar, actions, central widget, menus, and restored window state;"
+msgstr ""
+
+msgid "calls ``_after_setup(console)``; and"
+msgstr ""
+
+msgid "restores the window geometry."
+msgstr ""
+
+msgid "Use ``_before_setup`` for derived state that another protected hook may need during startup. Use ``_after_setup`` for work that requires generic widgets such as actions, menus, or the status bar."
+msgstr ""
+
+msgid "The HDF5 reference application follows this rule by creating its data model in ``_before_setup``:"
+msgstr ""
+
+msgid "Singleton Access"
+msgstr ""
+
+msgid "Call ``MyMainWindow.get_instance()`` on the concrete derived class. It returns the current instance of that class or creates one of the same class. This keeps the base framework from accidentally constructing ``SGMXMainWindow`` when an application requested its own window subclass."
+msgstr ""
+
+msgid "Shutdown Order"
+msgstr ""
+
+msgid "For a modified workspace, the close flow asks the user to save first. A successful application save clears the modified state; cancellation or failure leaves it set and stops the close. Once closing proceeds, SigimaX calls ``_close_managed_widgets()``, ``_cleanup_before_reset()``, ``reset_all()``, ``_save_pos_size_and_state()``, and ``_cleanup_after_state_save()`` in that order."
+msgstr ""
+
+msgid "Derived applications should use these hooks for their own managed resources and call ``super()`` when preserving the generic behavior is required."
+msgstr ""
+

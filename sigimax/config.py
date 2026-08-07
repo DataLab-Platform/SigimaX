@@ -61,6 +61,34 @@ Extending for a derived application:
             )
 
     options = MyAppOptions()
+
+.. autoclass:: SigimaXOptions
+    :members:
+.. autoclass:: AppOptionsContainer
+    :members:
+.. autoclass:: OptionField
+    :members:
+.. autoclass:: TypedOptionField
+    :members:
+.. autoclass:: ImageIOOptionField
+    :members:
+.. autoclass:: EnumOptionField
+    :members:
+.. autoclass:: TupleOptionField
+    :members:
+.. autoclass:: FontOptionField
+    :members:
+.. autoclass:: ConfigPathOptionField
+    :members:
+.. autoclass:: WorkingDirOptionField
+    :members:
+.. autoclass:: FormatStringOptionField
+    :members:
+.. autoclass:: DataSetOptionField
+    :members:
+.. autofunction:: get_conf
+.. autofunction:: set_conf
+.. autofunction:: reset_conf
 """
 
 from __future__ import annotations

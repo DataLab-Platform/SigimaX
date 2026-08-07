@@ -2,6 +2,12 @@
 
 """
 Module providing a log viewer widget, a log viewer window and SigimaX's log viewer
+
+.. autoclass:: LogViewerWindow
+    :members:
+.. autofunction:: get_log_filenames
+.. autofunction:: get_log_prompt_message
+.. autofunction:: exec_sigimax_logviewer_dialog
 """
 
 from __future__ import annotations

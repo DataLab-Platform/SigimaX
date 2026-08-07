@@ -1,6 +1,10 @@
 # Copyright (c) DataLab Platform Developers, BSD 3-Clause license, see LICENSE file.
 
-"""Image background selection dialog."""
+"""Image background selection dialog.
+
+.. autoclass:: ImageBackgroundDialog
+    :members:
+"""
 
 # pylint: disable=invalid-name  # Allows short reference names like x, y, ...
 
