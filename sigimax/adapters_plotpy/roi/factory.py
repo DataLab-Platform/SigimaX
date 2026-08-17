@@ -24,7 +24,7 @@ def create_roi_adapter(roi):
     Returns:
         ROI adapter instance
     """
-    # pylint: disable=import-outside-toplevel
+    # pylint: disable=import-outside-toplevel,cyclic-import
     from sigimax.adapters_plotpy.factories import create_adapter_from_object
 
     return create_adapter_from_object(roi)
@@ -40,7 +40,7 @@ def create_single_roi_plot_item(single_roi, obj: TypeObj):
     Returns:
         Plot item
     """
-    # pylint: disable=import-outside-toplevel
+    # pylint: disable=import-outside-toplevel,cyclic-import
     from sigimax.adapters_plotpy.factories import create_adapter_from_object
 
     return create_adapter_from_object(single_roi).to_plot_item(obj)

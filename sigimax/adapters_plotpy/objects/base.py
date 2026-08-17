@@ -162,7 +162,7 @@ class BaseObjPlotPyAdapter(Generic[TypeObj, TypePlotItem]):
                 roi = self.obj.roi
                 if roi is not None:
                     # Delayed import to avoid circular dependency
-                    # pylint: disable=import-outside-toplevel
+                    # pylint: disable=import-outside-toplevel,cyclic-import
                     from sigimax.adapters_plotpy.roi.factory import create_roi_adapter
 
                     adapter = create_roi_adapter(roi)

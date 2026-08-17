@@ -213,9 +213,8 @@ class TestFontOptionField:
 
     def test_get_font_builds_qfont(self):
         """get_font returns a QFont matching the stored specification."""
-        from qtpy.QtWidgets import (
-            QApplication,  # pylint: disable=import-outside-toplevel
-        )
+        # pylint: disable-next=import-outside-toplevel
+        from qtpy.QtWidgets import QApplication
 
         _app = QApplication.instance() or QApplication([])
         c = _MiniContainer()
@@ -396,7 +395,7 @@ class TestAppOptionsContainer:
 
         assert "``my_str``" in rst
         assert "``'hello'``" in rst
-        assert c.changed_options == []
+        assert not c.changed_options
         assert not c.is_option_initialized("my_str")
 
     def test_from_dict_invalid_value_warning(self, capsys):

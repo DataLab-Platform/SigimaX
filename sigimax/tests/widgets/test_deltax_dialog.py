@@ -27,7 +27,9 @@ def test_signal_delta_x_dialog():
         exec_dialog(dlg)
     y = dlg.get_y_value()
     x0, y0, x1, y1 = dlg.get_coords()
-    exp_x0, exp_y0, exp_x1, exp_y1 = full_width_at_y(sig.x, sig.y, y)
+    # The paracetamol signal has multiple crossing points at this Y level
+    with pytest.warns(UserWarning, match="Multiple crossing points found"):
+        exp_x0, exp_y0, exp_x1, exp_y1 = full_width_at_y(sig.x, sig.y, y)
     assert (x0, y0, x1, y1) == (exp_x0, exp_y0, exp_x1, exp_y1), (
         f"Expected: {(exp_x0, exp_y0, exp_x1, exp_y1)} but got: {(x0, y0, x1, y1)}"
     )

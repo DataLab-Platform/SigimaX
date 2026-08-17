@@ -38,7 +38,7 @@ class PlotPyAdapterFactory:
         Raises:
             TypeError: If the object type is not supported
         """
-        # pylint: disable=import-outside-toplevel
+        # pylint: disable=import-outside-toplevel,cyclic-import
         from sigima.objects import (
             CircularROI,
             ImageObj,
@@ -63,22 +63,21 @@ class PlotPyAdapterFactory:
             SignalROIPlotPyAdapter,
         )
 
-        if isinstance(object_to_adapt, SignalObj):
-            return SignalObjPlotPyAdapter
-        if isinstance(object_to_adapt, SignalROI):
-            return SignalROIPlotPyAdapter
-        if isinstance(object_to_adapt, SegmentROI):
-            return SegmentROIPlotPyAdapter
-        if isinstance(object_to_adapt, ImageObj):
-            return ImageObjPlotPyAdapter
-        if isinstance(object_to_adapt, RectangularROI):
-            return RectangularROIPlotPyAdapter
-        if isinstance(object_to_adapt, CircularROI):
-            return CircularROIPlotPyAdapter
-        if isinstance(object_to_adapt, PolygonalROI):
-            return PolygonalROIPlotPyAdapter
-        if isinstance(object_to_adapt, ImageROI):
-            return ImageROIPlotPyAdapter
+        # Order matters: check more specific types (e.g. SegmentROI) before
+        # their more generic bases (e.g. SignalROI) where applicable.
+        type_to_adapter: tuple[tuple[type, type], ...] = (
+            (SignalObj, SignalObjPlotPyAdapter),
+            (SignalROI, SignalROIPlotPyAdapter),
+            (SegmentROI, SegmentROIPlotPyAdapter),
+            (ImageObj, ImageObjPlotPyAdapter),
+            (RectangularROI, RectangularROIPlotPyAdapter),
+            (CircularROI, CircularROIPlotPyAdapter),
+            (PolygonalROI, PolygonalROIPlotPyAdapter),
+            (ImageROI, ImageROIPlotPyAdapter),
+        )
+        for obj_type, adapter_class in type_to_adapter:
+            if isinstance(object_to_adapt, obj_type):
+                return adapter_class
         raise TypeError(f"Unsupported object type: {type(object_to_adapt)}")
 
     def get_adapter_class_for_plot_item(self, plot_item) -> type:
