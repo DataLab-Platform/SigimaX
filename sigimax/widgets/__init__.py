@@ -25,12 +25,14 @@ Submodules
 .. autosummary::
 
     plotdock
+    connection
     filedialog
     fileviewer
     fitdialog
     h5browser
     imagebackground
     logviewer
+    objectdialog
     signalbaseline
     signalcursor
     signaldeltax
@@ -41,8 +43,10 @@ Submodules
     wizard
 """
 
+from sigimax.widgets.connection import ConnectionDialog
 from sigimax.widgets.h5browser import H5Browser, H5BrowserDialog
 from sigimax.widgets.logviewer import LogViewerWindow
+from sigimax.widgets.objectdialog import GetObjectDialog, SimpleObjectTree
 from sigimax.widgets.plotdock import (
     CurveStatsToolFunctions,
     DockablePlotWidget,
@@ -55,15 +59,18 @@ from sigimax.widgets.wizard import Wizard, WizardPage
 
 __all__ = [
     "BaseStatus",
+    "ConnectionDialog",
     "ConsoleStatus",
     "CurveStatsToolFunctions",
     "DockablePlotWidget",
+    "GetObjectDialog",
     "H5Browser",
     "H5BrowserDialog",
     "LogViewerWindow",
     "MemoryStatus",
     "SigimaXPlotWidget",
     "SigimaXSplashScreen",
+    "SimpleObjectTree",
     "SplashScreenConfig",
     "WarningErrorMessageBox",
     "Wizard",
