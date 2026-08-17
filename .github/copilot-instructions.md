@@ -127,6 +127,7 @@ SigimaX is designed around **subclassing**. Derived applications follow three st
 ```python
 from sigimax.config import EnumOptionField, SigimaXOptions, TypedOptionField
 
+
 class MyAppOptions(SigimaXOptions):
     ENV_VAR = "MYAPP_OPTIONS_JSON"
     APP_NAME = "MyApp"
@@ -135,11 +136,16 @@ class MyAppOptions(SigimaXOptions):
         super().__init__()
         self.app_name.set("MyApp")
         self.greeting = TypedOptionField(
-            self, "greeting", default="Hello!",
-            expected_type=str, description="Startup message",
+            self,
+            "greeting",
+            default="Hello!",
+            expected_type=str,
+            description="Startup message",
         )
         self.unit_system = EnumOptionField(
-            self, "unit_system", default="metric",
+            self,
+            "unit_system",
+            default="metric",
             choices=["metric", "imperial"],
             description="Default units",
         )
@@ -150,6 +156,7 @@ class MyAppOptions(SigimaXOptions):
 ```python
 from sigimax.mainwindow import SGMXMainWindow
 from sigimax.config import CONF as Conf
+
 
 class MyAppMainWindow(SGMXMainWindow):
     def __init__(self, console=None, hide_on_close=False):

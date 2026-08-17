@@ -87,8 +87,11 @@ class MyAppOptions(SigimaXOptions):
         super().__init__()
         self.app_name.set("MyApp")
         self.greeting = TypedOptionField(
-            self, "greeting", default="Hello!",
-            expected_type=str, description="Startup message",
+            self,
+            "greeting",
+            default="Hello!",
+            expected_type=str,
+            description="Startup message",
         )
 
 
