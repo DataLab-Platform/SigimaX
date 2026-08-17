@@ -51,3 +51,9 @@ Submodules
 
 .. automodule:: sigimax.widgets.fileviewer
     :no-members:
+
+.. automodule:: sigimax.widgets.connection
+    :no-members:
+
+.. automodule:: sigimax.widgets.objectdialog
+    :no-members:

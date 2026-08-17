@@ -122,6 +122,33 @@ Scientific Widgets
     * - :class:`~sigimax.widgets.warningerror.WarningErrorMessageBox`
       - Warning/error display dialog with traceback support.
 
+Remote Control Widgets
+----------------------
+
+.. list-table::
+    :header-rows: 1
+    :align: left
+    :widths: 30 70
+
+    * - Widget
+      - Description
+    * - :class:`~sigimax.widgets.connection.ConnectionDialog`
+      - Modal dialog showing the progress of a connection attempt to a
+        DataLab-derived application server, via a blocking connect callback
+        run in a background thread.
+    * - :class:`~sigimax.widgets.objectdialog.GetObjectDialog`
+      - Dialog to browse and pick a signal or image among the objects
+        available on a connected server.
+    * - :class:`~sigimax.widgets.objectdialog.SimpleObjectTree`
+      - Tree widget populated from a remote proxy's groups and objects,
+        used internally by ``GetObjectDialog``.
+    * - :mod:`sigimax.utils.svg_icons`
+      - Generic signal/image/group icons shared by the widgets above.
+
+These widgets only depend on :class:`sigima.client.SimpleRemoteProxy` (or a
+compatible proxy), never on a specific application's branding or object model.
+See :doc:`remote_control` for a complete guide and usage examples.
+
 Status Bar Widgets
 ------------------
 

@@ -12,3 +12,6 @@ Submodules
 
 .. automodule:: sigimax.utils.conf
     :no-members:
+
+.. automodule:: sigimax.utils.svg_icons
+    :no-members:

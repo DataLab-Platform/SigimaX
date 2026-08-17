@@ -37,6 +37,7 @@ User Guide
     installation
     getting_started
     hdf5_workspace
+    remote_control
     lifecycle
     overview
     features
