@@ -673,3 +673,4 @@ msgstr "Générer"
 
 msgid "Signal generated"
 msgstr "Signal généré"
+
