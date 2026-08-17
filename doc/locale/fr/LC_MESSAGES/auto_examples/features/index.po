@@ -29,3 +29,6 @@ msgstr ":doc:`/auto_examples/features/mainwindow_customization`"
 
 msgid ":doc:`/auto_examples/features/adapters_plotpy_factory`"
 msgstr ":doc:`/auto_examples/features/adapters_plotpy_factory`"
+
+msgid ":doc:`/auto_examples/features/remote_control_widgets`"
+msgstr ":doc:`/auto_examples/features/remote_control_widgets`"

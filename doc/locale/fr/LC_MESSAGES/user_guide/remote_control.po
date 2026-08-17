@@ -1,0 +1,76 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2025, DataLab Platform Developers
+# This file is distributed under the same license as the SigimaX package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Language: fr\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Remote Control Widgets"
+msgstr "Widgets de contrôle à distance"
+
+msgid "SigimaX provides ready-to-use Qt widgets to build a *remote client* application: a separate process that connects to a running DataLab-derived application server and exchanges signals/images with it, using :class:`sigima.client.SimpleRemoteProxy` (or any proxy exposing the same ``connect``/``get_current_panel``/``get_group_titles_with_object_info`` API)."
+msgstr "SigimaX fournit des widgets Qt prêts à l'emploi pour créer une application *client distant* : un processus séparé qui se connecte à un serveur d'application dérivé de DataLab en cours d'exécution et échange des signaux/images avec celui-ci, en utilisant :class:`sigima.client.SimpleRemoteProxy` (ou tout proxy exposant la même API ``connect``/``get_current_panel``/``get_group_titles_with_object_info``)."
+
+msgid "These widgets originate from the (now unmaintained) ``cdlclient`` / `DataLab Simple Client <https://github.com/DataLab-Platform/DataLabSimpleClient>`_ package. They have been ported into SigimaX, generalized (no DataLab-specific branding hardcoded), and adapted to the current :mod:`sigima.client` API."
+msgstr "Ces widgets proviennent du package (aujourd'hui non maintenu) ``cdlclient`` / `DataLab Simple Client <https://github.com/DataLab-Platform/DataLabSimpleClient>`_. Ils ont été portés dans SigimaX, généralisés (aucun branding spécifique à DataLab codé en dur) et adaptés à l'API actuelle :mod:`sigima.client`."
+
+msgid "Responsibilities"
+msgstr "Responsabilités"
+
+msgid "SigimaX provides:"
+msgstr "SigimaX fournit :"
+
+msgid ":class:`~sigimax.widgets.connection.ConnectionDialog`, a small modal dialog showing the progress of a (possibly slow or failing) connection attempt;"
+msgstr ":class:`~sigimax.widgets.connection.ConnectionDialog`, une petite boîte de dialogue modale affichant la progression d'une tentative de connexion (éventuellement lente ou échouant) ;"
+
+msgid ":class:`~sigimax.widgets.objectdialog.GetObjectDialog` and :class:`~sigimax.widgets.objectdialog.SimpleObjectTree`, a dialog and tree widget to browse and pick a signal or image among the objects currently available on the connected server;"
+msgstr ":class:`~sigimax.widgets.objectdialog.GetObjectDialog` et :class:`~sigimax.widgets.objectdialog.SimpleObjectTree`, une boîte de dialogue et un widget en arbre pour parcourir et sélectionner un signal ou une image parmi les objets actuellement disponibles sur le serveur connecté ;"
+
+msgid "generic icons for signals, images and groups (:mod:`sigimax.utils.svg_icons`)."
+msgstr "Icônes génériques pour les signaux, images et groupes (:mod:`sigimax.utils.svg_icons`)."
+
+msgid "A derived (client) application provides:"
+msgstr "Une application dérivée (client) fournit :"
+
+msgid "the actual :class:`sigima.client.SimpleRemoteProxy` (or compatible proxy) instance and its connection parameters;"
+msgstr "L'instance réelle de :class:`sigima.client.SimpleRemoteProxy` (ou un proxy compatible) et ses paramètres de connexion ;"
+
+msgid "what to do with the object selected in :class:`~sigimax.widgets.objectdialog.GetObjectDialog` (e.g. retrieve its data with :meth:`~sigima.client.base.SimpleBaseProxy.get_object`); the widgets never modify the connection or the remote objects themselves."
+msgstr "Ce qu'il faut faire avec l'objet sélectionné dans :class:`~sigimax.widgets.objectdialog.GetObjectDialog` (par exemple récupérer ses données avec :meth:`~sigima.client.base.SimpleBaseProxy.get_object`) ; les widgets ne modifient jamais la connexion ni les objets distants eux-mêmes."
+
+msgid "Connecting to a Server"
+msgstr "Connexion à un serveur"
+
+msgid ":class:`~sigimax.widgets.connection.ConnectionDialog` wraps a *blocking* connect callback (typically :meth:`sigima.client.remote.SimpleRemoteProxy.connect`) in a background thread, so the Qt event loop keeps running while the connection is attempted:"
+msgstr ":class:`~sigimax.widgets.connection.ConnectionDialog` encapsule un rappel de connexion *bloquant* (typiquement :meth:`sigima.client.remote.SimpleRemoteProxy.connect`) dans un thread en arrière-plan, de sorte que la boucle d'événements Qt continue de fonctionner pendant que la connexion est tentée :"
+
+msgid "The dialog is generic: it does not assume any application branding. A derived application may pass its own window icon and/or a banner pixmap:"
+msgstr "La boîte de dialogue est générique : elle ne suppose aucun branding d'application. Une application dérivée peut passer sa propre icône de fenêtre et/ou un pixmap de bannière :"
+
+msgid "Picking a Remote Object"
+msgstr "Sélection d'un objet distant"
+
+msgid "Once connected, :class:`~sigimax.widgets.objectdialog.GetObjectDialog` lists the groups and objects (signals and/or images) currently available on the server, using :meth:`sigima.client.base.SimpleBaseProxy.get_group_titles_with_object_info`:"
+msgstr "Une fois connecté, :class:`~sigimax.widgets.objectdialog.GetObjectDialog` liste les groupes et objets (signaux et/ou images) actuellement disponibles sur le serveur, en utilisant :meth:`sigima.client.base.SimpleBaseProxy.get_group_titles_with_object_info` :"
+
+msgid "Passing ``panel=None`` (the default) lets the user switch between the signal and image panels from a combo box inside the dialog. Passing ``panel=\"signal\"`` or ``panel=\"image\"`` restricts the dialog to a single panel and hides the combo box."
+msgstr "Passer ``panel=None`` (par défaut) permet à l'utilisateur de basculer entre les panneaux signal et image à partir d'une combo box à l'intérieur de la boîte de dialogue. Passer ``panel=\"signal\"`` ou ``panel=\"image\"`` restreint la boîte de dialogue à un seul panneau et masque la combo box."
+
+msgid "Testing Without a Real Server"
+msgstr "Test sans serveur réel"
+
+msgid ":mod:`sigima.client.stub` provides a lightweight in-process XML-RPC server (:class:`~sigima.client.stub.DataLabStubServer`) that implements enough of the protocol to exercise these widgets headlessly, without launching a real DataLab-derived application. This is how SigimaX's own test suite validates :class:`~sigimax.widgets.connection.ConnectionDialog` and :class:`~sigimax.widgets.objectdialog.GetObjectDialog`:"
+msgstr ":mod:`sigima.client.stub` fournit un serveur XML-RPC léger en processus (:class:`~sigima.client.stub.DataLabStubServer`) qui implémente suffisamment du protocole pour tester ces widgets sans tête, sans lancer une véritable application dérivée de DataLab. C'est ainsi que la suite de tests de SigimaX valide :class:`~sigimax.widgets.connection.ConnectionDialog` et :class:`~sigimax.widgets.objectdialog.GetObjectDialog` :"
+
+msgid "``SimpleRemoteProxy.add_signal`` stores the signal on the stub server unconditionally, but does not attach it to any group. The example above wires the stub server's default group directly (through the ``DataLabStubServer`` instance) to get a deterministic, non-empty tree for the test. A real DataLab-derived server groups newly added objects automatically."
+msgstr "``SimpleRemoteProxy.add_signal`` stocke le signal sur le serveur stub de manière inconditionnelle, mais ne l'attache à aucun groupe. L'exemple ci-dessus connecte directement le groupe par défaut du serveur stub (via l'instance ``DataLabStubServer``) pour obtenir un arbre déterministe et non vide pour le test. Un véritable serveur dérivé de DataLab groupe automatiquement les objets nouvellement ajoutés."
+
+msgid "See also the :ref:`sphx_glr_auto_examples_features_remote_control_widgets.py` example for a runnable, standalone script."
+msgstr "Voir également l'exemple :ref:`sphx_glr_auto_examples_features_remote_control_widgets.py` pour un script autonome exécutable."

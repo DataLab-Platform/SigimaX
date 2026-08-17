@@ -192,6 +192,36 @@ msgstr ":class:`~sigimax.widgets.warningerror.WarningErrorMessageBox`"
 msgid "Warning/error display dialog with traceback support."
 msgstr "Dialogue d'affichage des avertissements et erreurs avec support des traces d'exécution."
 
+msgid "Remote Control Widgets"
+msgstr "Widgets de contrôle à distance"
+
+msgid ":class:`~sigimax.widgets.connection.ConnectionDialog`"
+msgstr ":class:`~sigimax.widgets.connection.ConnectionDialog`"
+
+msgid "Modal dialog showing the progress of a connection attempt to a DataLab-derived application server, via a blocking connect callback run in a background thread."
+msgstr "Dialogue modal affichant la progression d'une tentative de connexion à un serveur d'application dérivé de DataLab, via un callback de connexion bloquant exécuté dans un thread en arrière-plan."
+
+msgid ":class:`~sigimax.widgets.objectdialog.GetObjectDialog`"
+msgstr ":class:`~sigimax.widgets.objectdialog.GetObjectDialog`"
+
+msgid "Dialog to browse and pick a signal or image among the objects available on a connected server."
+msgstr "Dialogue pour parcourir et sélectionner un signal ou une image parmi les objets disponibles sur un serveur connecté."
+
+msgid ":class:`~sigimax.widgets.objectdialog.SimpleObjectTree`"
+msgstr ":class:`~sigimax.widgets.objectdialog.SimpleObjectTree`"
+
+msgid "Tree widget populated from a remote proxy's groups and objects, used internally by ``GetObjectDialog``."
+msgstr "Widget en arbre peuplé à partir des groupes et objets d'un proxy distant, utilisé en interne par ``GetObjectDialog``."
+
+msgid ":mod:`sigimax.utils.svg_icons`"
+msgstr ":mod:`sigimax.utils.svg_icons`"
+
+msgid "Generic signal/image/group icons shared by the widgets above."
+msgstr "Icônes génériques de signal/image/groupe partagées par les widgets ci-dessus."
+
+msgid "These widgets only depend on :class:`sigima.client.SimpleRemoteProxy` (or a compatible proxy), never on a specific application's branding or object model. See :doc:`remote_control` for a complete guide and usage examples."
+msgstr "Ces widgets ne dépendent que de :class:`sigima.client.SimpleRemoteProxy` (ou d'un proxy compatible), jamais de l'image de marque ou du modèle d'objet d'une application spécifique. Voir :doc:`remote_control` pour un guide complet et des exemples d'utilisation."
+
 msgid "Status Bar Widgets"
 msgstr "Widgets de barre d'état"
 
@@ -281,4 +311,3 @@ msgstr "Les traductions sont stockées dans ``locale/`` (actuellement anglais et
 
 msgid "Use ``guidata.utils.translations`` CLI to scan and compile translations"
 msgstr "Utilisez la CLI ``guidata.utils.translations`` pour analyser et compiler les traductions"
-

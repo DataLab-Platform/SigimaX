@@ -282,6 +282,22 @@ msgstr "dans ce dossier"
 msgid "Open tab menu"
 msgstr "Ouvrir le menu de l'onglet"
 
+msgid "Connection"
+msgstr "Connexion"
+
+msgid "Waiting for connection..."
+msgstr "En attente de connexion..."
+
+msgid "Connecting to server..."
+msgstr "Connexion au serveur..."
+
+msgid "Connection successful!"
+msgstr "Connexion réussie !"
+
+#, python-format
+msgid "Connection failed: %s"
+msgstr "Connexion échouée : %s"
+
 msgid "Contents of file"
 msgstr "Contenu du fichier"
 
@@ -482,6 +498,18 @@ msgstr "Des fichiers journaux ont été générés pendant la dernière session.
 msgid "Log files are currently empty."
 msgstr "Les fichiers journaux sont actuellement vides."
 
+msgid "Select object"
+msgstr "Sélectionner l'objet"
+
+msgid "Signals"
+msgstr "Signaux"
+
+msgid "Images"
+msgstr "Images"
+
+msgid "Active panel:"
+msgstr "Panneau actif :"
+
 msgid "Signal baseline selection"
 msgstr "Sélection de la ligne de base du signal"
 
@@ -645,4 +673,3 @@ msgstr "Générer"
 
 msgid "Signal generated"
 msgstr "Signal généré"
-
