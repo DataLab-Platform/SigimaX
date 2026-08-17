@@ -1,5 +1,7 @@
 # SigimaX - Reusable GUI Framework for Scientific Applications
 
+![SigimaX](https://raw.githubusercontent.com/DataLab-Platform/SigimaX/main/doc/images/SigimaX-Banner.svg)
+
 [![license](https://img.shields.io/pypi/l/sigimax.svg)](./LICENSE)
 [![PyPI pyversions](https://img.shields.io/pypi/pyversions/sigimax.svg)](https://pypi.org/project/sigimax/)
 
