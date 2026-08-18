@@ -15,8 +15,8 @@ msgstr ""
 msgid "Version 0.1"
 msgstr "Version 0.1"
 
-msgid "SigimaX Version 0.1.0 (2026-03-04)"
-msgstr "SigimaX Version 0.1.0 (04/03/2026)"
+msgid "SigimaX Version 0.1.0 (2026-03-04) (pre-release)##"
+msgstr "SigimaX Version 0.1.0 (04/03/2026) (pré-release)##"
 
 msgid "Initial development release — SigimaX is extracted from DataLab as a reusable GUI application framework for scientific computing Qt applications."
 msgstr "Première version de développement — SigimaX est extrait de DataLab en tant que framework d'application GUI réutilisable pour les applications Qt de calcul scientifique."
@@ -81,7 +81,6 @@ msgstr "Implémentation d'options de configuration typées inspirées du systèm
 msgid "Added generic application metadata options (`app_name`, `app_version`, `app_logo_path`, `app_desc`, `app_docurl`, `app_homeurl`, `app_supporturl`)"
 msgstr "Ajout d'options génériques de métadonnées d'application (`app_name`, `app_version`, `app_logo_path`, `app_desc`, `app_docurl`, `app_homeurl`, `app_supporturl`)"
 
-#, fuzzy
 msgid "Configuration supports JSON persistence via `save()` / `load()`"
 msgstr "La configuration supporte la persistance JSON via `save()` / `load()` et la surcharge par variables d'environnement"
 
@@ -97,7 +96,6 @@ msgstr "Portage de la navigation HDF5 générique et de l'import de jeux de donn
 msgid "Added workspace persistence hooks for derived applications; SigimaX does not impose a universal workspace format or serializer"
 msgstr "Ajout de points d'extension de persistance de l'espace de travail pour les applications dérivées ; SigimaX n'impose pas de format ou de sérialiseur d'espace de travail universel"
 
-#, fuzzy
 msgid "Added `import_dataset_from_file()` hook for derived apps to handle application-specific dataset import from HDF5"
 msgstr "Ajout du hook `import_dataset_from_file()` (sans opération) pour que les applications dérivées puissent gérer l'import de jeux de données spécifiques depuis HDF5"
 
@@ -238,4 +236,3 @@ msgstr "Changement de l'adresse e-mail du mainteneur vers `datalab@codra.fr`"
 
 msgid "Fixed `run_with_env.py` to substitute `sys.executable` when command starts with `python`, ensuring the correct venv interpreter is used"
 msgstr "Correction de `run_with_env.py` pour substituer `sys.executable` lorsque la commande commence par `python`, garantissant l'utilisation du bon interpréteur du venv"
-

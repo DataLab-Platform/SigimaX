@@ -15,5 +15,5 @@ msgstr ""
 msgid "Getting Started"
 msgstr "Premiers pas"
 
-msgid ":doc:`/auto_examples/getting_started/minimal_app`"
-msgstr ":doc:`/auto_examples/getting_started/minimal_app`"
+msgid ":ref:`sphx_glr_auto_examples_getting_started_minimal_app.py`"
+msgstr ":ref:`sphx_glr_auto_examples_getting_started_minimal_app.py`"

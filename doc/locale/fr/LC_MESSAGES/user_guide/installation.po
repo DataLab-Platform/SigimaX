@@ -108,8 +108,8 @@ msgstr "Langage de programmation Python"
 msgid "guidata"
 msgstr "guidata"
 
-msgid ">= 3.13.4"
-msgstr ">= 3.13.4"
+msgid ">= 3.15.0"
+msgstr ">= 3.15.0"
 
 msgid "Automatic GUI generation for easy dataset editing and display"
 msgstr "Génération automatique d'interface graphique pour une édition et un affichage facile des jeux de données"
@@ -117,8 +117,8 @@ msgstr "Génération automatique d'interface graphique pour une édition et un a
 msgid "PlotPy"
 msgstr "PlotPy"
 
-msgid ">= 2.8.2"
-msgstr ">= 2.8.2"
+msgid ">= 2.11.0"
+msgstr ">= 2.11.0"
 
 msgid "Curve and image plotting tools for Python/Qt applications"
 msgstr "Outils de tracé de courbes et d'images pour les applications Python/Qt"
@@ -135,8 +135,8 @@ msgstr "Bibliothèque multiplateforme pour la surveillance des processus et du s
 msgid "Sigima"
 msgstr "Sigima"
 
-msgid ">= 1.1.0"
-msgstr ">= 1.1.0"
+msgid ">= 1.2.0"
+msgstr ">= 1.2.0"
 
 msgid "Scientific computing engine for 1D signals and 2D images, part of the DataLab open-source platform."
 msgstr "Moteur de calcul scientifique pour les signaux 1D et les images 2D, partie de la plateforme open-source DataLab."
@@ -245,4 +245,3 @@ msgstr "pytest-xvfb"
 
 msgid "A pytest plugin to run Xvfb (or Xephyr/Xvnc) for tests."
 msgstr "Un plugin pytest pour exécuter Xvfb (ou Xephyr/Xvnc) pour les tests."
-

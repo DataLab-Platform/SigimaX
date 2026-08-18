@@ -18,9 +18,9 @@ msgstr "Premiers pas"
 msgid "This page provides a quick introduction to building applications with SigimaX."
 msgstr "Cette page fournit une introduction rapide à la construction d'applications avec SigimaX."
 
-#, fuzzy
+
 msgid "SigimaX follows a **three-step derivation pattern**: subclass the configuration, subclass the main window, and launch with ``run()``. This pattern is proven in production — `DataLab <https://datalab-platform.com/>`_ is built entirely on it."
-msgstr "SigimaX suit un **patron de d\\u00e9rivation en trois \\u00e9tapes** : h\\u00e9riter de la configuration, h\\u00e9riter de la fen\\u00eatre principale, et lancer avec ``run()``. Ce patron est \\u00e9prouv\\u00e9 en production \\u2014 `DataLab <https://datalab-platform.com/>`_ est enti\\u00e8rement construit dessus."
+msgstr "SigimaX suit un **patron de dérivation en trois étapes** : hériter de la configuration, hériter de la fenêtre principale et lancer avec ``run()``. Ce patron est éprouvé en production — `DataLab <https://datalab-platform.com/>`_ est entièrement construit dessus."
 
 msgid "The Derivation Pattern"
 msgstr "Le patron de dérivation"
@@ -40,11 +40,9 @@ msgstr "C'est tout. Trois classes, trois étapes — et vous avez une applicatio
 msgid "Key Concepts"
 msgstr "Concepts clés"
 
-#, fuzzy
 msgid "**Configuration system**: Options are typed fields (``TypedOptionField``, ``EnumOptionField``, ``TupleOptionField``) that support ``get()``/``set()``/ ``context()`` API and JSON persistence."
 msgstr "**Système de configuration** : les options sont des champs typés (``TypedOptionField``, ``EnumOptionField``, ``TupleOptionField``) qui supportent l'API ``get()``/``set()``/ ``context()``, la persistance JSON et la synchronisation avec les variables d'environnement."
 
-#, fuzzy
 msgid "**Overridable hooks**: The main window provides hooks that derived apps can override: ``reset_all()``, ``_is_save_enabled()``, ``_update_file_menu()``, ``_update_view_menu()``, ``_about()``, ``_before_setup()``, and ``_after_setup()``. See :doc:`lifecycle` for their ordering and initialization contract."
 msgstr "**Hooks redéfinissables** : la fenêtre principale fournit des hooks que les applications dérivées peuvent redéfinir : ``reset_all()``, ``_is_save_enabled()``, ``_update_file_menu()``, ``_update_view_menu()``, ``_about()``."
 
@@ -152,4 +150,3 @@ msgstr "Lisez la :doc:`overview` pour les détails de l'architecture"
 
 msgid "Dive into the :doc:`/api/index` for complete reference documentation"
 msgstr "Plongez dans la :doc:`/api/index` pour la documentation de référence complète"
-

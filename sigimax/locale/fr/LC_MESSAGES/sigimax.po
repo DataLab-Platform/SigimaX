@@ -10,45 +10,6 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-msgid "Signal Viewer"
-msgstr "Visionneuse de signaux"
-
-msgid "&Analysis"
-msgstr "&Analyse"
-
-msgid "Run analysis"
-msgstr "Exécuter l'analyse"
-
-msgid "Export report..."
-msgstr "Exporter le rapport..."
-
-msgid "Running analysis..."
-msgstr "Analyse en cours..."
-
-msgid "Exporting report..."
-msgstr "Export du rapport en cours"
-
-msgid "Idle"
-msgstr "Inactif"
-
-msgid "Curve Viewer"
-msgstr "Visionneuse de courbes"
-
-msgid "Generate signal"
-msgstr "Générer un signal"
-
-msgid "Clear plot"
-msgstr "Effacer le graphique"
-
-msgid "Analysis"
-msgstr "Analyse"
-
-msgid "Generate"
-msgstr "Générer"
-
-msgid "Signal generated"
-msgstr "Signal généré"
-
 msgid ""
 "SigimaX is a GUI library working with Sigima and PlotPyStack.\n"
 "             It provides a App configuration system, a generic MainWindow class and a\n"
@@ -196,15 +157,6 @@ msgstr "Non"
 msgid "%d object(s) imported successfully"
 msgstr "%d objet(s) importé(s) avec succès"
 
-msgid "Home page"
-msgstr "Page d'accueil"
-
-msgid "Documentation"
-msgstr "Documentation"
-
-msgid "Support"
-msgstr "Support"
-
 msgid "Developed and maintained by DataLab open-source project team"
 msgstr "Développé et maintenu par l'équipe du projet open-source DataLab"
 
@@ -214,6 +166,9 @@ msgstr "À propos"
 msgid "Do you want to save all signals and images to an HDF5 file before quitting the application?"
 msgstr "Voulez-vous enregistrer tous les signaux et images dans un fichier HDF5 avant de quitter l'application ?"
 
+msgid "Curve Viewer"
+msgstr "Visionneuse de courbes"
+
 msgid "&Tools"
 msgstr "&Outils"
 
@@ -222,6 +177,9 @@ msgstr "Générer une onde sinusoïddale"
 
 msgid "Generate a sample sine wave and display it"
 msgstr "Générer un exemple d'onde sinusoïddale et l'afficher"
+
+msgid "Clear plot"
+msgstr "Effacer le graphique"
 
 msgid "Remove all curves from the plot"
 msgstr "Supprimer toutes les courbes du graphique"
@@ -293,11 +251,11 @@ msgstr "Une action personnalisée"
 msgid "Cancel"
 msgstr "Annuler"
 
-msgid "Error:"
-msgstr "Erreur:"
-
 msgid "Context"
 msgstr "Contexte"
+
+msgid "Error:"
+msgstr "Erreur:"
 
 #, python-format
 msgid "The file %s could not be read:"
@@ -393,7 +351,7 @@ msgid "CDF fit"
 msgstr "Ajustement CDF"
 
 msgid "Scale factor"
-msgstr ""
+msgstr "Facteur d'échelle"
 
 msgid "Width factor"
 msgstr "Facteur de largeur"
@@ -428,11 +386,9 @@ msgstr "Ajustement bi-demi-gaussien"
 msgid "Center position"
 msgstr "Position du centre"
 
-#, fuzzy
 msgid "Left rate"
 msgstr "Amplitude gauche"
 
-#, fuzzy
 msgid "Right rate"
 msgstr "Amplitude droite"
 
@@ -460,17 +416,17 @@ msgstr "Développer la sélection"
 msgid "HDF5 Browser"
 msgstr "Explorateur HDF5"
 
-msgid "Size"
-msgstr "Taille"
-
-msgid "Type"
-msgstr "Type"
-
 msgid "Value"
 msgstr "Valeur"
 
 msgid "Name"
 msgstr "Nom"
+
+msgid "Size"
+msgstr "Taille"
+
+msgid "Type"
+msgstr "Type"
 
 msgid "Unsupported data"
 msgstr "Données non prises en charge"
@@ -564,9 +520,6 @@ msgstr "Distance minimale :"
 
 msgid "Signal peak detection"
 msgstr "Détection de pics du signal"
-
-msgid "Peaks:"
-msgstr "Pics :"
 
 msgid "Internal console"
 msgstr "Console interne"
@@ -669,3 +622,36 @@ msgstr "Veuillez sélectionner le fichier à importer."
 
 msgid "Example Wizard"
 msgstr "Assistant d'exemple"
+
+msgid "Signal Viewer"
+msgstr "Visionneuse de signaux"
+
+msgid "&Analysis"
+msgstr "&Analyse"
+
+msgid "Run analysis"
+msgstr "Exécuter l'analyse"
+
+msgid "Export report..."
+msgstr "Exporter le rapport..."
+
+msgid "Running analysis..."
+msgstr "Analyse en cours..."
+
+msgid "Exporting report..."
+msgstr "Export du rapport en cours"
+
+msgid "Idle"
+msgstr "Inactif"
+
+msgid "Generate signal"
+msgstr "Générer un signal"
+
+msgid "Analysis"
+msgstr "Analyse"
+
+msgid "Generate"
+msgstr "Générer"
+
+msgid "Signal generated"
+msgstr "Signal généré"
