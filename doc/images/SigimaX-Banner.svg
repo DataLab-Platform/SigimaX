@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- SigimaX banner: two overlapping dockable windows (image view behind, signal view in front) -->
+<svg version="1.1" width="660" height="220" viewBox="0 0 660 220"
+  xmlns="http://www.w3.org/2000/svg">
+  <!-- back window: image view -->
+  <rect x="30" y="34" width="140" height="112" rx="10" ry="10" fill="#ffffff" stroke="#264e97" stroke-width="4" opacity="0.9"/>
+  <path d="M 30 44 A 10 10 0 0 1 40 34 H 160 A 10 10 0 0 1 170 44 V 52 H 30 Z" fill="#264e97" opacity="0.55"/>
+  <defs>
+    <clipPath id="photoClipC">
+      <rect x="30" y="52" width="140" height="94" rx="0" ry="0"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#photoClipC)">
+    <circle cx="140" cy="72" r="8" fill="#264e97" opacity="0.55"/>
+    <path d="M 30 146 L 62 104 L 84 124 L 104 100 L 170 146 Z" fill="#264e97" opacity="0.55"/>
+  </g>
+  <!-- front window: signal view -->
+  <rect x="72" y="82" width="158" height="112" rx="10" ry="10" fill="#ffffff" stroke="#264e97" stroke-width="6"/>
+  <path d="M 72 92 A 10 10 0 0 1 82 82 H 220 A 10 10 0 0 1 230 92 V 100 H 72 Z" fill="#264e97"/>
+  <circle cx="88" cy="91" r="3.5" fill="#ffffff"/>
+  <circle cx="99" cy="91" r="3.5" fill="#ffffff"/>
+  <path d="M 84 156 C 98 122, 114 190, 128 156 C 142 122, 158 190, 172 156 C 182 134, 196 168, 214 140" fill="none" stroke="#264e97" stroke-width="4" stroke-linecap="round"/>
+  <!-- wordmark -->
+  <text x="252" y="150" font-family="Century Gothic, sans-serif" font-size="78" font-weight="normal" fill="#264e97" stroke="#ffffff" stroke-width="1">SigimaX</text>
+</svg>

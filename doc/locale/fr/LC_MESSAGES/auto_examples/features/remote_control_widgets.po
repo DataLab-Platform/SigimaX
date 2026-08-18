@@ -1,0 +1,73 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2025, DataLab Platform Developers
+# This file is distributed under the same license as the SigimaX package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Language: fr\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid ":ref:`Go to the end <sphx_glr_download_auto_examples_features_remote_control_widgets.py>` to download the full example code."
+msgstr ":ref:`Allez à la fin <sphx_glr_download_auto_examples_features_remote_control_widgets.py>` pour télécharger le code complet de l'exemple."
+
+msgid "Remote Control Widgets"
+msgstr "Widgets de contrôle à distance"
+
+msgid "This example demonstrates how to use :class:`~sigimax.widgets.connection.ConnectionDialog` and :class:`~sigimax.widgets.objectdialog.GetObjectDialog` to build a minimal remote client for a DataLab-derived application server."
+msgstr "Cet exemple montre comment utiliser :class:`~sigimax.widgets.connection.ConnectionDialog` et :class:`~sigimax.widgets.objectdialog.GetObjectDialog` pour créer un client distant minimal pour un serveur d'application dérivé de DataLab."
+
+msgid "These widgets are generic: they only depend on :class:`sigima.client.SimpleRemoteProxy` (or any proxy exposing the same ``connect``/``get_current_panel``/``get_group_titles_with_object_info`` API), never on a specific application's branding or object model."
+msgstr "Ces widgets sont génériques : ils ne dépendent que de :class:`sigima.client.SimpleRemoteProxy` (ou de tout proxy exposant la même API ``connect``/``get_current_panel``/``get_group_titles_with_object_info``), jamais de l'image de marque ou du modèle d'objet d'une application spécifique."
+
+msgid "To keep this example runnable without a real DataLab-derived application, :class:`sigima.client.stub.DataLabStubServer` is used to simulate one in-process."
+msgstr "Pour que cet exemple soit exécutable sans une véritable application dérivée de DataLab, :class:`sigima.client.stub.DataLabStubServer` est utilisé pour en simuler une en processus."
+
+msgid "Importing necessary modules"
+msgstr "Importation des modules nécessaires"
+
+msgid "Starting a (stub) server and connecting to it"
+msgstr "Démarrage d'un serveur (stub) et connexion à celui-ci"
+
+msgid "In a real client application, ``server`` would not exist: a real DataLab-derived application would already be running, and ``proxy.connect`` would be passed to :class:`~sigimax.widgets.connection.ConnectionDialog` for the user to see the connection progress."
+msgstr "Dans une véritable application cliente, ``server`` n'existerait pas : une véritable application dérivée de DataLab serait déjà en cours d'exécution, et ``proxy.connect`` serait passé à :class:`~sigimax.widgets.connection.ConnectionDialog` pour que l'utilisateur voie la progression de la connexion."
+
+msgid "Populating the server with a couple of signals"
+msgstr "Peuplement du serveur avec quelques signaux"
+
+msgid "``add_signal`` stores the signal on the server but does not attach it to any group by itself: the stub server's default group is wired here directly, through the server instance, to get a non-empty tree below. A real DataLab-derived server groups newly added objects automatically."
+msgstr "``add_signal`` stocke le signal sur le serveur mais ne l'attache pas à un groupe par lui-même : le groupe par défaut du serveur stub est connecté ici directement, via l'instance du serveur, pour obtenir un arbre non vide ci-dessous. Un véritable serveur dérivé de DataLab groupe automatiquement les objets nouvellement ajoutés."
+
+msgid "Picking an object from the server"
+msgstr "Sélection d'un objet sur le serveur"
+
+msgid ":class:`~sigimax.widgets.objectdialog.GetObjectDialog` lists the groups and objects available on the server. Restricting ``panel`` to ``\"signal\"`` hides the panel selector combo box."
+msgstr ":class:`~sigimax.widgets.objectdialog.GetObjectDialog` liste les groupes et objets disponibles sur le serveur. Restreindre ``panel`` à ``\"signal\"`` masque la combo box du sélecteur de panneau."
+
+msgid "Summary"
+msgstr "Résumé"
+
+msgid ":class:`~sigimax.widgets.connection.ConnectionDialog` wraps a blocking ``connect`` callback in a background thread, so the Qt event loop keeps running while the connection is attempted."
+msgstr ":class:`~sigimax.widgets.connection.ConnectionDialog` encapsule un callback bloquant ``connect`` dans un thread en arrière-plan, de sorte que la boucle d'événements Qt continue de fonctionner pendant que la connexion est tentée."
+
+msgid ":class:`~sigimax.widgets.objectdialog.GetObjectDialog` displays the groups/objects reported by :meth:`sigima.client.base.SimpleBaseProxy.get_group_titles_with_object_info`."
+msgstr ":class:`~sigimax.widgets.objectdialog.GetObjectDialog` affiche les groupes/objets rapportés par :meth:`sigima.client.base.SimpleBaseProxy.get_group_titles_with_object_info`."
+
+msgid ":class:`~sigima.client.stub.DataLabStubServer` lets both widgets be exercised headlessly, without a real DataLab-derived application."
+msgstr ":class:`~sigima.client.stub.DataLabStubServer` permet aux deux widgets d'être testés sans interface graphique, sans une véritable application dérivée de DataLab."
+
+msgid ":download:`Download Jupyter notebook: remote_control_widgets.ipynb <remote_control_widgets.ipynb>`"
+msgstr ":download:`Télécharger le notebook Jupyter : remote_control_widgets.ipynb <remote_control_widgets.ipynb>`"
+
+msgid ":download:`Download Python source code: remote_control_widgets.py <remote_control_widgets.py>`"
+msgstr ":download:`Télécharger le code source Python : remote_control_widgets.py <remote_control_widgets.py>`"
+
+msgid ":download:`Download zipped: remote_control_widgets.zip <remote_control_widgets.zip>`"
+msgstr ":download:`Télécharger l'archive zip : remote_control_widgets.zip <remote_control_widgets.zip>`"
+
+msgid "`Gallery generated by Sphinx-Gallery <https://sphinx-gallery.github.io>`_"
+msgstr "`Galerie générée par Sphinx-Gallery <https://sphinx-gallery.github.io>`_"

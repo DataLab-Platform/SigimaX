@@ -1,0 +1,82 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2025, DataLab Platform Developers
+# This file is distributed under the same license as the SigimaX package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Language: fr\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid ":ref:`Go to the end <sphx_glr_download_auto_examples_features_h5_workspace.py>` to download the full example code."
+msgstr ":ref:`Aller à la fin <sphx_glr_download_auto_examples_features_h5_workspace.py>` pour télécharger le code complet de l'exemple."
+
+msgid "HDF5 Workspace Save/Load"
+msgstr "Sauvegarde et chargement de l'espace de travail HDF5"
+
+msgid "SigimaX provides the plumbing for an HDF5-backed workspace (menu actions, file dialogs, browser) but does **not** know what a derived application's data model looks like. This example shows how to plug your own model in by overriding three extension points on :class:`~sigimax.mainwindow.SGMXMainWindow`:"
+msgstr "SigimaX fournit la plomberie d'un espace de travail basé sur HDF5 (actions de menu, boîtes de dialogue de fichiers, navigateur) mais ne connaît **pas** à quoi ressemble le modèle de données d'une application dérivée. Cet exemple montre comment y brancher votre propre modèle en surchargeant trois points d'extension de :class:`~sigimax.mainwindow.SGMXMainWindow` :"
+
+msgid ":meth:`~sigimax.mainwindow.SGMXMainWindow.save_h5_workspace` — serialize your objects when the user chooses *File > Save*"
+msgstr ":meth:`~sigimax.mainwindow.SGMXMainWindow.save_h5_workspace` — sérialise vos objets lorsque l'utilisateur choisit *Fichier > Enregistrer*"
+
+msgid "``load_h5_workspace`` (a convention, not a base-class method) — the counterpart used to reload a workspace saved by your own application"
+msgstr "``load_h5_workspace`` (une convention, pas une méthode de la classe de base) — le pendant utilisé pour recharger un espace de travail enregistré par votre propre application"
+
+msgid ":meth:`~sigimax.mainwindow.SGMXMainWindow.import_dataset_from_file` — import data coming from a *generic* (non-SigimaX) HDF5 file, as offered by *File > Browse HDF5 file*"
+msgstr ":meth:`~sigimax.mainwindow.SGMXMainWindow.import_dataset_from_file` — importe des données provenant d'un fichier HDF5 *générique* (non-SigimaX), comme proposé par *Fichier > Parcourir un fichier HDF5*"
+
+msgid "See :doc:`../../user_guide/hdf5_workspace` for the full reference and ``sigimax/tests/hdf5/test_h5_derived_app.py`` for the complete test this example is derived from."
+msgstr "Voir :doc:`../../user_guide/hdf5_workspace` pour la référence complète et ``sigimax/tests/hdf5/test_h5_derived_app.py`` pour le test complet dont cet exemple est issu."
+
+msgid "Importing necessary modules"
+msgstr "Import des modules nécessaires"
+
+msgid "Step 1: A minimal data model"
+msgstr "Étape 1 : Un modèle de données minimal"
+
+msgid "Any object store works, as long as it can serialize/deserialize itself using :class:`guidata.io.HDF5Writer`/:class:`guidata.io.HDF5Reader`. Here we use a plain list of :class:`~sigima.objects.SignalObj`/ :class:`~sigima.objects.ImageObj`, grouped under two HDF5 groups."
+msgstr "N'importe quel magasin d'objets convient, tant qu'il peut se sérialiser/désérialiser lui-même avec :class:`guidata.io.HDF5Writer`/:class:`guidata.io.HDF5Reader`. Ici, nous utilisons une simple liste de :class:`~sigima.objects.SignalObj`/ :class:`~sigima.objects.ImageObj`, regroupée sous deux groupes HDF5."
+
+msgid "Step 2: Override the workspace save/load hooks"
+msgstr "Étape 2 : Surcharger les points d'entrée de sauvegarde/chargement de l'espace de travail"
+
+msgid "``save_h5_workspace`` is the only method the base class calls (from *File > Save*, wired to :meth:`~sigimax.mainwindow.SGMXMainWindow.save_to_h5_file`). ``load_h5_workspace`` is a symmetrical helper of our own — SigimaX does not impose a name or signature for \"load one of *our own* workspace files\" since it depends entirely on the data model."
+msgstr "``save_h5_workspace`` est la seule méthode que la classe de base appelle (depuis *Fichier > Enregistrer*, reliée à :meth:`~sigimax.mainwindow.SGMXMainWindow.save_to_h5_file`). ``load_h5_workspace`` est un helper symétrique qui nous est propre — SigimaX n'impose ni nom ni signature pour « charger un de *nos propres* fichiers d'espace de travail », car cela dépend entièrement du modèle de données."
+
+msgid "Step 3: Round-trip"
+msgstr "Étape 3 : Aller-retour"
+
+msgid "``save_to_h5_file(path)``/``save_h5_workspace(path)`` and ``load_h5_workspace(path)`` accept an explicit path, so they never open a file dialog — this is what makes them usable both interactively (*File* menu) and headlessly (macros, tests, this example)."
+msgstr "``save_to_h5_file(path)``/``save_h5_workspace(path)`` et ``load_h5_workspace(path)`` acceptent un chemin explicite, si bien qu'elles n'ouvrent jamais de boîte de dialogue — c'est ce qui les rend utilisables à la fois interactivement (menu *Fichier*) et sans interface (macros, tests, cet exemple)."
+
+msgid "Summary"
+msgstr "Résumé"
+
+msgid ":meth:`~sigimax.mainwindow.SGMXMainWindow.save_h5_workspace` is the single contract point SigimaX relies on for *File > Save* — the base implementation is a documented no-op, override it in your window class"
+msgstr ":meth:`~sigimax.mainwindow.SGMXMainWindow.save_h5_workspace` est l'unique point de contrat sur lequel SigimaX s'appuie pour *Fichier > Enregistrer* — l'implémentation de base est un no-op documenté, à surcharger dans votre classe de fenêtre"
+
+msgid "Add a symmetrical ``load_*`` method for reopening your own files; there is no base-class hook to override because the data model is entirely downstream"
+msgstr "Ajoutez une méthode symétrique ``load_*`` pour rouvrir vos propres fichiers ; il n'existe pas de point d'extension de la classe de base à surcharger car le modèle de données est entièrement en aval"
+
+msgid "Override :meth:`~sigimax.mainwindow.SGMXMainWindow.import_dataset_from_file` to support importing *generic* (non-SigimaX) HDF5 files through *File > Browse HDF5 file*"
+msgstr "Surchargez :meth:`~sigimax.mainwindow.SGMXMainWindow.import_dataset_from_file` pour prendre en charge l'import de fichiers HDF5 *génériques* (non-SigimaX) via *Fichier > Parcourir un fichier HDF5*"
+
+msgid "To add a new node type recognized by the generic HDF5 browser itself (rather than importing raw datasets), subclass :class:`~sigimax.h5.common.BaseNode` and register it with ``sigimax.h5.common.NODE_FACTORY.register(MyNode)``"
+msgstr "Pour ajouter un nouveau type de nœud reconnu par le navigateur HDF5 générique lui-même (plutôt que d'importer des jeux de données bruts), sous-classez :class:`~sigimax.h5.common.BaseNode` et enregistrez-le avec ``sigimax.h5.common.NODE_FACTORY.register(MyNode)``"
+
+msgid ":download:`Download Jupyter notebook: h5_workspace.ipynb <h5_workspace.ipynb>`"
+msgstr ":download:`Télécharger le notebook Jupyter : h5_workspace.ipynb <h5_workspace.ipynb>`"
+
+msgid ":download:`Download Python source code: h5_workspace.py <h5_workspace.py>`"
+msgstr ":download:`Télécharger le code source Python : h5_workspace.py <h5_workspace.py>`"
+
+msgid ":download:`Download zipped: h5_workspace.zip <h5_workspace.zip>`"
+msgstr ":download:`Télécharger l'archive : h5_workspace.zip <h5_workspace.zip>`"
+
+msgid "`Gallery generated by Sphinx-Gallery <https://sphinx-gallery.github.io>`_"
+msgstr "`Galerie générée par Sphinx-Gallery <https://sphinx-gallery.github.io>`_"

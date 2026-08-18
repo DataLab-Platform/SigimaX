@@ -1,0 +1,151 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2025, DataLab Platform Developers
+# This file is distributed under the same license as the SigimaX package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Language: fr\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Version 1.0.0"
+msgstr "Version 1.0.0"
+
+msgid "SigimaX Version 1.0.0"
+msgstr "SigimaX Version 1.0.0"
+
+msgid "Highlights"
+msgstr "Faits Marquants"
+
+msgid "This release turns `SGMXMainWindow` and the SigimaX configuration system into a real extension surface: derived applications (DataLab and others) can now compose menus, docks, status bar widgets, HDF5 import and the whole application lifecycle by overriding small, well-documented hooks instead of duplicating entire methods. It also brings a simplified, more robust configuration option system, new remote-control widgets for connecting to a running DataLab-Kernel instance, and a batch of fixes ported from DataLab's `develop` branch."
+msgstr "Cette version transforme `SGMXMainWindow` et le système de configuration SigimaX en une véritable surface d'extension : les applications dérivées (DataLab et autres) peuvent désormais composer des menus, des docks, des widgets de barre d'état, l'importation HDF5 et l'ensemble du cycle de vie de l'application en remplaçant de petits hooks bien documentés au lieu de dupliquer des méthodes entières. Elle apporte également un système d'options de configuration simplifié et plus robuste, de nouveaux widgets de télécommande pour se connecter à une instance DataLab-Kernel en cours d'exécution, ainsi qu'un lot de correctifs portés depuis la branche `develop` de DataLab."
+
+msgid "Application framework"
+msgstr "Framework Applicatif"
+
+msgid "Made the main window setup sequence an extension point: `setup()` now calls optional `_setup_panels()`, `_setup_docks()` and `_post_setup()` hooks so that derived applications add their panels, docks and final wiring without reimplementing the whole startup sequence"
+msgstr "Rendu la séquence de configuration de la fenêtre principale un point d'extension : `setup()` appelle désormais les hooks optionnels `_setup_panels()`, `_setup_docks()` et `_post_setup()` afin que les applications dérivées ajoutent leurs panneaux, docks et câblage final sans réimplémenter toute la séquence de démarrage"
+
+msgid "Turned the dock registry into an explicit extension point: `_add_dockwidget()` now owns registration in `self.docks`, assigns a stable Qt object name and handles tabification through new `name`, `key` and `tabify_with` arguments, so derived applications no longer register docks by hand"
+msgstr "Transformé le registre des docks en un point d'extension explicite : `_add_dockwidget()` gère désormais l'enregistrement dans `self.docks`, attribue un nom d'objet Qt stable et gère la tabulation via de nouveaux arguments `name`, `key` et `tabify_with`, de sorte que les applications dérivées n'enregistrent plus les docks manuellement"
+
+msgid "Let derived applications compose the menu bar through `_get_menubar_layout()` and extend the Help menu through `_get_help_doc_actions()`, `_get_help_support_actions()` and `_get_help_about_actions()`, instead of reimplementing `_add_menus()` entirely"
+msgstr "Permettre aux applications dérivées de composer la barre de menus via `_get_menubar_layout()` et d'étendre le menu Aide via `_get_help_doc_actions()`, `_get_help_support_actions()` et `_get_help_about_actions()`, au lieu de réimplémenter entièrement `_add_menus()`"
+
+msgid "Let derived applications contribute status bar widgets via `_get_extra_status_widgets()`, inserted between the console and memory status, instead of rebuilding the whole status bar"
+msgstr "Permettre aux applications dérivées de contribuer des widgets à la barre d'état via `_get_extra_status_widgets()`, insérés entre la console et l'état de la mémoire, au lieu de reconstruire toute la barre d'état"
+
+msgid "Exposed a broad set of protected lifecycle hooks (status bar, actions, central widget, menus, console, geometry, window state, toolbar, dock, memory and color-mode steps, plus pre/post setup, post-show and shutdown hooks), all documented and covered by dedicated lifecycle-ordering tests"
+msgstr "Exposé un large ensemble de hooks de cycle de vie protégés (barre d'état, actions, widget central, menus, console, géométrie, état de la fenêtre, barre d'outils, dock, mémoire et étapes du mode couleur, plus les hooks pré/post configuration, post-affichage et arrêt), tous documentés et couverts par des tests dédiés à l'ordre du cycle de vie"
+
+msgid "Fixed the derived main window lifecycle: singleton instances are now created from the requested derived window class, with protected setup running before virtual startup hooks"
+msgstr "Correction du cycle de vie de la fenêtre principale dérivée : les instances singleton sont désormais créées à partir de la classe de fenêtre dérivée demandée, avec la configuration protégée s'exécutant avant les hooks de démarrage virtuels"
+
+msgid "Deferred command-line argument parsing so that the module-level SigimaX execution environment no longer intercepts application-specific options (such as DataLab's `--version`) before the derived environment is initialized"
+msgstr "Différé l'analyse des arguments de la ligne de commande afin que l'environnement d'exécution SigimaX au niveau du module n'intercepte plus les options spécifiques à l'application (telles que `--version` de DataLab) avant l'initialisation de l'environnement dérivé"
+
+msgid "Improved the application window factory to preserve the concrete derived window type, and made splash screen resource loading more robust (direct paths, guidata image path resolution, safe fallback when the configured resource is missing)"
+msgstr "Amélioration de l'usine de fenêtres d'application pour préserver le type concret de la fenêtre dérivée, et rendu le chargement des ressources de l'écran de démarrage plus robuste (chemins directs, résolution du chemin de l'image guidata, repli sûr lorsque la ressource configurée est manquante)"
+
+msgid "Dropped DataLab code that only duplicated unchanged SigimaX main window behavior (tab icon size handling)"
+msgstr "Suppression du code DataLab qui ne faisait que dupliquer le comportement inchangé de la fenêtre principale SigimaX (gestion de la taille des icônes des onglets)"
+
+msgid "Configuration system"
+msgstr "Système de configuration"
+
+msgid "Simplified application configuration state management: removed unused environment-variable synchronization from application options and simplified get/set/context/serialization/reset operations"
+msgstr "Simplification de la gestion de l'état de configuration de l'application : suppression de la synchronisation des variables d'environnement inutilisée à partir des options de l'application et simplification des opérations get/set/context/serialization/reset"
+
+msgid "Added an `option_changed` hook so derived applications can persist option changes without polling the configuration"
+msgstr "Ajout d'un hook `option_changed` afin que les applications dérivées puissent persister les modifications des options sans interroger la configuration"
+
+msgid "Added a storage serialization protocol (`to_storage`/`from_storage`) to option fields, fixing `to_dict`/`from_dict` and `reset_to_defaults` for fields whose getter/setter transform the stored value"
+msgstr "Ajout d'un protocole de sérialisation de stockage (`to_storage`/`from_storage`) aux champs d'option, correction de `to_dict`/`from_dict` et `reset_to_defaults` pour les champs dont le getter/setter transforme la valeur stockée"
+
+msgid "Let option fields declare their own storage metadata (`storage_key`, `runtime`), removing the need for key-mapping tables in consuming applications"
+msgstr "Permettre aux champs d'option de déclarer leurs propres métadonnées de stockage (`storage_key`, `runtime`), supprimant ainsi le besoin de tables de mappage de clés dans les applications consommatrices"
+
+msgid "Moved generic option field types (`ConfigPathOptionField`, `WorkingDirOptionField`, `FormatStringOptionField`, `DataSetOptionField`, `FontOptionField`) from DataLab into `sigimax.config`, and removed the legacy `Section`/`Option` class hierarchy, which had no remaining consumer"
+msgstr "Déplacement des types de champs d'option génériques (`ConfigPathOptionField`, `WorkingDirOptionField`, `FormatStringOptionField`, `DataSetOptionField`, `FontOptionField`) de DataLab vers `sigimax.config`, et suppression de l'ancienne hiérarchie de classes `Section`/`Option`, qui n'avait plus de consommateur"
+
+msgid "Added support for optional defaults on option fields and for standalone option field containers"
+msgstr "Ajout de la prise en charge des valeurs par défaut optionnelles sur les champs d'option et des conteneurs de champs d'option autonomes"
+
+msgid "Fixed option state not being preserved when restored from a temporary context"
+msgstr "Correction de l'état des options qui n'était pas préservé lors de la restauration à partir d'un contexte temporaire"
+
+msgid "Made PlotPy default colors (foreground/background) color-mode aware by reading them at call time, so re-applying defaults after a color mode change now uses the current theme"
+msgstr "Rendre les couleurs par défaut de PlotPy (avant-plan/arrière-plan) conscientes du mode couleur en les lisant au moment de l'appel, de sorte que la réapplication des valeurs par défaut après un changement de mode couleur utilise désormais le thème actuel"
+
+msgid "HDF5 support"
+msgstr "Prise en charge de HDF5"
+
+msgid "Made the HDF5 import contract explicit: `import_h5_file()` is renamed to `import_all_from_h5_file()` (it imports every supported dataset without a dialog), and a single `_handle_imported_objects()` convergence point now receives the imported objects together with the `reset_all` flag, so a derived application is never asked whether to clear the workspace only to have the answer ignored"
+msgstr "Rendre le contrat d'importation HDF5 explicite : `import_h5_file()` est renommé en `import_all_from_h5_file()` (il importe tous les ensembles de données pris en charge sans boîte de dialogue), et un point de convergence unique `_handle_imported_objects()` reçoit désormais les objets importés avec le drapeau `reset_all`, de sorte qu'une application dérivée n'est jamais invitée à vider l'espace de travail pour que la réponse soit ignorée"
+
+msgid "Added `_is_workspace_empty()` and `_get_clear_workspace_message()` hooks so derived applications can control the \"clear workspace\" question and its wording without reimplementing the import orchestrator"
+msgstr "Ajout des hooks `_is_workspace_empty()` et `_get_clear_workspace_message()` afin que les applications dérivées puissent contrôler la question \"vider l'espace de travail\" et sa formulation sans réimplémenter l'orchestrateur d'importation"
+
+msgid "Fixed safe HDF5 workspace contracts: derived applications are now required to implement workspace persistence instead of silently acknowledging a save that wrote no data"
+msgstr "Correction des contrats de l'espace de travail HDF5 sécurisé : les applications dérivées doivent désormais implémenter la persistance de l'espace de travail au lieu de reconnaître silencieusement une sauvegarde qui n'a écrit aucune donnée"
+
+msgid "Ported the latest HDF5 and widget fixes from DataLab's `develop` branch, including a fix for `DIMENSION_LIST`/`REFERENCE` attributes breaking picklability in `h5/common.py`"
+msgstr "Portage des dernières corrections HDF5 et des widgets depuis la branche `develop` de DataLab, y compris une correction pour les attributs `DIMENSION_LIST`/`REFERENCE` rompant la picklabilité dans `h5/common.py`"
+
+msgid "Widgets"
+msgstr "Widgets"
+
+msgid "Added `DataLabSimpleClient` widgets: a connection dialog and an object browsing dialog for remote-controlling a running DataLab-Kernel instance over HTTP ([DataLab-Platform/DataLab#183](https://github.com/DataLab-Platform/DataLab/issues/183))"
+msgstr "Ajout des widgets `DataLabSimpleClient` : une boîte de dialogue de connexion et une boîte de dialogue de navigation d'objets pour le contrôle à distance d'une instance DataLab-Kernel en cours d'exécution via HTTP ([DataLab-Platform/DataLab#183](https://github.com/DataLab-Platform/DataLab/issues/183))"
+
+msgid "Aligned the plot dock's curve statistics with PlotPy: the hand-written, NaN-robust statistics label functions are replaced by PlotPy's own `CurveStatsTool.LABELFUNCS`, and the y-range cursor sum is now a plain sum instead of a trapezoidal integral, matching PlotPy's behavior"
+msgstr "Alignement des statistiques de courbes du dock de tracé avec PlotPy : les fonctions d'étiquetage des statistiques écrites à la main et robustes aux NaN sont remplacées par les propres `CurveStatsTool.LABELFUNCS` de PlotPy, et la somme du curseur de l'axe y est désormais une somme simple au lieu d'une intégrale trapézoïdale, correspondant au comportement de PlotPy"
+
+msgid "Opened up the plot dock for customization: added `SigimaXPlotWidget._customize_image_panels()` to tweak the X/Y cross section panels, and `DockablePlotWidget.PLOTWIDGET_CLASS` to let a derived application select its own plot widget class"
+msgstr "Ouverture du dock de tracé à la personnalisation : ajout de `SigimaXPlotWidget._customize_image_panels()` pour ajuster les panneaux de sections transversales X/Y, et de `DockablePlotWidget.PLOTWIDGET_CLASS` pour permettre à une application dérivée de sélectionner sa propre classe de widget de tracé"
+
+msgid "Fixed signal update for plain `CurveItem`: when a signal's `xydata` has 4 rows but `dx`/`dy` are all `NaN`, `update_item` no longer calls `set_data` with error-bar arguments on a plain curve item"
+msgstr "Correction de la mise à jour du signal pour un `CurveItem` simple : lorsqu'un `xydata` d'un signal a 4 lignes mais que `dx`/`dy` sont tous `NaN`, `update_item` n'appelle plus `set_data` avec des arguments de barres d'erreur sur un élément de courbe simple"
+
+msgid "PlotPy adapters"
+msgstr "Adaptateurs PlotPy"
+
+msgid "Made the adapter factory overridable: introduced `PlotPyAdapterFactory` with `get_adapter_factory()`/`set_adapter_factory()`/`reset_adapter_factory()` (following the existing `get_conf`/`set_conf`/`reset_conf` pattern), so a derived application can substitute an adapter or register an additional object type without forking the whole dispatch chain"
+msgstr "Rendre la fabrique d'adaptateurs remplaçable : introduction de `PlotPyAdapterFactory` avec `get_adapter_factory()`/`set_adapter_factory()`/`reset_adapter_factory()` (suivant le modèle existant `get_conf`/`set_conf`/`reset_conf`), afin qu'une application dérivée puisse substituer un adaptateur ou enregistrer un type d'objet supplémentaire sans forker toute la chaîne de dispatch"
+
+msgid "Promoted DataLab's signal ROI adapters into SigimaX: ROI fills are now clipped to the signal curve instead of covering the whole canvas height, and sibling ROIs cycle through a color palette indexed by ROI title so colors stay stable across deletions"
+msgstr "Promotion des adaptateurs ROI de signal de DataLab dans SigimaX : les remplissages ROI sont désormais découpés sur la courbe de signal au lieu de couvrir toute la hauteur de la toile, et les ROI frères parcourent une palette de couleurs indexée par le titre ROI afin que les couleurs restent stables lors des suppressions"
+
+msgid "Testing"
+msgstr "Tests"
+
+msgid "Added regression tests for the HDF5 and widget fixes ported from DataLab (interactive fit metadata, `WarningErrorMessageBox` construction, config field coverage, HDF5 utility helpers, `DIMENSION_LIST`/`REFERENCE` picklability, `adapters_plotpy.coordutils` rounding)"
+msgstr "Ajout de tests de régression pour les corrections HDF5 et les widgets portés depuis DataLab (métadonnées d'ajustement interactif, construction de `WarningErrorMessageBox`, couverture des champs de configuration, helpers utilitaires HDF5, sérialisabilité de `DIMENSION_LIST`/`REFERENCE`, arrondi dans `adapters_plotpy.coordutils`)"
+
+msgid "Added tests covering lifecycle hook overridability and call order for the main window setup and shutdown sequence"
+msgstr "Ajout de tests couvrant la possibilité de remplacer les hooks du cycle de vie et l'ordre d'appel pour la séquence de configuration et de fermeture de la fenêtre principale"
+
+msgid "Added tests for splash screen resource resolution (registered resources, missing-image fallback, disabled progress messages)"
+msgstr "Ajout de tests pour la résolution des ressources de l'écran de démarrage (ressources enregistrées, image manquante de repli, messages de progression désactivés)"
+
+msgid "Preserved coverage for the legacy HDF5 dataset selector contract"
+msgstr "Préservation de la couverture pour le contrat du sélecteur de jeux de données HDF5 hérité"
+
+msgid "Cleaned up remaining Pylint and pytest warnings (adapter factory dispatch table, import-outside-toplevel/cyclic-import disables, `pytest.warns` usage)"
+msgstr "Nettoyage des avertissements Pylint et pytest restants (table de dispatch de la fabrique d'adaptateurs, désactivation des import-outside-toplevel/cyclic-import, utilisation de `pytest.warns`)"
+
+msgid "Documentation and internationalization"
+msgstr "Documentation et internationalisation"
+
+msgid "Updated and completed the French translation, including fixes to the SVG icon `.po` file format"
+msgstr "Mise à jour et finalisation de la traduction française, y compris des corrections du format de fichier `.po` des icônes SVG"
+
+msgid "Updated the documentation pipeline and refreshed all user guide pages, examples and API references to reflect the simplified configuration API, the new lifecycle hooks and the `DataLabSimpleClient` widgets"
+msgstr "Mise à jour du pipeline de documentation et actualisation de toutes les pages du guide de l'utilisateur, des exemples et des références API pour refléter l'API de configuration simplifiée, les nouveaux hooks du cycle de vie et les widgets `DataLabSimpleClient`"
+
+msgid "Updated the documentation banner"
+msgstr "Mise à jour de la bannière de documentation"

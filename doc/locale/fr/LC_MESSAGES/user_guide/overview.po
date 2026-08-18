@@ -1,0 +1,251 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2025, DataLab Platform Developers
+# This file is distributed under the same license as the SigimaX package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Language: fr\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Overview"
+msgstr "Vue d'ensemble"
+
+msgid "What is SigimaX?"
+msgstr "Qu'est-ce que SigimaX ?"
+
+msgid "**SigimaX** is an open-source Python framework for building Qt-based scientific desktop applications. It provides a reusable application skeleton — main window, configuration system, embedded widgets, and HDF5 infrastructure — so that developers can focus on domain-specific features instead of boilerplate."
+msgstr "**SigimaX** est un framework Python open-source pour la construction d'applications de bureau scientifiques basées sur Qt. Il fournit un squelette d'application réutilisable — fenêtre principale, système de configuration, widgets intégrés et infrastructure HDF5 — afin que les développeurs puissent se concentrer sur les fonctionnalités spécifiques à leur domaine plutôt que sur le code répétitif."
+
+msgid "SigimaX is extracted from `DataLab <https://datalab-platform.com/>`_, a mature open-source platform for scientific signal and image processing, and powers its GUI layer."
+msgstr "SigimaX est extrait de `DataLab <https://datalab-platform.com/>`_, une plateforme open-source mature pour le traitement scientifique de signaux et d'images, et alimente sa couche d'interface graphique."
+
+msgid "Why SigimaX?"
+msgstr "Pourquoi SigimaX ?"
+
+msgid "Building a scientific desktop application from scratch typically requires:"
+msgstr "Construire une application de bureau scientifique à partir de zéro nécessite généralement :"
+
+msgid "A main window with menus, toolbars, dock widgets, and status bar"
+msgstr "Une fenêtre principale avec des menus, des barres d'outils, des widgets ancrables et une barre d'état"
+
+msgid "A configuration system with typed options, persistence, and defaults"
+msgstr "Un système de configuration avec des options typées, de la persistance et des valeurs par défaut"
+
+msgid "HDF5 file management (industry standard for scientific data)"
+msgstr "La gestion de fichiers HDF5 (standard industriel pour les données scientifiques)"
+
+msgid "An embedded Python console for scripting and debugging"
+msgstr "Une console Python intégrée pour le scripting et le débogage"
+
+msgid "Specialized dialogs for signal/image analysis (fitting, peak detection, etc.)"
+msgstr "Des dialogues spécialisés pour l'analyse de signaux/images (ajustement, détection de pics, etc.)"
+
+msgid "Production-grade features: splash screen, memory monitoring, log viewer"
+msgstr "Des fonctionnalités de qualité production : écran de démarrage, surveillance mémoire, visualiseur de journaux"
+
+msgid "SigimaX provides all of these as a **subclassable framework**, so derived applications only need to add their domain-specific logic."
+msgstr "SigimaX fournit tout cela sous forme d'un **framework dérivable par sous-classement**, de sorte que les applications dérivées n'ont qu'à ajouter leur logique spécifique au domaine."
+
+msgid "Position in the Stack"
+msgstr "Position dans la pile logicielle"
+
+msgid "SigimaX sits between the low-level libraries (PlotPy, guidata, PythonQwt) and end-user applications:"
+msgstr "SigimaX se situe entre les bibliothèques de bas niveau (PlotPy, guidata, PythonQwt) et les applications utilisateur :"
+
+msgid "Layer"
+msgstr "Couche"
+
+msgid "Project"
+msgstr "Projet"
+
+msgid "Role"
+msgstr "Rôle"
+
+msgid "End-user apps"
+msgstr "Applications utilisateur"
+
+msgid "DataLab"
+msgstr "DataLab"
+
+msgid "Signal/image processing GUI application"
+msgstr "Application d'interface graphique de traitement de signaux et d'images"
+
+msgid "GUI framework"
+msgstr "Framework d'interface graphique"
+
+msgid "**SigimaX**"
+msgstr "**SigimaX**"
+
+msgid "Reusable application skeleton"
+msgstr "Squelette d'application réutilisable"
+
+msgid "Computation"
+msgstr "Calcul"
+
+msgid "Sigima"
+msgstr "Sigima"
+
+msgid "Headless scientific computing (signals & images)"
+msgstr "Calcul scientifique sans interface graphique (signaux et images)"
+
+msgid "Plotting"
+msgstr "Tracé"
+
+msgid "PlotPy + PythonQwt"
+msgstr "PlotPy + PythonQwt"
+
+msgid "Interactive plot widgets"
+msgstr "Widgets de tracé interactifs"
+
+msgid "GUI toolkit"
+msgstr "Boîte à outils d'interface graphique"
+
+msgid "guidata"
+msgstr "guidata"
+
+msgid "Dataset/parameter framework with automatic GUI generation"
+msgstr "Framework de jeux de données/paramètres avec génération automatique d'interface graphique"
+
+msgid "Foundation"
+msgstr "Fondation"
+
+msgid "NumPy + SciPy + Qt"
+msgstr "NumPy + SciPy + Qt"
+
+msgid "Core scientific and GUI libraries"
+msgstr "Bibliothèques scientifiques et d'interface graphique fondamentales"
+
+msgid "Architecture"
+msgstr "Architecture"
+
+msgid "Core Modules"
+msgstr "Modules principaux"
+
+msgid "Module"
+msgstr "Module"
+
+msgid "Purpose"
+msgstr "Fonction"
+
+msgid ":mod:`sigimax.app`"
+msgstr ":mod:`sigimax.app`"
+
+msgid "Application launcher — ``create()`` and ``run()`` functions"
+msgstr "Lanceur d'application — fonctions ``create()`` et ``run()``"
+
+msgid ":mod:`sigimax.config`"
+msgstr ":mod:`sigimax.config`"
+
+msgid "Configuration system — ``SigimaXOptions``, ``CONF`` singleton, option fields"
+msgstr "Système de configuration — ``SigimaXOptions``, singleton ``CONF``, champs d'options"
+
+msgid ":mod:`sigimax.env`"
+msgstr ":mod:`sigimax.env`"
+
+msgid "Runtime environment — ``SGMXExecEnv``, verbosity levels, unattended mode"
+msgstr "Environnement d'exécution — ``SGMXExecEnv``, niveaux de verbosité, mode non interactif"
+
+msgid ":mod:`sigimax.mainwindow`"
+msgstr ":mod:`sigimax.mainwindow`"
+
+msgid "``SGMXMainWindow`` — generic main window with menus, console, HDF5 workspace"
+msgstr "``SGMXMainWindow`` — fenêtre principale générique avec menus, console, espace de travail HDF5"
+
+msgid "Design Philosophy"
+msgstr "Philosophie de conception"
+
+msgid "SigimaX separates the **generic application skeleton** from **domain-specific logic**. Derived applications follow a three-step pattern:"
+msgstr "SigimaX s\\u00e9pare le **squelette g\\u00e9n\\u00e9rique de l'application** de la **logique sp\\u00e9cifique au domaine**. Les applications d\\u00e9riv\\u00e9es suivent un processus en trois \\u00e9tapes :"
+
+msgid "**Subclass** :class:`~sigimax.config.SigimaXOptions` to add application-specific configuration fields"
+msgstr "**Sous-classer** :class:`~sigimax.config.SigimaXOptions` pour ajouter des champs de configuration sp\\u00e9cifiques \\u00e0 l'application"
+
+msgid "**Subclass** :class:`~sigimax.mainwindow.SGMXMainWindow` to customize menus, toolbars, and dock widgets"
+msgstr "**Sous-classer** :class:`~sigimax.mainwindow.SGMXMainWindow` pour personnaliser les menus, les barres d'outils et les widgets ancrables"
+
+msgid "**Call** :func:`~sigimax.app.run` to launch the application with splash screen support"
+msgstr "**Appeler** :func:`~sigimax.app.run` pour lancer l'application avec le support de l'\\u00e9cran de d\\u00e9marrage"
+
+msgid "This architecture is proven in production: `DataLab <https://datalab-platform.com/>`_ is built entirely on this pattern."
+msgstr "Cette architecture est \\u00e9prouv\\u00e9e en production : `DataLab <https://datalab-platform.com/>`_ est enti\\u00e8rement construit sur ce mod\\u00e8le."
+
+msgid "Configuration System"
+msgstr "Syst\\u00e8me de configuration"
+
+msgid "The configuration system uses typed option fields that support:"
+msgstr "Le syst\\u00e8me de configuration utilise des champs d'options typ\\u00e9s qui prennent en charge :"
+
+msgid "**Type safety**: ``TypedOptionField`` (int, str, bool, float), ``EnumOptionField`` (constrained choices), ``TupleOptionField`` (fixed-length tuples), ``FontOptionField`` (font validation)"
+msgstr "**S\\u00e9curit\\u00e9 de typage** : ``TypedOptionField`` (int, str, bool, float), ``EnumOptionField`` (choix contraints), ``TupleOptionField`` (tuples de longueur fixe), ``FontOptionField`` (validation de police)"
+
+msgid "**Persistence**: JSON save/load with ``save()`` and ``load()`` methods"
+msgstr "**Persistance** : sauvegarde/chargement JSON avec les m\\u00e9thodes ``save()`` et ``load()``"
+
+msgid "**Context managers**: Temporary overrides with ``option.context(value)``"
+msgstr "**Gestionnaires de contexte** : surcharges temporaires avec ``option.context(value)``"
+
+msgid "**Defaults**: Built-in reset-to-defaults mechanism"
+msgstr "**Valeurs par d\\u00e9faut** : m\\u00e9canisme int\\u00e9gr\\u00e9 de r\\u00e9initialisation aux valeurs par d\\u00e9faut"
+
+msgid "What SigimaX Provides vs What Stays in Derived Apps"
+msgstr "Ce que SigimaX fournit vs ce qui reste dans les applications dérivées"
+
+msgid "**In SigimaX**"
+msgstr "**Dans SigimaX**"
+
+msgid "**Stays in derived apps (e.g. DataLab)**"
+msgstr "**Reste dans les applications dérivées (par ex. DataLab)**"
+
+msgid "Configuration system"
+msgstr "Système de configuration"
+
+msgid "Signal/Image panels, processors"
+msgstr "Panneaux Signal/Image, processeurs"
+
+msgid "Generic main window"
+msgstr "Fenêtre principale générique"
+
+msgid "Action handler, plugin system"
+msgstr "Gestionnaire d'actions, système de plugins"
+
+msgid "Dockable plot widgets"
+msgstr "Widgets de tracé ancrables"
+
+msgid "Remote control (XML-RPC, Web API)"
+msgstr "Contrôle à distance (XML-RPC, API Web)"
+
+msgid "HDF5 I/O + browser"
+msgstr "E/S HDF5 + navigateur"
+
+msgid "Macro editor, new-object dialogs"
+msgstr "Éditeur de macros, dialogues de création d'objets"
+
+msgid "Scientific dialogs (fit, baseline, peak, cursor…)"
+msgstr "Dialogues scientifiques (ajustement, ligne de base, pic, curseur…)"
+
+msgid "Application-specific UI and processing"
+msgstr "Interface utilisateur et traitements spécifiques à l'application"
+
+msgid "Log viewer, status bar, splash screen, wizard"
+msgstr "Visualiseur de journaux, barre d'état, écran de démarrage, assistant"
+
+msgid "Object model, plot handler"
+msgstr "Modèle d'objets, gestionnaire de tracé"
+
+msgid "PlotPy adapters"
+msgstr "Adaptateurs PlotPy"
+
+msgid "Processor registration pattern"
+msgstr "Patron d'enregistrement des processeurs"
+
+msgid "Environment/exec utilities"
+msgstr "Utilitaires d'environnement/exécution"
+
+msgid "Tour/tutorial features"
+msgstr "Fonctionnalités de visite guidée/tutoriel"
+

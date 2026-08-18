@@ -1,4 +1,3 @@
 graft doc
-include CHANGELOG.md
-include CONTRIBUTING.md
+graft sigimax/locale
 include requirements.txt
