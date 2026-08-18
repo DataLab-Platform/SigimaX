@@ -10,6 +10,7 @@ on:
     branches: [ "main", "develop", "release" ]
   pull_request:
     branches: [ "main", "develop", "release" ]
+  workflow_call:
   workflow_dispatch:
     inputs:
       job_to_run:
@@ -27,7 +28,7 @@ on:
 
 jobs:
   build:
-    if: ${{ (github.event_name == 'push' || github.event_name == 'pull_request') || (github.event_name == 'workflow_dispatch' && (github.event.inputs.job_to_run == 'all' || github.event.inputs.job_to_run == 'build')) }}
+    if: ${{ (github.event_name == 'push' || github.event_name == 'pull_request' || github.event_name == 'release') || (github.event_name == 'workflow_dispatch' && (github.event.inputs.job_to_run == 'all' || github.event.inputs.job_to_run == 'build')) }}
 
     env:
       DISPLAY: ':99.0'
@@ -36,7 +37,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.13", "3.14"]
+        python-version: ["3.9", "3.14"]
 
     steps:
     - uses: actions/checkout@v4
@@ -115,7 +116,7 @@ jobs:
     - name: Set up Python 3.14
       uses: actions/setup-python@v5
       with:
-        python-version: "3.13"
+        python-version: "3.14"
 
     - name: Install dependencies (latest)
       run: |
