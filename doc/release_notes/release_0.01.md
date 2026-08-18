@@ -1,6 +1,6 @@
 # Version 0.1 #
 
-## SigimaX Version 0.1.0 (2026-03-04) ##
+## SigimaX Version 0.1.0 (2026-03-04) (pre-release)##
 
 Initial development release — SigimaX is extracted from DataLab as a reusable GUI
 application framework for scientific computing Qt applications.
