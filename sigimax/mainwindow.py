@@ -323,6 +323,9 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
 
     def _save_pos_size_and_state(self) -> None:
         """Save main window position, size and state to configuration"""
+        if execenv.unattended:
+            # Running tests must not overwrite the user's window layout
+            return
         conf = get_conf()
         is_maximized = self.windowState() == QC.Qt.WindowMaximized
         conf.window_maximized.set(is_maximized)
@@ -871,6 +874,36 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         """Return whether the derived window implements workspace persistence."""
         return type(self).save_h5_workspace is not SGMXMainWindow.save_h5_workspace
 
+    def _on_h5_save_requested(self, filename: str) -> None:
+        """Notify that a workspace save is about to be performed.
+
+        Called by :meth:`save_to_h5_file` once *filename* is resolved and before
+        the workspace is written. Override in derived applications to react to
+        the operation (e.g. record it in an application history).
+
+        Args:
+            filename: Resolved HDF5 filename
+        """
+
+    def _on_h5_open_requested(
+        self,
+        h5files: list[str],
+        import_all: bool | None,
+        reset_all: bool | None,
+    ) -> None:
+        """Notify that an HDF5 open/import is about to be performed.
+
+        Called by :meth:`open_h5_files` once all arguments are resolved and
+        before any file is read. Override in derived applications to react to
+        the operation (e.g. record it in an application history).
+
+        Args:
+            h5files: Resolved HDF5 filenames (optionally with dataset name,
+             separated by ",")
+            import_all: Import all datasets from HDF5 files
+            reset_all: Reset all application data before importing
+        """
+
     def save_to_h5_file(self, filename=None) -> None:
         """Save to a HDF5 file
 
@@ -891,6 +924,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
                 )
             if not filename:
                 return
+        self._on_h5_save_requested(filename)
         with qth.qt_try_loadsave_file(self, filename, "save"):
             self.save_h5_workspace(filename)
 
@@ -941,6 +975,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
                 )
         if not h5files:
             return
+        self._on_h5_open_requested(h5files, import_all, reset_all)
         filenames, dsetnames = [], []
         for fname_with_dset in h5files:
             if "," in fname_with_dset:
