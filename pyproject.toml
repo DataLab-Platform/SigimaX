@@ -49,8 +49,8 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project.urls]
-Homepage = "https://datalab-platform.com/"
-Documentation = "https://datalab-platform.com/"
+Homepage = "https://github.com/DataLab-Platform/SigimaX/"
+Documentation = "https://sigimax.readthedocs.io/"
 
 [project.optional-dependencies]
 qt = ["PyQt5 >= 5.15.6"]
