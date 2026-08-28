@@ -103,8 +103,8 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
 
     def __init__(self, console=None, hide_on_close=False):
         """Initialize main window"""
-        SGMXMainWindow.__instance = self
         super().__init__()
+        SGMXMainWindow.__instance = self
         conf = get_conf()
         self.setObjectName(conf.app_name.get())
         self.setWindowIcon(get_icon(conf.app_logo_path.get()))
