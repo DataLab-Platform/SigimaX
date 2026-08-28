@@ -1,0 +1,199 @@
+# ============================================================================
+# Reusable build workflow for SigimaX release artifacts.
+#
+# Decomposed into modular jobs so each artifact is uploaded independently
+# and any individual job can be re-run from the GitHub UI on failure:
+#
+#   preflight             - tag/version check, exports `version` output
+#   compile-translations  - UI + docs .mo files                  (ubuntu)
+#   build-python-dists    - sdist + wheel                        (ubuntu)
+#
+# Each job uploads its own artifact (see "Artifacts produced" below) so
+# they can be downloaded individually from the workflow run page even when
+# the workflow as a whole fails.
+#
+# Artifacts produced:
+#   translations-mo   compiled .mo files (sigimax/locale/**, doc/locale/**)
+#   python-dists      *.whl, *.tar.gz
+# ============================================================================
+name: _build (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: "Git ref to build (default: github.ref)"
+        type: string
+        required: false
+        default: ""
+      skip-tag-check:
+        description: "Skip the tag vs __version__ consistency check"
+        type: boolean
+        required: false
+        default: false
+      skip-tag-branch-check:
+        description: "Skip the 'tag is on main' check"
+        type: boolean
+        required: false
+        default: false
+      artifact-retention-days:
+        description: "Retention period for uploaded artifacts (days)"
+        type: number
+        required: false
+        default: 14
+      python-version:
+        description: "Python version used to build the release artifacts"
+        type: string
+        required: false
+        default: "3.11"
+    outputs:
+      version:
+        description: "Version that was built (without leading v)"
+        value: ${{ jobs.preflight.outputs.version }}
+
+permissions:
+  contents: read
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # 0. Preflight: derive version from tag or __version__, optional checks.
+  # ---------------------------------------------------------------------------
+  preflight:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ inputs.python-version }}
+
+      - name: Verify tag is on main branch
+        if: ${{ !inputs.skip-tag-branch-check && startsWith(github.ref, 'refs/tags/') }}
+        run: |
+          git fetch origin main --depth=200
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "::error::Tag ${GITHUB_REF_NAME} (commit $GITHUB_SHA) is not reachable from origin/main."
+            exit 1
+          fi
+          echo "Tag commit is on main branch ✔"
+
+      - name: Verify tag matches sigimax.__version__ and export version
+        id: version
+        run: |
+          if [ "${{ inputs.skip-tag-check }}" = "true" ] || [ "${GITHUB_REF_TYPE}" != "tag" ]; then
+            VERSION=$(python -c "import re; t=open('sigimax/_metadata.py').read(); print(re.search(r'__version__\s*=\s*\"([^\"]+)\"', t).group(1))")
+            echo "Using sigimax.__version__=$VERSION (no tag check)"
+          else
+            python scripts/ci_release_helpers.py check-tag "$GITHUB_REF_NAME"
+            VERSION="${GITHUB_REF_NAME#v}"
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+  # ---------------------------------------------------------------------------
+  # 1. Compile UI + documentation translations.
+  # ---------------------------------------------------------------------------
+  compile-translations:
+    needs: preflight
+    runs-on: ubuntu-latest
+    env:
+      DISPLAY: ":99.0"
+      QT_QPA_PLATFORM: offscreen
+      UNATTENDED: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ inputs.python-version }}
+          cache: pip
+
+      # `sphinx -b gettext` parses doc/conf.py which transitively imports
+      # `sigimax.*` -> `qtpy`. Without a Qt binding installed `qtpy` raises
+      # `QtBindingsNotFoundError` and the build aborts. Installing PyQt5
+      # (no graphical session required thanks to QT_QPA_PLATFORM=offscreen)
+      # is enough to let imports succeed.
+      - name: Install system dependencies (Qt offscreen)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 \
+            libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade PythonQwt guidata PlotPy Sigima
+          python -m pip install .[doc,qt]
+
+      - name: Compile docs gettext + sphinx_intl + UI .mo
+        run: |
+          python -m sphinx build doc build/gettext -b gettext -W
+          python -m sphinx_intl build -d doc/locale
+          python -m guidata.utils.translations compile --name sigimax --directory .
+
+      - name: List produced .mo files
+        run: find sigimax/locale doc/locale -name '*.mo' | sort
+
+      - name: Upload compiled translations
+        uses: actions/upload-artifact@v4
+        with:
+          name: translations-mo
+          path: |
+            sigimax/locale/**/*.mo
+            doc/locale/**/*.mo
+          retention-days: ${{ inputs.artifact-retention-days }}
+
+  # ---------------------------------------------------------------------------
+  # 2. Build sdist + wheel (both embed the compiled .mo files).
+  # ---------------------------------------------------------------------------
+  build-python-dists:
+    needs: [preflight, compile-translations]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ inputs.python-version }}
+          cache: pip
+
+      - name: Install build tool
+        run: python -m pip install --upgrade pip build
+
+      - name: Download compiled translations
+        uses: actions/download-artifact@v4
+        with:
+          name: translations-mo
+          path: .
+
+      - name: Build sdist + wheel
+        run: |
+          python -m build --sdist
+          python -m build --wheel
+          ls -lh dist/
+
+      - name: Sanity-check that wheel embeds compiled translations
+        run: |
+          WHL=$(ls dist/*.whl | head -n1)
+          echo "Inspecting $WHL"
+          python -m zipfile -l "$WHL" | grep -E 'sigimax/locale/.*\.mo' \
+            || { echo "::error::Compiled translations missing from wheel"; exit 1; }
+
+      - name: Upload Python distributions
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-dists
+          path: dist/*
+          retention-days: ${{ inputs.artifact-retention-days }}
