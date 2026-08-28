@@ -56,6 +56,7 @@ Documentation = "https://sigimax.readthedocs.io/"
 qt = ["PyQt5 >= 5.15.6"]
 dev = ["ruff", "pylint", "Coverage"]
 doc = [
+    "PyQt5 >= 5.15.6",
     "sphinx",
     "sphinx_intl",
     "sphinx-sitemap",
