@@ -24,6 +24,9 @@ msgstr "Modes d'installation"
 msgid "SigimaX is available in several forms:"
 msgstr "SigimaX est disponible sous plusieurs formes :"
 
+msgid "As a :ref:`install_conda`."
+msgstr "En tant que :ref:`install_conda`."
+
 msgid "As a Python package, which can be installed using the :ref:`install_pip`."
 msgstr "En tant que paquet Python, qui peut être installé en utilisant le :ref:`install_pip`."
 
@@ -35,6 +38,12 @@ msgstr "En tant que :ref:`install_source`, qui peut être installé depuis le d�
 
 msgid "Impatient to try the next version of SigimaX? You can also install the latest development version from the main branch of the Git repository. See :ref:`install_development` for more information."
 msgstr "Impatient d'essayer la prochaine version de SigimaX ? Vous pouvez également installer la dernière version de développement depuis la branche principale du dépôt Git. Voir :ref:`install_development` pour plus d'informations."
+
+msgid "Conda package"
+msgstr "Paquet Conda"
+
+msgid "To install ``sigimax`` package from the `conda-forge` channel (https://anaconda.org/conda-forge/sigimax), run the following command:"
+msgstr "Pour installer le paquet ``sigimax`` depuis le canal ``conda-forge`` (https://anaconda.org/conda-forge/sigimax), exécutez la commande suivante :"
 
 msgid "Package manager ``pip``"
 msgstr "Gestionnaire de paquets ``pip``"
