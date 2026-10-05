@@ -145,9 +145,13 @@ def sigimax_app_context(
         except Exception:  # pylint: disable=broad-except
             exception_occured = True
         finally:
+            # Without an event loop, a pending close timer would fire later and
+            # close unrelated top-level widgets (e.g. the next test's window).
             if (
-                execenv.unattended or execenv.screenshot
-            ) and not execenv.do_not_quit:  # pragma: no cover
+                exec_loop
+                and (execenv.unattended or execenv.screenshot)
+                and not execenv.do_not_quit
+            ):  # pragma: no cover
                 if execenv.delay > 0:
                     mode = "Screenshot" if execenv.screenshot else "Unattended"
                     message = f"{mode} mode (delay: {execenv.delay}ms)"
@@ -452,19 +456,23 @@ def block_signals(
     Returns:
         Context manager
     """
+    # Restoring previous states (instead of unblocking) keeps nested contexts and
+    # widgets blocked by the caller consistent.
+    widget_was_blocked = widget.signalsBlocked()
+    child_states: list[tuple[QW.QWidget, bool]] = []
     if enable:
         widget.blockSignals(True)
         if children:
             for child in widget.findChildren(QW.QWidget):
+                child_states.append((child, child.signalsBlocked()))
                 child.blockSignals(True)
     try:
         yield
     finally:
         if enable:
-            widget.blockSignals(False)
-            if children:
-                for child in widget.findChildren(QW.QWidget):
-                    child.blockSignals(False)
+            widget.blockSignals(widget_was_blocked)
+            for child, was_blocked in child_states:
+                child.blockSignals(was_blocked)
 
 
 # Used in SigimaX: mainwindow.py (window management)

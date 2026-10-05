@@ -9,6 +9,7 @@ Covers:
 - is_running_tests (unit)
 - save_restore_stds (unit)
 - block_signals (gui)
+- sigimax_app_context (gui)
 """
 
 from __future__ import annotations
@@ -21,6 +22,7 @@ import pytest
 from guidata.qthelpers import qt_app_context
 from qtpy import QtWidgets as QW
 
+from sigimax.env import execenv
 from sigimax.utils.qthelpers import (
     block_signals,
     get_log_contents,
@@ -28,6 +30,7 @@ from sigimax.utils.qthelpers import (
     is_running_tests,
     remove_empty_log_file,
     save_restore_stds,
+    sigimax_app_context,
 )
 
 # ======================== Unit tests =========================================
@@ -185,6 +188,43 @@ def test_block_signals_disabled():
         with block_signals(widget, enable=False):
             assert not widget.signalsBlocked()
         assert not widget.signalsBlocked()
+
+
+@pytest.mark.gui
+def test_block_signals_restores_nested_states():
+    """Nested blockers restore the states owned by their outer context."""
+    with qt_app_context():
+        parent = QW.QWidget()
+        child = QW.QWidget(parent)
+        child.blockSignals(True)
+
+        with block_signals(parent, children=True):
+            assert parent.signalsBlocked()
+            assert child.signalsBlocked()
+            with block_signals(parent, children=True):
+                assert parent.signalsBlocked()
+                assert child.signalsBlocked()
+            assert parent.signalsBlocked()
+            assert child.signalsBlocked()
+
+        assert not parent.signalsBlocked()
+        assert child.signalsBlocked()
+
+
+@pytest.mark.gui
+def test_app_context_without_event_loop_leaves_no_close_timer():
+    """A context without ``exec()`` does not close a later top-level widget."""
+    with execenv.context(unattended=True, delay=0):
+        with sigimax_app_context(exec_loop=False, enable_logs=False) as application:
+            # Flush close timers left by app contexts of previous tests
+            application.processEvents()
+
+        widget = QW.QWidget()
+        widget.show()
+        application.processEvents()
+
+        assert widget.isVisible()
+        widget.close()
 
 
 if __name__ == "__main__":
