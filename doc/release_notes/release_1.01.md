@@ -15,6 +15,11 @@
   state are preserved across PlotPy editing round trips. Application-specific
   opaque annotation entries continue to coexist with graphical annotations.
 
+### Qt helpers ###
+
+* `block_signals` now restores the previous signal-blocking state of the widget and of its children instead of unblocking them unconditionally: nested blocking contexts and widgets already blocked by the caller keep their state.
+* `sigimax_app_context` no longer schedules the unattended/screenshot close timer when the Qt event loop is not executed (`exec_loop=False`): the pending timer previously closed unrelated top-level widgets created later, such as the window of a subsequent test.
+
 ### Requirements ###
 
 * Sigima 1.3.0 or later is required for the portable annotation model and
