@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import pytest
+from qtpy import QtCore as QC
 from qtpy import QtWidgets as QW
 
 from sigimax.config import CONF as Conf
@@ -93,6 +94,24 @@ class DerivedInstanceWindow(SGMXMainWindow):
     """Derived class used to verify class-specific singleton construction."""
 
 
+class TabifiedDocksWindow(SGMXMainWindow):
+    """Window with tabified right docks next to a width-limited central widget."""
+
+    def _setup_central_widget(self) -> None:
+        super()._setup_central_widget()
+        self.tabwidget.setMaximumWidth(600)
+
+    def _setup_docks(self) -> None:
+        docks = []
+        for name in ("view", "welcome"):
+            dock = QW.QDockWidget(name, self)
+            dock.setObjectName(name)
+            dock.setWidget(QW.QLabel(name))
+            self.addDockWidget(QC.Qt.RightDockWidgetArea, dock)
+            docks.append(dock)
+        self.tabifyDockWidget(*docks)
+
+
 def test_lifecycle_hooks() -> None:
     """Protected lifecycle hooks are overridable and keep a stable call order."""
     Conf.app_name.set("LifecycleHookTest")
@@ -101,13 +120,13 @@ def test_lifecycle_hooks() -> None:
         assert window.hook_calls == [
             "before",
             "color",
+            "geometry",
             "statusbar",
             "actions",
             "central",
             "menus",
             "state",
             "after",
-            "geometry",
         ]
         window._save_pos_size_and_state()  # pylint: disable=protected-access
         assert window.hook_calls[-1] == "save"
@@ -135,6 +154,27 @@ def test_get_instance_preserves_derived_window_class() -> None:
         assert isinstance(derived_window, DerivedInstanceWindow)
         base_window.close()
         derived_window.close()
+
+
+def test_restored_dock_width() -> None:
+    """Test that a restarted window keeps the central width chosen by the user."""
+    with qth.sigimax_app_context(exec_loop=False):
+        with Conf.window_size.context((1300, 800)), Conf.window_state.context(""):
+            window = TabifiedDocksWindow(console=False)
+            window.show()
+            dock = window.findChild(QW.QDockWidget, "view")
+            window.resizeDocks([dock], [5000], QC.Qt.Horizontal)
+            QW.QApplication.processEvents()
+            width = window.tabwidget.width()
+            state = window.saveState(window.WINDOW_STATE_VERSION).toBase64()
+            window.close()
+        state = bytes(state).decode("ascii")
+        with Conf.window_size.context((1300, 800)), Conf.window_state.context(state):
+            window = TabifiedDocksWindow(console=False)
+            window.show()
+            QW.QApplication.processEvents()
+            assert window.tabwidget.width() == width
+            window.close()
 
 
 def test_failed_save_cancels_close(monkeypatch: pytest.MonkeyPatch) -> None:

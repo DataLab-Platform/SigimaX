@@ -145,10 +145,10 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
 
         self.__is_modified = False
         self.set_modified(False)
+        # Must precede setup(): restored dock sizes only hold at the final size
+        self._restore_pos_and_size()
         self.setup(console)
         self._after_setup(console)
-
-        self._restore_pos_and_size()
         execenv.log(self, "Initialization done")
 
     def _before_setup(self, console: bool) -> None:
@@ -315,6 +315,8 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         """Restore main window state from configuration"""
         state = get_conf().window_state.get()
         if state:
+            # Qt 5 refits half-restored docks unless the window was laid out first
+            self.layout().activate()
             state = base64.b64decode(state)
             self.restoreState(QC.QByteArray(state), self.WINDOW_STATE_VERSION)
             for widget in self.children():
