@@ -15,6 +15,10 @@
   state are preserved across PlotPy editing round trips. Application-specific
   opaque annotation entries continue to coexist with graphical annotations.
 
+### Main window ###
+
+* With Qt 5, the dock widget sizes saved on exit are now restored at startup: the window is sized and laid out before its state is restored, so tabified docks no longer shrink to the default window size and leave the extra width to the central widget.
+
 ### Qt helpers ###
 
 * `block_signals` now restores the previous signal-blocking state of the widget and of its children instead of unblocking them unconditionally: nested blocking contexts and widgets already blocked by the caller keep their state.
