@@ -63,13 +63,13 @@ jobs:
     outputs:
       version: ${{ steps.version.outputs.version }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.ref || github.ref }}
           fetch-depth: 0
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ inputs.python-version }}
 
@@ -106,12 +106,12 @@ jobs:
       QT_QPA_PLATFORM: offscreen
       UNATTENDED: "1"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.ref || github.ref }}
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ inputs.python-version }}
           cache: pip
@@ -144,7 +144,7 @@ jobs:
         run: find sigimax/locale doc/locale -name '*.mo' | sort
 
       - name: Upload compiled translations
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: translations-mo
           path: |
@@ -159,12 +159,12 @@ jobs:
     needs: [preflight, compile-translations]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.ref || github.ref }}
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ inputs.python-version }}
           cache: pip
@@ -173,7 +173,7 @@ jobs:
         run: python -m pip install --upgrade pip build
 
       - name: Download compiled translations
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: translations-mo
           path: .
@@ -192,7 +192,7 @@ jobs:
             || { echo "::error::Compiled translations missing from wheel"; exit 1; }
 
       - name: Upload Python distributions
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: python-dists
           path: dist/*
