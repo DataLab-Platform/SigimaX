@@ -30,8 +30,39 @@ msgstr "Les annotations PlotPy existantes restent lisibles sans modifier l'objet
 msgid "Canonical annotation identifiers, metadata, extensions, and persistent lock state are preserved across PlotPy editing round trips. Application-specific opaque annotation entries continue to coexist with graphical annotations."
 msgstr "Les identifiants d'annotation canoniques, les métadonnées, les extensions et l'état de verrouillage persistant sont conservés lors des allers-retours d'édition PlotPy. Les entrées d'annotation opaques spécifiques à l'application continuent de coexister avec les annotations graphiques."
 
+msgid "Main window"
+msgstr ""
+
+msgid "With Qt 5, the dock widget sizes saved on exit are now restored at startup: the window is sized and laid out before its state is restored, so tabified docks no longer shrink to the default window size and leave the extra width to the central widget."
+msgstr ""
+
+msgid "Qt helpers"
+msgstr ""
+
+msgid "`block_signals` now restores the previous signal-blocking state of the widget and of its children instead of unblocking them unconditionally: nested blocking contexts and widgets already blocked by the caller keep their state."
+msgstr ""
+
+msgid "`sigimax_app_context` no longer schedules the unattended/screenshot close timer when the Qt event loop is not executed (`exec_loop=False`): the pending timer previously closed unrelated top-level widgets created later, such as the window of a subsequent test."
+msgstr ""
+
+msgid "Curve fitting dialogs"
+msgstr "Fenêtres d'ajustement de courbes"
+
+msgid "Interactive fitting dialogs now show the formula of the fitted model below the fit parameters, and parameter labels show the symbols used in the formula (e.g. \"Scale factor (x₀)\"), so that the parameters stored in the fitted signal metadata can be related to the model. `guifit` accepts a new `formula` argument for this purpose. This closes [Issue #9](https://github.com/DataLab-Platform/SigimaX/issues/9)."
+msgstr "Les fenêtres d'ajustement interactif affichent désormais la formule du modèle ajusté sous les paramètres d'ajustement, et les libellés des paramètres indiquent les symboles utilisés dans la formule (par exemple « Facteur d'échelle (x₀) »), afin de pouvoir relier au modèle les paramètres enregistrés dans les métadonnées du signal ajusté. `guifit` accepte pour cela un nouvel argument `formula`. Cela corrige [l'issue #9](https://github.com/DataLab-Platform/SigimaX/issues/9)."
+
+msgid "Polynomial and linear fit coefficients are now labelled `a`, `b`, `c`... as in the model formula and in the fitted signal metadata, instead of `c2`, `c1`, `c0`."
+msgstr "Les coefficients des ajustements polynomial et linéaire sont désormais nommés `a`, `b`, `c`... comme dans la formule du modèle et dans les métadonnées du signal ajusté, au lieu de `c2`, `c1`, `c0`."
+
+msgid "The Planckian fit dialog starts from a curve matching the data peak (its initial amplitude was about 147 times too low on blackbody data in physical units), and its \"width factor\" is now labelled \"temperature factor\": for wavelengths in meters, the temperature is `h c σ / (5 k_B x₀)`."
+msgstr "La fenêtre d'ajustement planckien part d'une courbe correspondant au pic des données (son amplitude initiale était environ 147 fois trop faible sur des données de corps noir en unités physiques), et son « facteur de largeur » est désormais nommé « facteur de température » : pour des longueurs d'onde en mètres, la température vaut `h c σ / (5 k_B x₀)`."
+
+msgid "The exponential fit dialog now evaluates the same model as Sigima, and its rate slider covers short time constants whatever the X unit (e.g. 1 ms with X in seconds)."
+msgstr "La fenêtre d'ajustement exponentiel évalue désormais le même modèle que Sigima, et son curseur de taux couvre les constantes de temps courtes quelle que soit l'unité de X (par exemple 1 ms avec X en secondes)."
+
 msgid "Requirements"
 msgstr "Exigences"
 
-msgid "Sigima 1.3.0 or later is required for the portable annotation model and PlotPy conversion helpers."
-msgstr "Sigima 1.3.0 ou une version ultérieure est requise pour le modèle d'annotation portable et les helpers de conversion PlotPy."
+msgid "Sigima 1.3.0 or later is required for the portable annotation model, PlotPy conversion helpers and curve fitting model formulas."
+msgstr "Sigima 1.3.0 ou une version ultérieure est requise pour le modèle d'annotation portable, les helpers de conversion PlotPy et les formules des modèles d'ajustement de courbes."
+
