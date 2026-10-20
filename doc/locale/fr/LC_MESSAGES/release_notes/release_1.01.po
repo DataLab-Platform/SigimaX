@@ -36,6 +36,9 @@ msgstr ""
 msgid "With Qt 5, the dock widget sizes saved on exit are now restored at startup: the window is sized and laid out before its state is restored, so tabified docks no longer shrink to the default window size and leave the extra width to the central widget."
 msgstr ""
 
+msgid "Closing the main window (unless it is only hidden, see `hide_on_close`) now releases it as the instance returned by `get_instance`, which creates a new window afterwards: the closed window, with its widgets and data, is no longer kept in memory until another main window is created."
+msgstr "La fermeture de la fenêtre principale (sauf si elle est seulement masquée, voir `hide_on_close`) la libère désormais en tant qu'instance renvoyée par `get_instance`, qui crée ensuite une nouvelle fenêtre : la fenêtre fermée, avec ses widgets et ses données, n'est plus conservée en mémoire jusqu'à la création d'une autre fenêtre principale."
+
 msgid "Qt helpers"
 msgstr ""
 

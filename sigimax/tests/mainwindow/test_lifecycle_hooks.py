@@ -4,6 +4,9 @@
 
 from __future__ import annotations
 
+import gc
+import weakref
+
 import pytest
 from qtpy import QtCore as QC
 from qtpy import QtWidgets as QW
@@ -154,6 +157,23 @@ def test_get_instance_preserves_derived_window_class() -> None:
         assert isinstance(derived_window, DerivedInstanceWindow)
         base_window.close()
         derived_window.close()
+
+
+def test_get_instance_after_close() -> None:
+    """Test that a closed window is released as instance, unlike a hidden one."""
+    with qth.sigimax_app_context(exec_loop=False):
+        window = SGMXMainWindow(console=False, hide_on_close=True)
+        window.close()
+        assert SGMXMainWindow.get_instance() is window
+        window.hide_on_close = False
+        window.close()
+        window_ref = weakref.ref(window)
+        del window
+        gc.collect()
+        assert window_ref() is None, "Closed window is still alive"
+        new_window = SGMXMainWindow.get_instance(console=False)
+        assert isinstance(new_window, SGMXMainWindow)
+        new_window.close()
 
 
 def test_restored_dock_width() -> None:
