@@ -11,7 +11,13 @@ Testing fit dialogs: Gaussian, Lorentzian, Voigt, etc.
 import numpy as np
 import pytest
 from guidata.qthelpers import qt_app_context
-from sigima.objects import NormalDistribution1DParam
+from qtpy import QtCore as QC
+from qtpy import QtWidgets as QW
+from sigima.objects import (
+    NormalDistribution1DParam,
+    PlanckParam,
+    create_signal_from_param,
+)
 from sigima.tests.data import create_noisy_signal, get_test_signal
 from sigima.tools.signal import fitting, pulse
 from sigima.tools.signal.peakdetection import peak_indices
@@ -256,6 +262,105 @@ def test_fit_dialog_bounds_contain_the_optimum(
             f"{param.name}: true value {true_value} is outside the slider range "
             f"[{param.min}, {param.max}]"
         )
+
+
+FORMULA_CASES = (
+    (fdlg.linear_fit, None, fitting.LinearFitComputer.FORMULA),
+    (
+        lambda x, y: fdlg.polynomial_fit(x, y, 3),
+        None,
+        "y = a x<sup>3</sup> + b x<sup>2</sup> + c x + d",
+    ),
+    (fdlg.gaussian_fit, None, fitting.GaussianFitComputer.FORMULA),
+    (fdlg.lorentzian_fit, None, fitting.LorentzianFitComputer.FORMULA),
+    (fdlg.voigt_fit, None, fitting.VoigtFitComputer.FORMULA),
+    (fdlg.multigaussian_fit, "peaks", fitting.MultiGaussianFitComputer.FORMULA),
+    (fdlg.multilorentzian_fit, "peaks", fitting.MultiLorentzianFitComputer.FORMULA),
+    (fdlg.exponential_fit, None, fitting.ExponentialFitComputer.FORMULA),
+    (fdlg.sinusoidal_fit, None, fitting.SinusoidalFitComputer.FORMULA),
+    (fdlg.cdf_fit, None, fitting.CDFFitComputer.FORMULA),
+    (fdlg.planckian_fit, None, fitting.PlanckianFitComputer.FORMULA),
+    (fdlg.twohalfgaussian_fit, None, fitting.TwoHalfGaussianFitComputer.FORMULA),
+    (
+        fdlg.piecewiseexponential_fit,
+        None,
+        fitting.DoubleExponentialFitComputer.FORMULA,
+    ),
+)
+
+
+@pytest.mark.parametrize(("dialog", "extra", "formula"), FORMULA_CASES)
+def test_fit_dialogs_show_model_formula(monkeypatch, dialog, extra, formula):
+    """Every interactive fit dialog displays the formula of its Sigima model."""
+    captured = {}
+
+    def accept_initial_values(_x, _y, _fitfunc, fitparams, **kwargs):
+        captured.update(kwargs)
+        return [param.value for param in fitparams]
+
+    monkeypatch.setattr(fdlg, "guifit", accept_initial_values)
+    signal = get_test_signal("paracetamol.txt")
+    if extra == "peaks":
+        assert dialog(signal.x, signal.y, peak_indices(signal.y)) is not None
+    else:
+        assert dialog(signal.x, signal.y) is not None
+    assert captured["formula"] == formula
+
+
+def test_guifit_displays_formula(monkeypatch):
+    """`guifit` adds a selectable label showing the model formula."""
+    dialogs = []
+
+    def reject_dialog(dialog):
+        dialogs.append(dialog)
+        return False
+
+    monkeypatch.setattr(fdlg, "exec_dialog", reject_dialog)
+    x = np.linspace(0.0, 1.0, 50)
+    y = 2.0 * x + 1.0
+    with qt_app_context():
+        params = [fdlg.FitParam("a", 1.0, -5.0, 5.0), fdlg.FitParam("b", 0.0, -5, 5)]
+        formula = fitting.LinearFitComputer.FORMULA
+        result = fdlg.guifit(
+            x, y, lambda x, p: p[0] * x + p[1], params, formula=formula
+        )
+        assert result is None
+        label = dialogs[0].findChild(QW.QLabel, "fit_formula")
+        assert label is not None
+        assert formula in label.text()
+        assert label.textInteractionFlags() & QC.Qt.TextSelectableByMouse
+
+
+def test_exponential_dialog_reaches_short_time_constants(monkeypatch):
+    """The rate slider reaches b = -1000 for a 1 ms time constant (X in s).
+
+    The dialog model is Sigima's, so the stored parameters reproduce the curve.
+    """
+    captured = __capture_fit_params(monkeypatch)
+    x = np.linspace(0.0, 5e-3, 500)
+    y = 2.0 * np.exp(-x / 1e-3) + 0.1
+
+    y_fitted, _params, fit_params = fdlg.exponential_fit(x, y)
+
+    rate = captured[1]
+    assert rate.min <= -1000.0 <= rate.max
+    np.testing.assert_allclose(fitting.evaluate_fit(x, **fit_params), y_fitted)
+
+
+def test_planckian_dialog_starts_on_blackbody_peak(monkeypatch):
+    """On blackbody data, the initial Planckian curve matches the data peak.
+
+    The initial amplitude used to be about 147 times too low, and the initial
+    scale factor could lie outside its slider range.
+    """
+    captured = __capture_fit_params(monkeypatch)
+    signal = create_signal_from_param(PlanckParam.create(T=296.0))
+
+    y_initial, _params, _fit_params = fdlg.planckian_fit(signal.x, signal.y)
+
+    assert y_initial.max() == pytest.approx(signal.y.max(), rel=0.01)
+    for param in captured:
+        assert param.min <= param.value <= param.max, param.name
 
 
 if __name__ == "__main__":

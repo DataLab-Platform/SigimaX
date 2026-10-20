@@ -332,6 +332,10 @@ msgstr "Connexion échouée : %s"
 msgid "Contents of file"
 msgstr "Contenu du fichier"
 
+#, python-format
+msgid "Model: %s"
+msgstr "Modèle : %s"
+
 msgid "Polymomial fit"
 msgstr "Ajustement polynomial"
 
@@ -395,8 +399,8 @@ msgstr "Ajustement CDF"
 msgid "Scale factor"
 msgstr "Facteur d'échelle"
 
-msgid "Width factor"
-msgstr "Facteur de largeur"
+msgid "Temperature factor"
+msgstr "Facteur de température"
 
 msgid "Planckian fit"
 msgstr "Ajustement planckien"
