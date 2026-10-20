@@ -96,7 +96,12 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
 
     @classmethod
     def get_instance(cls, console=None, hide_on_close=False):
-        """Return the singleton instance for this window class."""
+        """Return the singleton instance for this window class.
+
+        A new window is created if there is no instance of this class, e.g. once
+        the previous one has been closed (unless it was only hidden, see
+        ``hide_on_close``).
+        """
         if not isinstance(SGMXMainWindow.__instance, cls):
             return cls(console, hide_on_close)
         return SGMXMainWindow.__instance
@@ -1372,6 +1377,10 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         else:
             if self.close_properly():
                 self.SIG_CLOSING.emit()
+                # A closed window must not be kept alive (with all its widgets and
+                # data) as the instance returned by `get_instance`
+                if SGMXMainWindow.__instance is self:
+                    SGMXMainWindow.__instance = None
                 event.accept()
             else:
                 event.ignore()
