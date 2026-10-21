@@ -6,6 +6,11 @@ SigimaX Utilities for exogenous HDF5 format support
 
 # pylint: disable=invalid-name  # Allows short reference names like x, y, ...
 
+from __future__ import annotations
+
+from typing import Any
+
+import h5py
 import numpy as np
 from guidata.utils.misc import to_string
 
@@ -93,3 +98,44 @@ def is_single_str_array(data):
 def is_supported_str_dtype(data):
     """Return True if data type is a string type supported by preview"""
     return data.dtype.name.startswith("string") or is_single_str_array(data)
+
+
+def is_string_dtype(dtype: np.dtype) -> bool:
+    """Return True if dtype stores fixed-length or variable-length strings"""
+    return dtype.kind in "SU" or h5py.check_string_dtype(dtype) is not None
+
+
+def get_size(dset: h5py.Dataset) -> int:
+    """Return the number of elements of a dataset, without reading it"""
+    return 0 if dset.shape is None else int(np.prod(dset.shape, dtype=np.int64))
+
+
+def read_bounded(dset: h5py.Dataset, max_items: int) -> tuple[Any, bool]:
+    """Read the first elements of a dataset, along each axis
+
+    Args:
+        dset: HDF5 dataset
+        max_items: maximum number of elements to read
+
+    Returns:
+        Data that was read and True if it is only part of the dataset
+    """
+    shape = dset.shape
+    if not shape or get_size(dset) <= max_items:
+        return dset[()], False
+    per_axis = max(1, int(max_items ** (1 / len(shape))))
+    return dset[tuple(slice(0, min(size, per_axis)) for size in shape)], True
+
+
+def read_first_items(dset: h5py.Dataset, count: int) -> tuple[Any, bool]:
+    """Read the first elements of a dataset, in C order, from its first row
+
+    Args:
+        dset: HDF5 dataset with at least one dimension
+        count: maximum number of elements to read
+
+    Returns:
+        Data that was read and True if it is only part of the dataset
+    """
+    selection = (0,) * (len(dset.shape) - 1) + (slice(0, count),)
+    return dset[selection], get_size(dset) > count

@@ -20,6 +20,9 @@ from sigima.objects import ImageObj, SignalObj
 
 from sigimax.config import get_conf
 
+#: Attributes with more elements are not copied to object metadata
+MAX_ATTRIBUTE_ITEMS = 10000
+
 
 def data_to_xy(data: np.ndarray) -> list[np.ndarray]:
     """Convert 2-D array into a list of 1-D array data (x, y, dx, dy).
@@ -62,6 +65,7 @@ class BaseNode(metaclass=abc.ABCMeta):
         self.metadata = {}
         self.__obj = None
         self.children = []
+        # Kept for applications reading it: uint32 data is no longer clipped
         self.uint32_wng = False
 
     @property
@@ -133,9 +137,15 @@ class BaseNode(metaclass=abc.ABCMeta):
         ``REFERENCE_LIST`` arrays produced by ``h4toh5convert``) are exposed by
         h5py as ``object``-dtype arrays of :class:`h5py.h5r.Reference`, which
         raise ``TypeError: no default __reduce__`` when DataLab pickles the
-        object to run a computation in a worker process.
+        object to run a computation in a worker process. Attributes with more than
+        :data:`MAX_ATTRIBUTE_ITEMS` elements are skipped without being read.
         """
-        for key, value in self.dset.attrs.items():
+        attrs = self.dset.attrs
+        for key in attrs:
+            shape = attrs.get_id(key).shape
+            if shape and int(np.prod(shape, dtype=np.int64)) > MAX_ATTRIBUTE_ITEMS:
+                continue
+            value = attrs[key]
             if isinstance(value, bytes):
                 value = to_string(value)
             if isinstance(value, np.ndarray):
@@ -180,12 +190,7 @@ class BaseNode(metaclass=abc.ABCMeta):
 
     def set_image_data(self, obj: ImageObj) -> None:
         """Set image data (handles various issues)"""
-        data = self.data
-        if data.dtype == np.uint32:
-            self.uint32_wng = data.max() > np.iinfo(np.int32).max
-            clipped_data = data.clip(0, np.iinfo(np.int32).max)
-            data = np.array(clipped_data, dtype=np.int32)
-        obj.data = convert_array_to_valid_dtype(data, ImageObj.VALID_DTYPES)
+        obj.data = convert_array_to_valid_dtype(self.data, ImageObj.VALID_DTYPES)
 
 
 class H5Importer:
@@ -247,6 +252,14 @@ class NodeFactory:
             self.__generic_classes.append(cls)
         else:
             self.__thirdparty_classes.append(cls)
+
+    def unregister(self, cls) -> None:
+        """Unregister node class and its post triggers, if registered.
+        This lets an application plugin remove its node classes when it is unloaded"""
+        for classes in (self.__thirdparty_classes, self.__generic_classes):
+            while cls in classes:
+                classes.remove(cls)
+        self.__post_triggers.pop(cls, None)
 
     def get(self, dset):
         """Return node class that matches h5 dataset"""
