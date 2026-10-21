@@ -34,7 +34,10 @@
 
 ### HDF5 import ###
 
-* Browsing an HDF5 file no longer reads its datasets entirely: generic nodes are classified and described from the dataset shape and data type, and value previews read only the first elements (`TEXT_PREVIEW_MAX_ITEMS`). Compound datasets mixing numeric and string fields are checked on their first records only. Data is read entirely when the object is created, for preview or import.
+* Browsing an HDF5 file no longer reads its datasets entirely: generic nodes are classified and described from the dataset shape and data type, and value previews read only the first elements (`TEXT_PREVIEW_MAX_ITEMS`). Compound datasets mixing numeric and string fields are checked on their first records only. Data is read entirely when the object is imported.
+* The HDF5 browser reads previews in a worker thread, so that it stays responsive while a large dataset is read: only the last selected node is shown, and closing a file waits for the preview being read. Datasets with more than `PlotPreview.MAX_ITEMS` (2²⁴) elements are previewed with a step along each axis (`BaseNode.create_preview_object`).
+* Numeric datasets with three dimensions or more (image stacks, spectral cubes...) are now listed in the HDF5 browser, with their shape and type. They are not imported as a whole: their 1D or 2D views are read with `sigimax.h5.selection.read_selection`, which reads only the selected elements (`NDSelection`: displayed axes, possibly transposed, and an index along each other axis).
+* NeXus `NXdata` groups are shown as single nodes, imported as a signal (1D) or an image (2D) with their axes, units, labels and, for signals, uncertainties: `@signal`/`@axes` attributes with `@<axis>_indices`, legacy `signal`/`axes` dataset attributes, bin edges converted to bin centers, non-uniform image axes. Invalid axes are reported in the browser instead of being guessed. Imported objects record their origin in the `experimental_source` metadata entry (file, group, signal and axes, conversions). `.nxs` and `.nx5` files are proposed in HDF5 file dialogs.
 * Dataset attributes with more than `MAX_ATTRIBUTE_ITEMS` (10 000) values are no longer copied to object metadata.
 * Images with unsigned 32-bit values above 2 147 483 647 are no longer clipped to `int32`: they are converted with Sigima's converter, which keeps every value exactly with Sigima ≥ 1.4.0. `BaseNode.uint32_wng` is kept for compatibility and is always `False`.
 * `NodeFactory.unregister` removes a node class and its post triggers, so that an application plugin can remove the node classes it registered when it is unloaded.
@@ -42,3 +45,4 @@
 ### Requirements ###
 
 * Sigima 1.3.0 or later is required for the portable annotation model, PlotPy conversion helpers and curve fitting model formulas.
+* Sigima 1.4.0 or later is required for the origin of experimental data recorded by NeXus imports and for exact integer conversions.
