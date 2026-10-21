@@ -248,6 +248,7 @@ class NodeFactory:
         self.__generic_classes = []
         self.__thirdparty_classes = []
         self.__post_triggers = {}
+        self.__children_providers = []
 
     def add_ignored_datasets(self, names):
         """Add h5 dataset name to ignore list"""
@@ -274,6 +275,34 @@ class NodeFactory:
             while cls in classes:
                 classes.remove(cls)
         self.__post_triggers.pop(cls, None)
+
+    def add_children_provider(self, func: Callable) -> None:
+        """Add a function returning extra nodes to show under a group node.
+        Functions take the group node and return a list of nodes whose ids are
+        not HDF5 paths of the file"""
+        if func not in self.__children_providers:
+            self.__children_providers.append(func)
+
+    def remove_children_provider(self, func: Callable) -> None:
+        """Remove a function added with :meth:`add_children_provider`"""
+        if func in self.__children_providers:
+            self.__children_providers.remove(func)
+
+    def get_extra_children(self, node: GroupNode) -> list[BaseNode]:
+        """Return the extra nodes to show under a group node"""
+        children = []
+        for func in self.__children_providers:
+            try:
+                children.extend(func(node))
+            except (
+                UnicodeDecodeError,
+                TypeError,
+                ValueError,
+                KeyError,
+                OSError,
+            ) as exc:
+                print(f"Warning: Skipping extra nodes of '{node.id}': {exc}")
+        return children
 
     def get(self, dset):
         """Return node class that matches h5 dataset"""
@@ -331,6 +360,13 @@ class GroupNode(BaseNode):
                 # Skip datasets that can't be processed due to various issues
                 print(f"Warning: Skipping dataset '{dset.name}' due to error: {exc}")
                 continue
+        for child in NODE_FACTORY.get_extra_children(self):
+            if child.id in node_dict:
+                print(f"Warning: Skipping node '{child.id}': id already used")
+                continue
+            child.collect_attributes()
+            node_dict[child.id] = child
+            self.children.append(child)
 
 
 class RootNode(GroupNode):

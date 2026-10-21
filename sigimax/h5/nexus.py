@@ -38,13 +38,22 @@ from sigima.objects import (
 
 from sigimax.h5 import common, utils
 
-__all__ = ["NXAxis", "NXdataDescription", "NXdataNode", "describe_nxdata"]
+__all__ = [
+    "NXAxis",
+    "NXdataDescription",
+    "NXdataNode",
+    "describe_nxdata",
+    "describe_signal",
+]
 
 
 def _text(value) -> str:
     """Return attribute value as text"""
     if isinstance(value, np.ndarray) and value.size == 1:
         value = value.flat[0]
+    if isinstance(value, str) and re.search("[\udc80-\udcff]", value):
+        # h5py decodes variable-length strings that are not UTF-8 with surrogates
+        value = value.encode("utf-8", "surrogateescape")
     return to_string(value) if isinstance(value, (bytes, np.bytes_)) else str(value)
 
 
@@ -60,7 +69,7 @@ class NXAxis:
     """Axis of a signal dimension
 
     Args:
-        name: axis dataset name in the ``NXdata`` group
+        name: axis dataset path, relative to the group
         size: number of values of the axis dataset
         edges: True if the axis holds bin edges (one value more than points)
         units: axis units
@@ -80,7 +89,7 @@ class NXdataDescription:
 
     Args:
         path: group path
-        signal: signal dataset name
+        signal: signal dataset path, relative to the group
         shape: signal shape
         dtype: signal data type
         axes: axis of each signal dimension (None if not defined)
@@ -152,6 +161,31 @@ def describe_nxdata(group: h5py.Group) -> NXdataDescription | None:
         return None
     signal, names = _find_signal(group)
     dset = group.get(signal) if signal else None
+    if not isinstance(dset, h5py.Dataset) or not dset.shape:
+        return None
+    axes = _axis_dimensions(group, names, dset.ndim)
+    return describe_signal(group, signal, axes, errors=(f"{signal}_errors", "errors"))
+
+
+def describe_signal(
+    group: h5py.Group,
+    signal: str,
+    axes: list[str | None],
+    errors: tuple[str, ...] = (),
+) -> NXdataDescription | None:
+    """Describe a signal dataset of a group, without reading its datasets
+
+    Args:
+        group: HDF5 group
+        signal: signal dataset path, relative to the group
+        axes: axis dataset path of each signal dimension (None: no axis)
+        errors: candidate uncertainties dataset paths; the first one with the
+         signal shape is used
+
+    Returns:
+        Description, or None if signal is not a numeric dataset
+    """
+    dset = group.get(signal)
     if (
         not isinstance(dset, h5py.Dataset)
         or not dset.shape
@@ -159,45 +193,50 @@ def describe_nxdata(group: h5py.Group) -> NXdataDescription | None:
     ):
         return None
     problems: list[str] = []
-    axes: list[NXAxis | None] = []
-    for dim, name in enumerate(_axis_dimensions(group, names, dset.ndim)):
+    if len(axes) != dset.ndim:
+        problems.append(f"{len(axes)} axes for {dset.ndim} dimensions")
+        axes = (list(axes) + [None] * dset.ndim)[: dset.ndim]
+    axis_descs: list[NXAxis | None] = []
+    for dim, name in enumerate(axes):
         axis_dset = group.get(name) if name else None
         if name is None:
-            axes.append(None)
+            axis_descs.append(None)
         elif not isinstance(axis_dset, h5py.Dataset) or axis_dset.ndim != 1:
             problems.append(f"axis '{name}' is not a 1D dataset")
-            axes.append(None)
+            axis_descs.append(None)
         elif axis_dset.shape[0] not in (dset.shape[dim], dset.shape[dim] + 1):
             problems.append(
                 f"axis '{name}' has {axis_dset.shape[0]} values "
                 f"for {dset.shape[dim]} points"
             )
-            axes.append(None)
+            axis_descs.append(None)
         else:
-            axes.append(
+            axis_descs.append(
                 NXAxis(
                     name=name,
                     size=axis_dset.shape[0],
                     edges=axis_dset.shape[0] == dset.shape[dim] + 1,
-                    units=_text(axis_dset.attrs.get("units", "")),
-                    label=_text(axis_dset.attrs.get("long_name", name)),
+                    units=_text(axis_dset.attrs.get("units", "")).strip(),
+                    label=_text(
+                        axis_dset.attrs.get("long_name", name.split("/")[-1])
+                    ).strip(),
                 )
             )
-    errors = None
-    for name in (f"{signal}_errors", "errors"):
+    found = None
+    for name in errors:
         candidate = group.get(name)
         if isinstance(candidate, h5py.Dataset) and candidate.shape == dset.shape:
-            errors = name
+            found = name
             break
     return NXdataDescription(
         path=group.name,
         signal=signal,
         shape=dset.shape,
         dtype=dset.dtype,
-        axes=tuple(axes),
-        errors=errors,
-        units=_text(dset.attrs.get("units", "")),
-        label=_text(dset.attrs.get("long_name", signal)),
+        axes=tuple(axis_descs),
+        errors=found,
+        units=_text(dset.attrs.get("units", "")).strip(),
+        label=_text(dset.attrs.get("long_name", signal.split("/")[-1])).strip(),
         problems=tuple(problems),
     )
 
@@ -217,11 +256,18 @@ def _is_uniform(values: np.ndarray) -> bool:
 
 
 class NXdataNode(common.GroupNode):
-    """Node for NeXus ``NXdata`` groups, imported as a signal or an image"""
+    """Node for NeXus ``NXdata`` groups, imported as a signal or an image
 
-    def __init__(self, h5file, dname):
+    Args:
+        h5file: HDF5 file
+        dname: group path
+        nxdata: signal description (default: described from ``NXdata`` attributes)
+    """
+
+    def __init__(self, h5file, dname, nxdata: NXdataDescription | None = None):
         super().__init__(h5file, dname)
-        self.nxdata = describe_nxdata(self.dset)
+        self.nxdata = describe_nxdata(self.dset) if nxdata is None else nxdata
+        self.text_prefix = "NXdata"
 
     @classmethod
     def match(cls, dset):
@@ -259,7 +305,7 @@ class NXdataNode(common.GroupNode):
         """Return node textual representation"""
         desc = self.nxdata
         names = [axis.name if axis else "." for axis in desc.axes]
-        text = f"NXdata: {desc.signal} ({', '.join(names)})"
+        text = f"{self.text_prefix}: {desc.signal} ({', '.join(names)})"
         if desc.problems:
             text += " - " + "; ".join(desc.problems)
         return text
@@ -269,7 +315,7 @@ class NXdataNode(common.GroupNode):
         """Return node description"""
         return self.text
 
-    def __make_source(self, conversions: list[str]) -> dict:
+    def make_source(self, conversions: list[str]) -> dict:
         """Return the experimental source of the imported object"""
         desc = self.nxdata
         return make_experimental_source(
@@ -337,7 +383,7 @@ class NXdataNode(common.GroupNode):
                 obj.ylabel, obj.yunit = yaxis.label, yaxis.units
             if desc.errors is not None:
                 conversions.append("uncertainties not imported (image)")
-        set_experimental_source(obj, self.__make_source(conversions))
+        set_experimental_source(obj, self.make_source(conversions))
         return obj
 
 

@@ -30,6 +30,18 @@ read with :func:`sigimax.h5.selection.read_selection`.
 
 .. autoclass:: sigimax.h5.nexus.NXdataNode
 .. autofunction:: sigimax.h5.nexus.describe_nxdata
+.. autofunction:: sigimax.h5.nexus.describe_signal
+
+Files without suitable ``NXdata`` groups are described by declarative data
+mappings (:mod:`sigimax.h5.mapping`), registered by applications or plugins.
+
+.. autofunction:: sigimax.h5.mapping.mapping_from_dict
+.. autofunction:: sigimax.h5.mapping.load_mapping
+.. autofunction:: sigimax.h5.mapping.register_mapping
+.. autofunction:: sigimax.h5.mapping.unregister_mapping
+.. autofunction:: sigimax.h5.mapping.describe_mapping
+.. autoclass:: sigimax.h5.mapping.DataMapping
+.. autoclass:: sigimax.h5.mapping.MappedDataNode
 .. autoclass:: sigimax.h5.selection.NDSelection
     :members:
 .. autofunction:: sigimax.h5.selection.read_selection
@@ -43,5 +55,5 @@ __all__ = [
 # pylint: disable=unused-import
 
 # Registering dynamic I/O features:
-from sigimax.h5 import generic, nexus  # noqa: F401
+from sigimax.h5 import generic, mapping, nexus  # noqa: F401
 from sigimax.h5.common import H5Importer  # noqa: F401
