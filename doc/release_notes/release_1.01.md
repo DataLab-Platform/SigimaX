@@ -32,6 +32,13 @@
 * The Planckian fit dialog starts from a curve matching the data peak (its initial amplitude was about 147 times too low on blackbody data in physical units), and its "width factor" is now labelled "temperature factor": for wavelengths in meters, the temperature is `h c σ / (5 k_B x₀)`.
 * The exponential fit dialog now evaluates the same model as Sigima, and its rate slider covers short time constants whatever the X unit (e.g. 1 ms with X in seconds).
 
+### HDF5 import ###
+
+* Browsing an HDF5 file no longer reads its datasets entirely: generic nodes are classified and described from the dataset shape and data type, and value previews read only the first elements (`TEXT_PREVIEW_MAX_ITEMS`). Compound datasets mixing numeric and string fields are checked on their first records only. Data is read entirely when the object is created, for preview or import.
+* Dataset attributes with more than `MAX_ATTRIBUTE_ITEMS` (10 000) values are no longer copied to object metadata.
+* Images with unsigned 32-bit values above 2 147 483 647 are no longer clipped to `int32`: they are converted with Sigima's converter, which keeps every value exactly with Sigima ≥ 1.4.0. `BaseNode.uint32_wng` is kept for compatibility and is always `False`.
+* `NodeFactory.unregister` removes a node class and its post triggers, so that an application plugin can remove the node classes it registered when it is unloaded.
+
 ### Requirements ###
 
 * Sigima 1.3.0 or later is required for the portable annotation model, PlotPy conversion helpers and curve fitting model formulas.
