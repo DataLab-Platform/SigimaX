@@ -23,6 +23,17 @@ and registering it with ``NODE_FACTORY.register(MyNode)`` — see
     :members:
 .. autoclass:: sigimax.h5.common.RootNode
     :members:
+
+NeXus ``NXdata`` groups are shown as single nodes, imported as signals or images
+with their axes (:mod:`sigimax.h5.nexus`). Views of multidimensional datasets are
+read with :func:`sigimax.h5.selection.read_selection`.
+
+.. autoclass:: sigimax.h5.nexus.NXdataNode
+.. autofunction:: sigimax.h5.nexus.describe_nxdata
+.. autoclass:: sigimax.h5.selection.NDSelection
+    :members:
+.. autofunction:: sigimax.h5.selection.read_selection
+.. autofunction:: sigimax.h5.selection.preview_step
 """
 
 __all__ = [
@@ -32,5 +43,5 @@ __all__ = [
 # pylint: disable=unused-import
 
 # Registering dynamic I/O features:
-from sigimax.h5 import generic  # noqa: F401
+from sigimax.h5 import generic, nexus  # noqa: F401
 from sigimax.h5.common import H5Importer  # noqa: F401

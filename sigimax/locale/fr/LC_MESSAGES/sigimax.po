@@ -173,8 +173,8 @@ msgstr "Enregistrer"
 msgid "Open"
 msgstr "Ouvrir"
 
-msgid "HDF5 files (*.h5 *.hdf5 *.hdf *.he5);;All files (*)"
-msgstr "Fichiers HDF5 (*.h5 *.hdf5 *.hdf *.he5);;Tous les fichiers (*)"
+msgid "HDF5 files (*.h5 *.hdf5 *.hdf *.he5 *.nxs *.nx5);;All files (*)"
+msgstr "Fichiers HDF5 (*.h5 *.hdf5 *.hdf *.he5 *.nxs *.nx5);;Tous les fichiers (*)"
 
 msgid "Do you want to clear current workspace before importing data from HDF5 files?"
 msgstr "Voulez-vous effacer l'espace de travail actuel avant d'importer des données depuis des fichiers HDF5 ?"

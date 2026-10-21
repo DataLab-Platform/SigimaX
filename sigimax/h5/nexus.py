@@ -1,0 +1,344 @@
+# Copyright (c) DataLab Platform Developers, BSD 3-Clause license, see LICENSE file.
+
+"""
+SigimaX NeXus support: interpretation of ``NXdata`` groups
+
+A NeXus ``NXdata`` group designates its plottable signal and the axes of each
+signal dimension. :class:`NXdataNode` shows such a group as a single node of the
+HDF5 browser, which is imported as a signal (1D) or an image (2D) with its axes,
+units and uncertainties. Only metadata is read until the object is created.
+
+Supported conventions (NeXus data model, ``NXdata`` base class):
+
+- ``@signal`` group attribute, or legacy ``signal=1`` dataset attribute
+- ``@axes`` group attribute (``"."`` for a dimension without axis), with optional
+  ``@<axis>_indices`` attributes, or legacy ``axes`` signal attribute
+- axis datasets holding one value per point, or bin edges (one more value), which
+  are converted to bin centers
+- ``<signal>_errors`` (or legacy ``errors``) uncertainties of a 1D signal
+- ``units`` and ``long_name`` dataset attributes
+"""
+
+from __future__ import annotations
+
+import dataclasses
+import re
+
+import h5py
+import numpy as np
+from guidata.utils.misc import to_string
+from sigima.io.common.converters import convert_array_to_valid_dtype
+from sigima.objects import (
+    ImageObj,
+    create_image,
+    create_signal,
+    make_experimental_source,
+    set_experimental_source,
+)
+
+from sigimax.h5 import common, utils
+
+__all__ = ["NXAxis", "NXdataDescription", "NXdataNode", "describe_nxdata"]
+
+
+def _text(value) -> str:
+    """Return attribute value as text"""
+    if isinstance(value, np.ndarray) and value.size == 1:
+        value = value.flat[0]
+    return to_string(value) if isinstance(value, (bytes, np.bytes_)) else str(value)
+
+
+def _text_list(value) -> list[str]:
+    """Return attribute value as a list of texts"""
+    if isinstance(value, np.ndarray):
+        return [_text(item) for item in value.flat]
+    return [_text(value)]
+
+
+@dataclasses.dataclass(frozen=True)
+class NXAxis:
+    """Axis of a signal dimension
+
+    Args:
+        name: axis dataset name in the ``NXdata`` group
+        size: number of values of the axis dataset
+        edges: True if the axis holds bin edges (one value more than points)
+        units: axis units
+        label: axis label (``long_name`` attribute, or name)
+    """
+
+    name: str
+    size: int
+    edges: bool
+    units: str
+    label: str
+
+
+@dataclasses.dataclass(frozen=True)
+class NXdataDescription:
+    """Description of an ``NXdata`` group, built from metadata only
+
+    Args:
+        path: group path
+        signal: signal dataset name
+        shape: signal shape
+        dtype: signal data type
+        axes: axis of each signal dimension (None if not defined)
+        errors: uncertainties dataset name, if any
+        units: signal units
+        label: signal label
+        problems: reasons why the signal cannot be imported as described
+    """
+
+    path: str
+    signal: str
+    shape: tuple[int, ...]
+    dtype: np.dtype
+    axes: tuple[NXAxis | None, ...]
+    errors: str | None
+    units: str
+    label: str
+    problems: tuple[str, ...]
+
+
+def _is_nxdata(group: h5py.Group) -> bool:
+    """Return True if group is an ``NXdata`` group"""
+    return _text(group.attrs.get("NX_class", "")) == "NXdata"
+
+
+def _find_signal(group: h5py.Group) -> tuple[str | None, list[str]]:
+    """Return signal dataset name and axis names declared by an NXdata group"""
+    if "signal" in group.attrs:
+        signal = _text(group.attrs["signal"])
+        axes = _text_list(group.attrs["axes"]) if "axes" in group.attrs else []
+        return signal, axes
+    for name, item in group.items():
+        if isinstance(item, h5py.Dataset) and _text(item.attrs.get("signal", "")) in (
+            "1",
+            "True",
+        ):
+            axes = item.attrs.get("axes")
+            names = (
+                re.split(r"[:,\s]+", _text(axes).strip()) if axes is not None else []
+            )
+            return name, [axis for axis in names if axis]
+    return None, []
+
+
+def _axis_dimensions(group: h5py.Group, names: list[str], ndim: int) -> list:
+    """Return the axis name of each signal dimension"""
+    axes: list[str | None] = [None] * ndim
+    for position, name in enumerate(names):
+        if name == ".":
+            continue
+        indices = group.attrs.get(f"{name}_indices")
+        dims = [position] if indices is None else [int(i) for i in np.ravel(indices)]
+        if len(dims) == 1 and 0 <= dims[0] < ndim:
+            axes[dims[0]] = name
+    return axes
+
+
+def describe_nxdata(group: h5py.Group) -> NXdataDescription | None:
+    """Describe an ``NXdata`` group, without reading its datasets
+
+    Args:
+        group: HDF5 group
+
+    Returns:
+        Description, or None if group is not an ``NXdata`` group with a numeric
+        signal dataset
+    """
+    if not isinstance(group, h5py.Group) or not _is_nxdata(group):
+        return None
+    signal, names = _find_signal(group)
+    dset = group.get(signal) if signal else None
+    if (
+        not isinstance(dset, h5py.Dataset)
+        or not dset.shape
+        or not utils.is_supported_num_dtype(dset)
+    ):
+        return None
+    problems: list[str] = []
+    axes: list[NXAxis | None] = []
+    for dim, name in enumerate(_axis_dimensions(group, names, dset.ndim)):
+        axis_dset = group.get(name) if name else None
+        if name is None:
+            axes.append(None)
+        elif not isinstance(axis_dset, h5py.Dataset) or axis_dset.ndim != 1:
+            problems.append(f"axis '{name}' is not a 1D dataset")
+            axes.append(None)
+        elif axis_dset.shape[0] not in (dset.shape[dim], dset.shape[dim] + 1):
+            problems.append(
+                f"axis '{name}' has {axis_dset.shape[0]} values "
+                f"for {dset.shape[dim]} points"
+            )
+            axes.append(None)
+        else:
+            axes.append(
+                NXAxis(
+                    name=name,
+                    size=axis_dset.shape[0],
+                    edges=axis_dset.shape[0] == dset.shape[dim] + 1,
+                    units=_text(axis_dset.attrs.get("units", "")),
+                    label=_text(axis_dset.attrs.get("long_name", name)),
+                )
+            )
+    errors = None
+    for name in (f"{signal}_errors", "errors"):
+        candidate = group.get(name)
+        if isinstance(candidate, h5py.Dataset) and candidate.shape == dset.shape:
+            errors = name
+            break
+    return NXdataDescription(
+        path=group.name,
+        signal=signal,
+        shape=dset.shape,
+        dtype=dset.dtype,
+        axes=tuple(axes),
+        errors=errors,
+        units=_text(dset.attrs.get("units", "")),
+        label=_text(dset.attrs.get("long_name", signal)),
+        problems=tuple(problems),
+    )
+
+
+def _read_axis(group: h5py.Group, axis: NXAxis) -> np.ndarray:
+    """Return axis values, at bin centers"""
+    values = np.asarray(group[axis.name][()], dtype=float)
+    return (values[:-1] + values[1:]) / 2 if axis.edges else values
+
+
+def _is_uniform(values: np.ndarray) -> bool:
+    """Return True if values are evenly spaced"""
+    if values.size < 2:
+        return True
+    steps = np.diff(values)
+    return bool(np.allclose(steps, steps[0], rtol=1e-9, atol=0.0))
+
+
+class NXdataNode(common.GroupNode):
+    """Node for NeXus ``NXdata`` groups, imported as a signal or an image"""
+
+    def __init__(self, h5file, dname):
+        super().__init__(h5file, dname)
+        self.nxdata = describe_nxdata(self.dset)
+
+    @classmethod
+    def match(cls, dset):
+        """Return True if h5 group is an ``NXdata`` group with a numeric signal"""
+        return describe_nxdata(dset) is not None
+
+    def is_supported(self) -> bool:
+        """Return True if the signal is 1D or 2D and its axes are valid"""
+        desc = self.nxdata
+        return (
+            not desc.problems
+            and len(desc.shape) in (1, 2)
+            and int(np.prod(desc.shape)) > 1
+        )
+
+    @property
+    def icon_name(self):
+        """Icon name associated to node"""
+        if self.is_supported():
+            return "signal.svg" if len(self.nxdata.shape) == 1 else "image.svg"
+        return "h5group.svg"
+
+    @property
+    def shape_str(self):
+        """Return string representation of node shape"""
+        return " x ".join([str(size) for size in self.nxdata.shape])
+
+    @property
+    def dtype_str(self):
+        """Return string representation of node data type"""
+        return str(self.nxdata.dtype)
+
+    @property
+    def text(self):
+        """Return node textual representation"""
+        desc = self.nxdata
+        names = [axis.name if axis else "." for axis in desc.axes]
+        text = f"NXdata: {desc.signal} ({', '.join(names)})"
+        if desc.problems:
+            text += " - " + "; ".join(desc.problems)
+        return text
+
+    @property
+    def description(self):
+        """Return node description"""
+        return self.text
+
+    def __make_source(self, conversions: list[str]) -> dict:
+        """Return the experimental source of the imported object"""
+        desc = self.nxdata
+        return make_experimental_source(
+            "nexus",
+            self.h5file.filename,
+            entry=desc.path,
+            selection={
+                "signal": desc.signal,
+                "axes": [axis.name if axis else None for axis in desc.axes],
+            },
+            conversions=conversions or None,
+        )
+
+    def create_native_object(self):
+        """Create signal or image object from the ``NXdata`` group"""
+        if not self.is_supported():
+            return None
+        desc, group = self.nxdata, self.dset
+        data = group[desc.signal][()]
+        conversions = [
+            f"axis '{axis.name}': bin edges -> bin centers"
+            for axis in desc.axes
+            if axis is not None and axis.edges
+        ]
+        if len(desc.shape) == 1:
+            axis = desc.axes[0]
+            x = np.arange(data.size, dtype=float)
+            if axis is not None:
+                x = _read_axis(group, axis)
+            dy = None
+            if desc.errors is not None:
+                dy = np.asarray(group[desc.errors][()], dtype=float)
+            y = data if np.iscomplexobj(data) else data.astype(float)
+            obj = create_signal(self.object_title, x, y, dy=dy)
+            obj.ylabel, obj.yunit = desc.label, desc.units
+            if axis is not None:
+                obj.xlabel, obj.xunit = axis.label, axis.units
+        else:
+            obj = create_image(
+                self.object_title,
+                convert_array_to_valid_dtype(data, ImageObj.VALID_DTYPES),
+            )
+            obj.zlabel, obj.zunit = desc.label, desc.units
+            yaxis, xaxis = desc.axes
+            ny, nx = desc.shape
+            xc = (
+                np.arange(nx, dtype=float)
+                if xaxis is None
+                else _read_axis(group, xaxis)
+            )
+            yc = (
+                np.arange(ny, dtype=float)
+                if yaxis is None
+                else _read_axis(group, yaxis)
+            )
+            if _is_uniform(xc) and _is_uniform(yc):
+                dx = float(xc[1] - xc[0]) if nx > 1 else 1.0
+                dy = float(yc[1] - yc[0]) if ny > 1 else 1.0
+                obj.set_uniform_coords(dx, dy, float(xc[0]), float(yc[0]))
+            else:
+                obj.set_coords(xc, yc)
+            if xaxis is not None:
+                obj.xlabel, obj.xunit = xaxis.label, xaxis.units
+            if yaxis is not None:
+                obj.ylabel, obj.yunit = yaxis.label, yaxis.units
+            if desc.errors is not None:
+                conversions.append("uncertainties not imported (image)")
+        set_experimental_source(obj, self.__make_source(conversions))
+        return obj
+
+
+common.NODE_FACTORY.register(NXdataNode, is_generic=True)

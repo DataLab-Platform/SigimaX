@@ -16,7 +16,7 @@ import h5py
 import numpy as np
 from guidata.utils.misc import to_string
 from sigima.io.common.converters import convert_array_to_valid_dtype
-from sigima.objects import ImageObj, SignalObj
+from sigima.objects import EXPERIMENTAL_SOURCE_KEY, ImageObj, SignalObj
 
 from sigimax.config import get_conf
 
@@ -170,10 +170,13 @@ class BaseNode(metaclass=abc.ABCMeta):
 
     def __process_metadata(self, obj):
         """Process metadata from dataset to obj"""
+        source = obj.metadata.get(EXPERIMENTAL_SOURCE_KEY)
         obj.reset_metadata_to_defaults()
         obj.set_metadata_option("HDF5Path", self.h5file.filename)
         obj.set_metadata_option("HDF5Dataset", self.id)
         obj.metadata.update(self.metadata)
+        if source is not None:
+            obj.metadata[EXPERIMENTAL_SOURCE_KEY] = source
 
     @property
     def object_title(self):
