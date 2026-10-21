@@ -18,6 +18,7 @@ from __future__ import annotations
 import abc
 import os
 import os.path as osp
+from concurrent.futures import Future, ThreadPoolExecutor
 from typing import TYPE_CHECKING, Any, Callable
 
 from guidata.qthelpers import (
@@ -471,10 +472,24 @@ class H5TreeWidget(AbstractTreeWidget):
 
 
 class PlotPreview(QW.QStackedWidget):
-    """Plot preview"""
+    """Plot preview
+
+    Preview data is read in a worker thread, so that the browser stays responsive
+    while a large dataset is read. Datasets larger than :attr:`MAX_ITEMS` are
+    decimated. The preview of a node replaces any pending one.
+    """
+
+    #: Maximum number of data elements read for a preview
+    MAX_ITEMS = 2**24
+
+    SIG_LOADED = QC.Signal(int, object, object)
 
     def __init__(self, parent: QW.QWidget) -> None:
         super().__init__(parent)
+        self.__generation = 0
+        self.__executor = ThreadPoolExecutor(1, thread_name_prefix="h5preview")
+        self.__pending: Future | None = None
+        self.SIG_LOADED.connect(self.__show_loaded_object)
         self.curvewidget = PlotWidget(
             self,
             options=PlotOptions(
@@ -498,23 +513,59 @@ class PlotPreview(QW.QStackedWidget):
 
     def cleanup(self) -> None:
         """Clean up widget"""
+        self.wait()
         for widget in (self.imagewidget, self.curvewidget):
             widget.get_plot().del_all_items()
 
+    def wait(self) -> None:
+        """Discard the pending preview and wait until its data is no longer read
+        (before closing HDF5 files)"""
+        self.__generation += 1
+        if self.__pending is not None:
+            self.__pending.result()
+            self.__pending = None
+
+    def __load_object(self, generation: int, node: BaseNode) -> None:
+        """Create the preview object of a node (worker thread)"""
+        obj, error = None, None
+        try:
+            obj = node.create_preview_object(self.MAX_ITEMS)
+        except Exception as exc:  # pylint: disable=broad-except
+            error = exc
+        try:
+            self.SIG_LOADED.emit(generation, obj, error)
+        except RuntimeError:
+            pass  # Widget deleted while the data was read
+
+    def __show_message(self, text: str) -> None:
+        """Show a message instead of the preview"""
+        label = make.label(text, "C", (0, 0), "C")
+        plot: BasePlot = self.currentWidget().get_plot()
+        plot.del_all_items()
+        plot.add_item(label)
+        plot.replot()
+
     def update_plot_preview(self, node: BaseNode) -> None:
         """Update plot preview widget"""
-        try:
-            obj = node.get_native_object()
-        except Exception as msg:  # pylint: disable=broad-except
-            qt_handle_error_message(self, msg)
+        self.__generation += 1
+        self.__show_message(_("Loading..."))
+        self.__pending = self.__executor.submit(
+            self.__load_object, self.__generation, node
+        )
+
+    def __show_loaded_object(
+        self, generation: int, obj: SignalObj | ImageObj | None, error: Exception
+    ) -> None:
+        """Show the preview object, unless another node was selected meanwhile"""
+        if generation != self.__generation:
+            return
+        if error is not None:
+            self.__show_message(_("Unsupported data"))
+            qt_handle_error_message(self, error)
             return
         if obj is None:
             # An error occurred while creating the object (invalid data, ...)
-            label = make.label(_("Unsupported data"), "C", (0, 0), "C")
-            plot: BasePlot = self.currentWidget().get_plot()
-            plot.del_all_items()
-            plot.add_item(label)
-            plot.replot()
+            self.__show_message(_("Unsupported data"))
             return
         if isinstance(obj, SignalObj):
             obj: SignalObj
@@ -812,6 +863,7 @@ class H5Browser(QW.QSplitter):
         Args:
             fname: HDF5 file name
         """
+        self.plotpreview.wait()
         self.tree.remove_root(fname)
         self.selector.remove_fname(fname)
 
@@ -836,8 +888,8 @@ class H5Browser(QW.QSplitter):
 
     def cleanup(self) -> None:
         """Clean up widget"""
-        self.tree.cleanup()
         self.plotpreview.cleanup()
+        self.tree.cleanup()
 
     def get_node(self, item: QW.QTreeWidgetItem | None = None) -> BaseNode:
         """Return (selected) dataset

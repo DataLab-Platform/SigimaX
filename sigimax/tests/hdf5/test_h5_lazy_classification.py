@@ -23,9 +23,11 @@ from sigimax.h5.common import MAX_ATTRIBUTE_ITEMS, NODE_FACTORY, BaseNode
 from sigimax.h5.generic import (
     GenericArrayNode,
     GenericCompoundNode,
+    GenericNDArrayNode,
     GenericScalarNode,
     GenericTextNode,
 )
+from sigimax.h5.selection import NDSelection, preview_step, read_selection
 
 pytestmark = pytest.mark.unit
 
@@ -44,7 +46,7 @@ def fixture_h5fname(tmp_path) -> str:
         h5file["image"] = np.ones((300, 400), dtype=np.uint16)
         counts = [[0, 2**32 - 1, 3], [7, 2**31, 4], [1, 2, 5]]
         h5file["counts"] = np.array(counts, np.uint32)
-        h5file["cube"] = np.zeros((10, 30, 40))
+        h5file["cube"] = np.arange(10 * 30 * 40, dtype=np.float64).reshape(10, 30, 40)
         records = np.zeros(5000, dtype=[("x", "f8"), ("y", "f4")])
         h5file["records"] = records
         mixed = np.zeros(5000, dtype=[("name", "S8"), ("v", "f8")])
@@ -93,7 +95,9 @@ def test_browsing_reads_no_large_dataset(h5fname: str, full_reads: list) -> None
         assert isinstance(nodes["/text"], GenericTextNode)
         assert isinstance(nodes["/records"], GenericArrayNode)
         assert isinstance(nodes["/mixed"], GenericCompoundNode)
-        assert "/cube" not in nodes
+        assert isinstance(nodes["/cube"], GenericNDArrayNode)
+        assert nodes["/cube"].shape_str == "10 x 30 x 40"
+        assert not nodes["/cube"].is_supported()
         assert nodes["/signal"].shape_str == "50000"
         assert nodes["/signal"].text.endswith(" ...")
         assert nodes["/records"].shape_str == "5000 x 2"
@@ -150,10 +154,72 @@ def test_unregister_node_class(h5fname: str) -> None:
     NODE_FACTORY.unregister(CubeNode)
     importer = H5Importer(h5fname)
     try:
-        assert "/cube" not in [node.id for node in importer.nodes]
+        assert isinstance(importer.get("/cube"), GenericNDArrayNode)
     finally:
         importer.close()
     assert triggered == ["/cube"]
+
+
+def test_read_selection(h5fname: str, full_reads: list) -> None:
+    """Selected views of a cube match NumPy indexing, without reading the cube."""
+    with h5py.File(h5fname, "r") as h5file:
+        dset = h5file["cube"]
+        cube = np.arange(10 * 30 * 40, dtype=np.float64).reshape(10, 30, 40)
+        frame = read_selection(dset, NDSelection((1, 2), (4,)))
+        assert np.array_equal(frame, cube[4])
+        transposed = read_selection(dset, NDSelection((2, 1), (4,)))
+        assert np.array_equal(transposed, cube[4].T)
+        spectrum = read_selection(dset, NDSelection((0,), (7, 3)))
+        assert np.array_equal(spectrum, cube[:, 7, 3])
+        strided = read_selection(dset, NDSelection((1, 2), (0,)), step=3)
+        assert np.array_equal(strided, cube[0, ::3, ::3])
+        assert NDSelection((0,), (7, 3)).as_dict() == {
+            "displayed": [0],
+            "indices": [7, 3],
+        }
+        for invalid in (
+            NDSelection((0, 1, 2)),
+            NDSelection((1, 1), (0,)),
+            NDSelection((1, 2)),
+            NDSelection((1, 2), (10,)),
+        ):
+            with pytest.raises(ValueError):
+                read_selection(dset, invalid)
+    assert full_reads == []
+
+
+@pytest.mark.parametrize(
+    "shape, max_items, step",
+    [
+        ((100,), 100, 1),
+        ((101,), 100, 2),
+        ((4096, 4096), 2**24, 1),
+        ((300, 400), 1000, 12),
+    ],
+    ids=["fits", "1d", "2d-fits", "2d"],
+)
+def test_preview_step(shape: tuple, max_items: int, step: int) -> None:
+    """The preview step is the smallest one keeping the view under the limit."""
+    assert preview_step(shape, max_items) == step
+    sizes = [len(range(0, dim, step)) for dim in shape]
+    assert np.prod(sizes) <= max_items
+
+
+def test_preview_is_decimated(h5fname: str, full_reads: list) -> None:
+    """Previews of large datasets are read with a step, in physical coordinates."""
+    importer = H5Importer(h5fname)
+    try:
+        image = importer.get("/image").create_preview_object(1000)
+        assert image.data.shape == (25, 34)
+        assert (image.dx, image.dy) == (12.0, 12.0)
+        signal = importer.get("/signal").create_preview_object(1000)
+        assert signal.y.size <= 1000
+        assert np.array_equal(signal.x, signal.y)
+        assert full_reads == []
+        small = importer.get("/counts")
+        assert small.create_preview_object(1000) is small.get_native_object()
+    finally:
+        importer.close()
 
 
 if __name__ == "__main__":

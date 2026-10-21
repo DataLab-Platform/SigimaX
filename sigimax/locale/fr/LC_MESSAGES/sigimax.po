@@ -477,6 +477,9 @@ msgstr "Nom"
 msgid "Unsupported data"
 msgstr "Données non prises en charge"
 
+msgid "Loading..."
+msgstr "Chargement..."
+
 msgid "Group"
 msgstr "Groupe"
 

@@ -8,12 +8,16 @@ SigimaX Generic HDF5 format support
 
 from __future__ import annotations
 
+import math
+
 import h5py
 import numpy as np
 from guidata.utils.misc import to_string
-from sigima.objects import create_image, create_signal
+from sigima.io.common.converters import convert_array_to_valid_dtype
+from sigima.objects import ImageObj, SignalObj, create_image, create_signal
 
 from sigimax.h5 import common, utils
+from sigimax.h5.selection import NDSelection, preview_step, read_selection
 
 #: Maximum number of elements read to show the textual preview of an array
 TEXT_PREVIEW_MAX_ITEMS = 100
@@ -468,6 +472,65 @@ class GenericArrayNode(BaseGenericNode):
                 obj = None
         return obj
 
+    def create_preview_object(self, max_items: int):
+        """Return the native object, or a decimated one if the dataset is larger
+        than ``max_items`` (1D signals and images only)"""
+        shape = self.layout[0]
+        if (
+            math.prod(shape) <= max_items
+            or self.dset.dtype.names is not None
+            or (self.__is_signal and len(shape) == 2)
+        ):
+            return self.get_native_object()
+        step = preview_step(shape, max_items)
+        data = read_selection(self.dset, NDSelection(tuple(range(len(shape)))), step)
+        if len(shape) == 1:
+            x = np.arange(0, shape[0], step, dtype=float)
+            y = convert_array_to_valid_dtype(data, SignalObj.VALID_DTYPES)
+            return create_signal(self.object_title, x, y)
+        obj = create_image(
+            self.object_title,
+            convert_array_to_valid_dtype(data, ImageObj.VALID_DTYPES),
+        )
+        obj.set_uniform_coords(float(step), float(step))
+        return obj
+
+
+class GenericNDArrayNode(BaseGenericNode):
+    """Node for numeric HDF5 datasets with three dimensions or more.
+
+    Such datasets (image stacks, spectral cubes...) are listed and described, but
+    are not imported as a whole: their 1D or 2D views are read with
+    :func:`sigimax.h5.selection.read_selection`.
+    """
+
+    @classmethod
+    def match(cls, dset):
+        """Match numeric datasets with three dimensions or more."""
+        return (
+            super().match(dset)
+            and dset.dtype.names is None
+            and dset.shape is not None
+            and len(dset.shape) >= 3
+            and utils.is_supported_num_dtype(dset)
+        )
+
+    @property
+    def icon_name(self):
+        """Icon name associated to node"""
+        return "h5array.svg"
+
+    @property
+    def shape_str(self):
+        """Return string representation of node shape, if any"""
+        return " x ".join([str(size) for size in self.dset.shape])
+
+    @property
+    def text(self):
+        """Return node textual representation"""
+        data, truncated = utils.read_bounded(self.dset, TEXT_PREVIEW_MAX_ITEMS)
+        return str(data) + (" ..." if truncated else "")
+
 
 class GenericCompoundNode(BaseGenericNode):
     """Node for compound/structured HDF5 data that can't convert to numeric arrays."""
@@ -549,4 +612,5 @@ class GenericCompoundNode(BaseGenericNode):
 common.NODE_FACTORY.register(GenericScalarNode, is_generic=True)
 common.NODE_FACTORY.register(GenericTextNode, is_generic=True)
 common.NODE_FACTORY.register(GenericArrayNode, is_generic=True)
+common.NODE_FACTORY.register(GenericNDArrayNode, is_generic=True)
 common.NODE_FACTORY.register(GenericCompoundNode, is_generic=True)

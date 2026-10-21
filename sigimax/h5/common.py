@@ -128,6 +128,17 @@ class BaseNode(metaclass=abc.ABCMeta):
             self.__obj = obj
         return self.__obj
 
+    def create_preview_object(self, max_items: int):  # pylint: disable=unused-argument
+        """Return the object shown as a preview of the node, if supported.
+
+        Subclasses may return a decimated object reading at most ``max_items``
+        elements, instead of the native object.
+
+        Args:
+            max_items: maximum number of data elements to read
+        """
+        return self.get_native_object()
+
     def collect_attributes(self):
         """Collect attributes from node.
 
