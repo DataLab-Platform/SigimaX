@@ -41,6 +41,8 @@ mappings (:mod:`sigimax.h5.mapping`), registered by applications or plugins.
 .. autofunction:: sigimax.h5.mapping.unregister_mapping
 .. autofunction:: sigimax.h5.mapping.describe_mapping
 .. autoclass:: sigimax.h5.mapping.DataMapping
+.. autoclass:: sigimax.h5.mapping.MappedObject
+.. autoclass:: sigimax.h5.mapping.MappedAxis
 .. autoclass:: sigimax.h5.mapping.MappedDataNode
 .. autoclass:: sigimax.h5.selection.NDSelection
     :members:

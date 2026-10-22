@@ -6,11 +6,18 @@
 #, fuzzy
 msgid ""
 msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2026-10-22 21:34+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
+"Language-Team: fr <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
 
 msgid "HDF5 Workspace"
 msgstr "Espace de travail HDF5"
@@ -87,9 +94,54 @@ msgstr "``open_h5_files`` et :class:`~sigimax.widgets.h5browser.H5BrowserDialog`
 msgid "The generic import layer can create :class:`sigima.objects.SignalObj` and :class:`sigima.objects.ImageObj`; a derived application decides how these objects enter its own model."
 msgstr "La couche d'import générique peut créer des :class:`sigima.objects.SignalObj` et :class:`sigima.objects.ImageObj` ; une application dérivée décide comment ces objets entrent dans son propre modèle."
 
+msgid "NeXus Scientific Objects"
+msgstr "Objets scientifiques NeXus"
+
+msgid "With Sigima 1.4 or later, an ``NXdata`` group is importable as a 1D signal or 2D image with its physical axes, labels and units. Modern group attributes (``signal``, ``axes`` and ``<axis>_indices``) and legacy dataset attributes (``signal=1`` and ``axes``) are supported. Selecting a group imports the scientific object; selecting a child dataset still gives access to raw values."
+msgstr "Avec Sigima 1.4 ou ultérieur, un groupe ``NXdata`` est importable comme signal 1D ou image 2D avec ses axes physiques, libellés et unités. Les attributs modernes du groupe (``signal``, ``axes`` et ``<axis>_indices``) et les anciens attributs des jeux de données (``signal=1`` et ``axes``) sont pris en charge. Sélectionner un groupe importe l'objet scientifique ; sélectionner un jeu de données enfant donne toujours accès aux valeurs brutes."
+
+msgid "Axis datasets must be 1D and contain either one coordinate per point or one extra value for bin edges. Edges are converted to centers. Image coordinates may be non-uniform. Invalid declared axes are reported and prevent group import; undeclared axes use indices. Signal Y uncertainties are read from ``<signal>_errors`` or ``errors`` when their shape matches; image uncertainties are not imported."
+msgstr "Les jeux de données des axes doivent être 1D et contenir une coordonnée par point, ou une valeur supplémentaire pour des bords de classes. Les bords sont convertis en centres. Les coordonnées d'image peuvent être non uniformes. Les axes déclarés invalides sont signalés et empêchent l'import du groupe ; les axes non déclarés utilisent les indices. Les incertitudes Y des signaux sont lues dans ``<signal>_errors`` ou ``errors`` lorsque leur forme correspond ; les incertitudes des images ne sont pas importées."
+
+msgid "Imported objects record their file, group, signal, axes and conversions in ``experimental_source`` metadata. This describes the measurement origin, not a reproducible acquisition or a processing history. The application must preserve object metadata in its own workspace serialization."
+msgstr "Les objets importés enregistrent leur fichier, groupe, signal, axes et conversions dans les métadonnées ``experimental_source``. Cela décrit l'origine de la mesure, pas une acquisition reproductible ni un historique de traitement. L'application doit préserver les métadonnées des objets dans sa propre sérialisation d'espace de travail."
+
+msgid "Declarative Data Mappings"
+msgstr "Profils de correspondance déclaratifs"
+
+msgid "For files without suitable ``NXdata`` descriptions, register a mapping before opening the file. A mapping matches groups by attribute values and required paths, then describes the signals or images they contain. Save the following JSON as ``counters.json``:"
+msgstr "Pour les fichiers sans descriptions ``NXdata`` adaptées, enregistrez un profil avant d'ouvrir le fichier. Un profil reconnaît les groupes par les valeurs de leurs attributs et des chemins requis, puis décrit les signaux ou images qu'ils contiennent. Enregistrez le JSON suivant dans ``counters.json`` :"
+
+#, python-brace-format
+msgid "Paths are relative to each matching group. Only the last component of ``signal`` may contain a pattern (``*``, ``?`` or ``[...]``); ``{name}`` is then required in the object name and is replaced by each dataset name. Uncertainty datasets ending in ``_errors`` and declared axes are excluded from pattern expansion."
+msgstr "Les chemins sont relatifs à chaque groupe reconnu. Seule la dernière composante de ``signal`` peut contenir un motif (``*``, ``?`` ou ``[...]``) ; ``{name}`` est alors obligatoire dans le nom de l'objet et est remplacé par le nom de chaque jeu de données. Les jeux de données d'incertitudes se terminant par ``_errors`` et les axes déclarés sont exclus du développement du motif."
+
+msgid "``axes`` contains one entry per signal dimension, in array order (rows then columns for an image). Each entry is a path, an object with ``path`` and optional ``label`` and ``units``, or ``null`` to use indices. Omitting ``axes`` uses indices for every dimension. The optional ``errors`` path overrides the default ``<signal>_errors`` dataset. Labels and units otherwise come from ``long_name`` and ``units`` attributes, with the dataset name as label fallback. An explicitly requested uncertainty dataset with the wrong shape prevents importing that mapped object."
+msgstr "``axes`` contient une entrée par dimension du signal, dans l'ordre du tableau (lignes puis colonnes pour une image). Chaque entrée est un chemin, un objet avec ``path`` et éventuellement ``label`` et ``units``, ou ``null`` pour utiliser les indices. Omettre ``axes`` utilise les indices pour chaque dimension. Le chemin facultatif ``errors`` remplace le jeu de données par défaut ``<signal>_errors``. Les libellés et unités viennent sinon des attributs ``long_name`` et ``units``, avec le nom du jeu de données comme libellé par défaut. Un jeu de données d'incertitudes explicitement demandé dont la forme est incorrecte empêche l'import de l'objet décrit."
+
+msgid "This runnable example uses the JSON file above and creates a small input file:"
+msgstr "Cet exemple exécutable utilise le fichier JSON ci-dessus et crée un petit fichier d'entrée :"
+
+msgid "The registry is process-wide; JSON files are not discovered automatically. A plugin should register its mappings when loaded and unregister them when unloaded. Re-registering an identical mapping is harmless; a different mapping with the same name raises ``ValueError``. Existing open files are not rebuilt when the registry changes. Mapped objects appear as extra browser nodes, leaving raw datasets accessible, and record the mapping name in their experimental source."
+msgstr "Le registre est commun au processus ; les fichiers JSON ne sont pas découverts automatiquement. Un plugin doit enregistrer ses profils au chargement et les retirer au déchargement. Réenregistrer un profil identique est sans effet ; un profil différent portant le même nom lève ``ValueError``. Les fichiers déjà ouverts ne sont pas reconstruits lorsque le registre change. Les objets décrits apparaissent comme des nœuds supplémentaires de l'explorateur, en laissant les jeux de données bruts accessibles, et enregistrent le nom du profil dans leur origine expérimentale."
+
+msgid "Large Files and Multidimensional Views"
+msgstr "Grands fichiers et vues multidimensionnelles"
+
+msgid "Dataset classification uses shape and type metadata; mixed compound datasets are checked on their first records. Text previews are bounded to 100 elements, and attributes above 10 000 elements are skipped. Graphical previews are read in a worker thread, and stale results are not displayed. File closure waits for the preview read to finish."
+msgstr "La classification des jeux de données utilise les métadonnées de forme et de type ; les jeux de données composites mixtes sont vérifiés sur leurs premiers enregistrements. Les aperçus textuels sont limités à 100 éléments, et les attributs de plus de 10 000 éléments sont ignorés. Les aperçus graphiques sont lus dans un fil d'exécution de travail, et les résultats périmés ne sont pas affichés. La fermeture d'un fichier attend la fin de la lecture de son aperçu."
+
+msgid "Ordinary 1D arrays and 2D images exceeding ``2**24`` elements are previewed with a sampling step along each axis. The full data is still read on import. NeXus and mapped objects, compound datasets and signals stored in 2D tables still use complete objects for graphical previews, so this is not a universal memory bound."
+msgstr "Les tableaux 1D ordinaires et les images 2D dépassant ``2**24`` éléments sont prévisualisés avec un pas d'échantillonnage le long de chaque axe. Les données complètes restent lues lors de l'import. Les objets NeXus et décrits par un profil, les jeux de données composites et les signaux stockés dans des tableaux 2D utilisent encore des objets complets pour leurs aperçus graphiques : ce n'est donc pas une borne mémoire universelle."
+
+msgid "Numeric datasets with three or more dimensions are listed but not imported as complete objects. There is no graphical slice selector. Use :class:`sigimax.h5.selection.NDSelection` and :func:`sigimax.h5.selection.read_selection` to read only a selected 1D or 2D view as a NumPy array:"
+msgstr "Les jeux de données numériques à trois dimensions ou plus sont listés mais pas importés comme objets complets. Il n'existe pas de sélecteur graphique de coupes. Utilisez :class:`sigimax.h5.selection.NDSelection` et :func:`sigimax.h5.selection.read_selection` pour ne lire qu'une vue 1D ou 2D sélectionnée, sous forme de tableau NumPy :"
+
+msgid "``displayed`` gives the axes in output order; ``indices`` fixes the other axes in their original order. An optional positive ``step`` samples displayed axes. Invalid axes or indices raise ``ValueError``. This low-level API returns arrays, not calibrated Sigima objects, and does not attach experimental-source metadata."
+msgstr "``displayed`` donne les axes dans l'ordre de sortie ; ``indices`` fixe les autres axes dans leur ordre d'origine. Un ``step`` positif facultatif échantillonne les axes affichés. Des axes ou indices invalides lèvent ``ValueError``. Cette API de bas niveau renvoie des tableaux, pas des objets Sigima calibrés, et n'attache pas de métadonnées d'origine expérimentale."
+
 msgid "DataLab"
 msgstr "DataLab"
 
 msgid "DataLab keeps its native workspace format, panel serialization, metadata, ROI, and analysis-result handling. Its ``save_h5_workspace`` override remains the owner of that format. The SigimaX HDF5 GUI and generic import infrastructure do not change DataLab's native HDF5 layout."
 msgstr "DataLab conserve son format d'espace de travail natif, la sérialisation de ses panneaux, ses métadonnées, ses ROI et la gestion des résultats d'analyse. Sa surcharge de ``save_h5_workspace`` reste propriétaire de ce format. L'interface HDF5 et l'infrastructure d'import générique de SigimaX ne modifient pas la disposition HDF5 native de DataLab."
-

@@ -6,11 +6,18 @@
 #, fuzzy
 msgid ""
 msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2026-10-22 21:34+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
+"Language-Team: fr <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
 
 msgid "Version 1.1.0"
 msgstr "Version 1.1.0"
@@ -63,9 +70,38 @@ msgstr "La fenêtre d'ajustement planckien part d'une courbe correspondant au pi
 msgid "The exponential fit dialog now evaluates the same model as Sigima, and its rate slider covers short time constants whatever the X unit (e.g. 1 ms with X in seconds)."
 msgstr "La fenêtre d'ajustement exponentiel évalue désormais le même modèle que Sigima, et son curseur de taux couvre les constantes de temps courtes quelle que soit l'unité de X (par exemple 1 ms avec X en secondes)."
 
+msgid "HDF5 import"
+msgstr "Import HDF5"
+
+msgid "Browsing an HDF5 file no longer reads its numeric datasets entirely just to classify them: generic nodes are classified and described from the dataset shape and data type, and value previews read only the first elements (`TEXT_PREVIEW_MAX_ITEMS`). Compound datasets mixing numeric and string fields are checked on their first records only. Full data is read when creating an imported object or an undecimated graphical preview."
+msgstr "Parcourir un fichier HDF5 ne lit plus ses jeux de données numériques en entier simplement pour les classifier : les nœuds génériques sont classifiés et décrits à partir de la forme et du type des jeux de données, et les aperçus de valeurs ne lisent que les premiers éléments (`TEXT_PREVIEW_MAX_ITEMS`). Les jeux de données composites mêlant champs numériques et textuels ne sont vérifiés que sur leurs premiers enregistrements. Les données complètes sont lues lors de la création d'un objet importé ou d'un aperçu graphique non sous-échantillonné."
+
+msgid "The HDF5 browser reads previews in a worker thread, so that it stays responsive while a large dataset is read: only the last selected node is shown, and closing a file waits for the preview being read. Ordinary 1D arrays and 2D images with more than `PlotPreview.MAX_ITEMS` (2²⁴) elements are previewed with a step along each axis. NeXus and mapped objects, compound datasets and signals stored in 2D tables still use complete objects for graphical previews; this is not a universal memory bound."
+msgstr "L'explorateur HDF5 lit les aperçus dans un fil d'exécution de travail pour rester réactif pendant la lecture d'un grand jeu de données : seul le dernier nœud sélectionné est affiché, et la fermeture d'un fichier attend la fin de la lecture de l'aperçu. Les tableaux 1D ordinaires et les images 2D de plus de `PlotPreview.MAX_ITEMS` (2²⁴) éléments sont prévisualisés avec un pas le long de chaque axe. Les objets NeXus et décrits par un profil, les jeux de données composites et les signaux stockés dans des tableaux 2D utilisent encore des objets complets pour leurs aperçus graphiques ; ce n'est pas une borne mémoire universelle."
+
+msgid "Numeric datasets with three dimensions or more (image stacks, spectral cubes...) are now listed in the HDF5 browser, with their shape and type. They are not imported as a whole, and there is no graphical slice selector: developers can read their 1D or 2D views with `sigimax.h5.selection.read_selection`, which reads only the selected elements (`NDSelection`: displayed axes, possibly transposed, and an index along each other axis)."
+msgstr "Les jeux de données numériques à trois dimensions ou plus (piles d'images, cubes spectraux...) sont désormais listés dans l'explorateur HDF5 avec leur forme et leur type. Ils ne sont pas importés en entier, et il n'existe pas de sélecteur graphique de coupes : les développeurs peuvent lire leurs vues 1D ou 2D avec `sigimax.h5.selection.read_selection`, qui ne lit que les éléments sélectionnés (`NDSelection` : axes affichés, éventuellement transposés, et un indice sur chaque autre axe)."
+
+msgid "NeXus `NXdata` groups are shown as single nodes, imported as a signal (1D) or an image (2D) with their axes, units, labels and, for signals, uncertainties: `@signal`/`@axes` attributes with `@<axis>_indices`, legacy `signal`/`axes` dataset attributes, bin edges converted to bin centers, non-uniform image axes. Invalid axes are reported in the browser instead of being guessed. Imported objects record their origin in the `experimental_source` metadata entry (file, group, signal and axes, conversions). `.nxs` and `.nx5` files are proposed in HDF5 file dialogs."
+msgstr "Les groupes NeXus `NXdata` sont présentés comme des nœuds uniques, importés comme signal (1D) ou image (2D) avec leurs axes, unités, libellés et, pour les signaux, incertitudes : attributs `@signal`/`@axes` avec `@<axis>_indices`, anciens attributs de jeux de données `signal`/`axes`, conversion des bords de classes en centres, axes d'image non uniformes. Les axes invalides sont signalés dans l'explorateur au lieu d'être devinés. Les objets importés enregistrent leur origine dans la métadonnée `experimental_source` (fichier, groupe, signal et axes, conversions). Les fichiers `.nxs` et `.nx5` sont proposés dans les dialogues de fichiers HDF5."
+
+msgid "Files that do not designate their data with suitable `NXdata` groups (no axes, several counters...) can be described by declarative data mappings (`sigimax.h5.mapping`): JSON-compatible descriptions of the signals and images of the groups having given attributes and paths, with their axes, uncertainties, labels and units, and a name pattern to repeat an object for each counter of a scan. Mapped objects are shown as extra nodes of the HDF5 browser and record the mapping in their `experimental_source`. Applications and plugins register mappings with `register_mapping` (and `unregister_mapping`); `NodeFactory.add_children_provider` lets them add such extra nodes. Blank units and labels are now ignored."
+msgstr "Les fichiers qui ne désignent pas leurs données par des groupes `NXdata` adaptés (sans axes, plusieurs compteurs...) peuvent être décrits par des profils de correspondance déclaratifs (`sigimax.h5.mapping`) : descriptions compatibles JSON des signaux et images des groupes ayant les attributs et chemins donnés, avec leurs axes, incertitudes, libellés et unités, et un motif de nom pour répéter un objet pour chaque compteur d'un scan. Les objets décrits apparaissent comme des nœuds supplémentaires de l'explorateur HDF5 et enregistrent le profil dans leur `experimental_source`. Les applications et plugins enregistrent les profils avec `register_mapping` (et `unregister_mapping`) ; `NodeFactory.add_children_provider` leur permet d'ajouter ces nœuds supplémentaires. Les unités et libellés vides sont désormais ignorés."
+
+msgid "Dataset attributes with more than `MAX_ATTRIBUTE_ITEMS` (10 000) values are no longer copied to object metadata."
+msgstr "Les attributs de jeux de données contenant plus de `MAX_ATTRIBUTE_ITEMS` (10 000) valeurs ne sont plus copiés dans les métadonnées des objets."
+
+msgid "Images with unsigned 32-bit values above 2 147 483 647 are no longer clipped to `int32`: they are converted with Sigima's converter, which keeps every value exactly with Sigima ≥ 1.4.0. `BaseNode.uint32_wng` is kept for compatibility and is always `False`."
+msgstr "Les images contenant des valeurs entières non signées sur 32 bits supérieures à 2 147 483 647 ne sont plus écrêtées en `int32` : elles sont converties avec le convertisseur de Sigima, qui conserve chaque valeur exactement avec Sigima ≥ 1.4.0. `BaseNode.uint32_wng` est conservé pour compatibilité et vaut toujours `False`."
+
+msgid "`NodeFactory.unregister` removes a node class and its post triggers, so that an application plugin can remove the node classes it registered when it is unloaded."
+msgstr "`NodeFactory.unregister` retire une classe de nœud et ses déclencheurs de post-traitement, afin qu'un plugin applicatif puisse retirer les classes de nœuds qu'il a enregistrées lors de son déchargement."
+
+msgid "See the [HDF5 guide](../user_guide/hdf5_workspace.rst) for a complete JSON mapping and registration example, NeXus import limits and multidimensional selection examples."
+msgstr "Le [guide HDF5](../user_guide/hdf5_workspace.rst) fournit un exemple complet de profil JSON et d'enregistrement, les limites de l'import NeXus et des exemples de sélections multidimensionnelles."
+
 msgid "Requirements"
 msgstr "Exigences"
 
-msgid "Sigima 1.3.0 or later is required for the portable annotation model, PlotPy conversion helpers and curve fitting model formulas."
-msgstr "Sigima 1.3.0 ou une version ultérieure est requise pour le modèle d'annotation portable, les helpers de conversion PlotPy et les formules des modèles d'ajustement de courbes."
-
+msgid "Sigima 1.4.0 or later is required: the HDF5 import modules use its experimental-source API, and integer conversions use its precision-preserving converter."
+msgstr "Sigima 1.4.0 ou ultérieur est requis : les modules d'import HDF5 utilisent son API d'origine expérimentale, et les conversions d'entiers utilisent son convertisseur préservant la précision."

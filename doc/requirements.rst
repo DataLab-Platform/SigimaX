@@ -20,7 +20,7 @@ The `sigimax` package requires the following Python modules:
       - >= 5.7
       - Cross-platform lib for process and system monitoring.
     * - Sigima
-      - >= 1.3.0
+      - >= 1.4.0
       - Scientific computing engine for 1D signals and 2D images, part of the DataLab open-source platform.
 
 Optional modules for GUI support (Qt):

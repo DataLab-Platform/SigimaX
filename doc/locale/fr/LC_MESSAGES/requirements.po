@@ -6,11 +6,18 @@
 #, fuzzy
 msgid ""
 msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2026-10-22 21:34+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
+"Language-Team: fr <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
 
 msgid "The `sigimax` package requires the following Python modules:"
 msgstr "Le paquet `sigimax` nécessite les modules Python suivants :"
@@ -63,8 +70,8 @@ msgstr "Bibliothèque multiplateforme pour la surveillance des processus et du s
 msgid "Sigima"
 msgstr "Sigima"
 
-msgid ">= 1.2.0"
-msgstr ">= 1.2.0"
+msgid ">= 1.4.0"
+msgstr ">= 1.4.0"
 
 msgid "Scientific computing engine for 1D signals and 2D images, part of the DataLab open-source platform."
 msgstr "Moteur de calcul scientifique pour les signaux 1D et les images 2D, faisant partie de la plateforme open-source DataLab."
