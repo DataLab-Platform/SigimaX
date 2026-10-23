@@ -23,6 +23,7 @@ from sigima.objects import ImageObj, SignalObj, get_experimental_source
 from sigimax.adapters_plotpy import create_adapter_from_object
 from sigimax.h5 import H5Importer
 from sigimax.h5.nexus import NXdataNode
+from sigimax.h5.selection import preview_step
 
 pytestmark = pytest.mark.unit
 
@@ -293,6 +294,43 @@ def test_nxdata_image_axes(tmp_path) -> None:
         for name in ("constant", "unordered"):
             with pytest.raises(ValueError, match="not strictly monotonic"):
                 nodes[f"/{name}"].get_native_object()
+
+
+def test_nxdata_decimated_preview(tmp_path) -> None:
+    """Previews of large NXdata groups read one element out of a step, with the
+    matching axis values; small groups are previewed with the native object."""
+
+    def build(h5file: h5py.File) -> None:
+        image = _nxdata(h5file, "image", "data", ["y", "x"])
+        image["data"] = np.arange(300 * 400, dtype=np.float32).reshape(300, 400)
+        image["x"] = np.linspace(0.0, 39.9, 400)
+        image["y"] = np.linspace(29.9, 0.0, 300)  # Decreasing: reversed
+        spectrum = _nxdata(h5file, "spectrum", "counts", "energy")
+        spectrum["counts"] = np.arange(5000.0)
+        spectrum["counts_errors"] = np.full(5000, 0.5)
+        spectrum["energy"] = np.linspace(8.0, 9.0, 5001)  # Bin edges
+
+    with _nodes_of(tmp_path, build) as nodes:
+        preview = nodes["/image"].create_preview_object(1000)
+        step = preview_step((300, 400), 1000)
+        assert preview.data.shape == (25, 34) and preview.data.size <= 1000
+        assert preview.is_uniform_coords
+        assert np.isclose(preview.dx, 0.1 * step) and preview.x0 == 0.0
+        # Rows 0, step... 24 * step are read, then reversed with the Y axis
+        assert np.isclose(preview.y0, 29.9 - 24 * step * 0.1)
+        assert np.isclose(preview.dy, 0.1 * step)
+        assert preview.data[0, 0] == 24 * step * 400
+        assert preview.data[-1, 1] == step
+
+        node = nodes["/spectrum"]
+        preview = node.create_preview_object(1000)
+        native = node.get_native_object()
+        assert preview.y.size <= 1000
+        step = preview_step((5000,), 1000)
+        assert np.allclose(preview.x, native.x[::step])
+        assert np.array_equal(preview.y, native.y[::step])
+        assert np.array_equal(preview.dy, native.dy[::step])
+        assert node.create_preview_object(5000) is native
 
 
 if __name__ == "__main__":

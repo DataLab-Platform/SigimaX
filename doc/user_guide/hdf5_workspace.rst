@@ -206,11 +206,11 @@ in a worker thread; previews of items selected meanwhile are not read, and
 stale results are not displayed. Closing a file or the browser dialog waits
 for the preview read to finish.
 
-Ordinary 1D arrays and 2D images exceeding ``2**24`` elements are previewed with a
-sampling step along each axis. The full data is still read on import.
-NeXus and mapped objects, compound datasets and signals stored in 2D tables
-still use complete objects for graphical previews, so this is not a universal
-memory bound.
+Ordinary 1D arrays and 2D images, NeXus and mapped objects exceeding ``2**24``
+elements are previewed with a sampling step along each axis. The full data is
+still read on import. Compound datasets and signals stored in 2D tables still
+use complete objects for graphical previews, so this is not a universal memory
+bound.
 
 Numeric datasets with three or more dimensions are listed but not imported as
 complete objects. There is no graphical slice selector. Use

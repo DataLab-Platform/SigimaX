@@ -6,7 +6,8 @@ SigimaX NeXus support: interpretation of ``NXdata`` groups
 A NeXus ``NXdata`` group designates its plottable signal and the axes of each
 signal dimension. :class:`NXdataNode` shows such a group as a single node of the
 HDF5 browser, which is imported as a signal (1D) or an image (2D) with its axes,
-units and uncertainties. Only metadata is read until the object is created.
+units and uncertainties. Only metadata is read until the object is created, and
+previews of large groups read one element out of a step along each dimension.
 
 Supported conventions (NeXus data model, ``NXdata`` base class):
 
@@ -24,6 +25,7 @@ Supported conventions (NeXus data model, ``NXdata`` base class):
 from __future__ import annotations
 
 import dataclasses
+import math
 import re
 
 import h5py
@@ -32,6 +34,7 @@ from guidata.utils.misc import to_string
 from sigima.io.common.converters import convert_array_to_valid_dtype
 from sigima.objects import (
     ImageObj,
+    SignalObj,
     create_image,
     create_signal,
     make_experimental_source,
@@ -39,6 +42,7 @@ from sigima.objects import (
 )
 
 from sigimax.h5 import common, utils
+from sigimax.h5.selection import preview_step
 
 __all__ = [
     "NXAxis",
@@ -316,18 +320,25 @@ def _is_decreasing(values: np.ndarray, name: str) -> bool:
 
 
 def _image_axis(
-    group: h5py.Group, axis: NXAxis | None, size: int
+    group: h5py.Group, axis: NXAxis | None, size: int, step: int = 1
 ) -> tuple[np.ndarray, np.dtype, bool]:
     """Return image axis values in increasing order, the data type they were
     stored with, and True if they were reversed
+
+    Args:
+        group: NXdata group
+        axis: axis description, or None for a dimension without axis
+        size: number of points along the dimension
+        step: step between the returned values (to read a decimated preview)
 
     Raises:
         ValueError: if axis values are not strictly monotonic
     """
     if axis is None:
-        return np.arange(size, dtype=float), np.dtype(float), False
+        return np.arange(0, size, step, dtype=float), np.dtype(float), False
     values, dtype = _read_axis(group, axis)
     reverse = _is_decreasing(values, axis.name)
+    values = values[::step]
     return (values[::-1] if reverse else values), dtype, reverse
 
 
@@ -412,8 +423,35 @@ class NXdataNode(common.GroupNode):
         """Create signal or image object from the ``NXdata`` group"""
         if not self.is_supported():
             return None
+        obj, conversions = self._build_object(1)
+        set_experimental_source(obj, self.make_source(conversions))
+        return obj
+
+    def create_preview_object(self, max_items: int):
+        """Return the native object, or a decimated one if the signal has more
+        than ``max_items`` elements (only the read elements of its axes are kept)
+
+        Args:
+            max_items: maximum number of signal elements to read
+        """
+        if not self.is_supported():
+            return None
+        shape = self.nxdata.shape
+        if math.prod(shape) <= max_items:
+            return self.get_native_object()
+        obj, _conversions = self._build_object(preview_step(shape, max_items))
+        return obj
+
+    def _build_object(self, step: int) -> tuple[SignalObj | ImageObj, list[str]]:
+        """Create signal or image object from the ``NXdata`` group, reading one
+        element out of ``step`` along each dimension
+
+        Returns:
+            Object and conversions applied to the source values
+        """
         desc, group = self.nxdata, self.dset
-        data = group[desc.signal][()]
+        dset = group[desc.signal]
+        data = dset[(slice(None, None, step),) * dset.ndim]
         conversions = [
             f"axis '{axis.name}': bin edges -> bin centers"
             for axis in desc.axes
@@ -421,12 +459,12 @@ class NXdataNode(common.GroupNode):
         ]
         if len(desc.shape) == 1:
             axis = desc.axes[0]
-            x = np.arange(data.size, dtype=float)
+            x = np.arange(0, desc.shape[0], step, dtype=float)
             if axis is not None:
-                x, _dtype = _read_axis(group, axis)
+                x = _read_axis(group, axis)[0][::step]
             dy = None
             if desc.errors is not None:
-                dy = np.asarray(group[desc.errors][()], dtype=float)
+                dy = np.asarray(group[desc.errors][::step], dtype=float)
             y = common.to_signal_data(data)
             obj = create_signal(self.object_title, x, y, dy=dy)
             obj.ylabel, obj.yunit = desc.label, desc.units
@@ -436,8 +474,8 @@ class NXdataNode(common.GroupNode):
             yaxis, xaxis = desc.axes
             ny, nx = desc.shape
             # PlotPy images need increasing coordinates: decreasing axes are reversed
-            xc, xdtype, xreversed = _image_axis(group, xaxis, nx)
-            yc, ydtype, yreversed = _image_axis(group, yaxis, ny)
+            xc, xdtype, xreversed = _image_axis(group, xaxis, nx, step)
+            yc, ydtype, yreversed = _image_axis(group, yaxis, ny, step)
             for axis, reverse, dim in ((xaxis, xreversed, 1), (yaxis, yreversed, 0)):
                 if reverse:
                     data = np.flip(data, axis=dim)
@@ -452,8 +490,8 @@ class NXdataNode(common.GroupNode):
             )
             obj.zlabel, obj.zunit = desc.label, desc.units
             if _is_uniform(xc, xdtype) and _is_uniform(yc, ydtype):
-                dx = float(xc[-1] - xc[0]) / (nx - 1) if nx > 1 else 1.0
-                dy = float(yc[-1] - yc[0]) / (ny - 1) if ny > 1 else 1.0
+                dx = float(xc[-1] - xc[0]) / (xc.size - 1) if xc.size > 1 else 1.0
+                dy = float(yc[-1] - yc[0]) / (yc.size - 1) if yc.size > 1 else 1.0
                 obj.set_uniform_coords(dx, dy, float(xc[0]), float(yc[0]))
             else:
                 obj.set_coords(xc, yc)
@@ -463,8 +501,7 @@ class NXdataNode(common.GroupNode):
                 obj.ylabel, obj.yunit = yaxis.label, yaxis.units
             if desc.errors is not None:
                 conversions.append("uncertainties not imported (image)")
-        set_experimental_source(obj, self.make_source(conversions))
-        return obj
+        return obj, conversions
 
 
 common.NODE_FACTORY.register(NXdataNode, is_generic=True)
