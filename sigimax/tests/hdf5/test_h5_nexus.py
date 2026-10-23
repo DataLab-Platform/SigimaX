@@ -10,7 +10,9 @@ uncertainties, following the NeXus conventions, and record their origin.
 
 from __future__ import annotations
 
+import contextlib
 import uuid
+from typing import Callable
 
 import h5py
 import numpy as np
@@ -102,6 +104,19 @@ def fixture_nodes(nxsfname: str):
         importer.close()
 
 
+@contextlib.contextmanager
+def _nodes_of(tmp_path, build: Callable[[h5py.File], None]):
+    """Create a file with a builder function, and yield its nodes by path."""
+    fname = str(tmp_path / f"{uuid.uuid4()}.nxs")
+    with h5py.File(fname, "w") as h5file:
+        build(h5file)
+    importer = H5Importer(fname)
+    try:
+        yield {node.id: node for node in importer.nodes}
+    finally:
+        importer.close()
+
+
 def test_nxdata_classification(nodes: dict) -> None:
     """NXdata groups are recognized; invalid ones are shown but not importable."""
     for name in ("spectrum", "histogram", "map", "indexed", "legacy"):
@@ -173,6 +188,56 @@ def test_nxdata_missing_axis_source(nodes: dict, tmp_path) -> None:
     fname = str(tmp_path / "partial.h5ima")
     sigima.io.write_image(fname, obj)
     assert get_experimental_source(sigima.io.read_image(fname)) == source
+
+
+def test_nxdata_invalid_axes(tmp_path) -> None:
+    """Axes that do not describe the signal dimensions, and axes or
+    uncertainties that do not hold real numbers, are reported."""
+
+    def build(h5file: h5py.File) -> None:
+        short = _nxdata(h5file, "short", "data", ["x"])
+        short["data"] = np.ones((3, 4))
+        short["x"] = np.arange(4.0)
+        long = _nxdata(h5file, "long", "data", ["y", "x", "z"])
+        long["data"] = np.ones((3, 4))
+        long["x"], long["y"], long["z"] = np.arange(4.0), np.arange(3.0), [0.0, 1.0]
+        twice = _nxdata(h5file, "twice", "data", ["x", "y"])
+        twice.attrs["x_indices"] = twice.attrs["y_indices"] = 0
+        twice["data"] = np.ones((3, 4))
+        twice["x"], twice["y"] = np.arange(3.0), np.arange(3.0)
+        missing = _nxdata(h5file, "missing", "data", ["x"])
+        missing.attrs["x_indices"] = 3
+        missing["data"] = np.ones(4)
+        missing["x"] = np.arange(4.0)
+        spanning = _nxdata(h5file, "spanning", "data", ["x", "."])
+        spanning.attrs["x_indices"] = [0, 1]
+        spanning["data"] = np.ones((3, 4))
+        spanning["x"] = np.arange(3.0)
+        text = _nxdata(h5file, "text", "data", ["x"])
+        text["data"] = np.ones(3)
+        text["x"] = np.array([b"a", b"b", b"c"])
+        text_errors = _nxdata(h5file, "text_errors", "data", ["x"])
+        text_errors["data"] = np.ones(3)
+        text_errors["x"] = np.arange(3.0)
+        text_errors["data_errors"] = np.array([b"a", b"b", b"c"])
+
+    with _nodes_of(tmp_path, build) as nodes:
+        expected = {
+            "short": "1 axes for 2 dimensions",
+            "long": "3 axes for 2 dimensions",
+            "twice": "axes 'x' and 'y' describe dimension 0",
+            "missing": "axis 'x' refers to missing dimension 3",
+            "spanning": "axis 'x' spans 2 dimensions",
+            "text": "axis 'x' does not hold real numbers",
+        }
+        for name, problem in expected.items():
+            node = nodes[f"/{name}"]
+            assert not node.is_supported(), name
+            assert problem in node.nxdata.problems, name
+            assert problem in node.text, name
+        node = nodes["/text_errors"]
+        assert node.is_supported() and node.nxdata.errors is None
+        assert isinstance(node.get_native_object(), SignalObj)
 
 
 if __name__ == "__main__":

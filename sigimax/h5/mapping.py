@@ -360,7 +360,9 @@ def _describe(
         return None
     problems = list(desc.problems)
     if obj.errors and desc.errors is None:
-        problems.append(f"errors '{obj.errors}' do not match the signal shape")
+        problems.append(
+            f"errors '{obj.errors}' is not a numeric dataset with the signal shape"
+        )
     axis_descs = list(desc.axes)
     for index, axis in enumerate(obj.axes or ()):
         if index < len(axis_descs) and axis is not None and axis_descs[index]:

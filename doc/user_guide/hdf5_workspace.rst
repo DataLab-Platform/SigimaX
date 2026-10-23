@@ -90,12 +90,14 @@ With Sigima 1.4 or later, an ``NXdata`` group is importable as a 1D signal or
 (``signal=1`` and ``axes``) are supported. Selecting a group imports the
 scientific object; selecting a child dataset still gives access to raw values.
 
-Axis datasets must be 1D and contain either one coordinate per point or one
-extra value for bin edges. Edges are converted to centers. Image coordinates
-may be non-uniform. Invalid declared axes are reported and prevent group
-import; undeclared axes use indices. Signal Y uncertainties are read from
-``<signal>_errors`` or ``errors`` when their shape matches; image uncertainties
-are not imported.
+Axis datasets must be 1D, hold real numbers and contain either one coordinate
+per point or one extra value for bin edges. Edges are converted to centers.
+Image coordinates may be non-uniform. The ``axes`` attribute must give one
+entry per signal dimension, and ``<axis>_indices`` attributes must designate
+distinct existing dimensions. Invalid declared axes are reported and prevent
+group import; undeclared axes use indices. Signal Y uncertainties are read from
+``<signal>_errors`` or ``errors`` when they hold real numbers and their shape
+matches; image uncertainties are not imported.
 
 Imported objects record their file, group, signal, axes and conversions in
 ``experimental_source`` metadata; a dimension without axis is recorded as
@@ -143,8 +145,8 @@ columns for an image). Each entry is a path, an object with ``path`` and optiona
 indices for every dimension. The optional ``errors`` path overrides the
 default ``<signal>_errors`` dataset. Labels and units otherwise come from
 ``long_name`` and ``units`` attributes, with the dataset name as label fallback.
-An explicitly requested uncertainty dataset with the wrong shape prevents
-importing that mapped object.
+An explicitly requested uncertainty dataset that does not hold real numbers or
+has the wrong shape prevents importing that mapped object.
 
 This runnable example uses the JSON file above and creates a small input file:
 

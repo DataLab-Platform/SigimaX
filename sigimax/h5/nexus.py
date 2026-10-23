@@ -12,9 +12,10 @@ Supported conventions (NeXus data model, ``NXdata`` base class):
 
 - ``@signal`` group attribute, or legacy ``signal=1`` dataset attribute
 - ``@axes`` group attribute (``"."`` for a dimension without axis), with optional
-  ``@<axis>_indices`` attributes, or legacy ``axes`` signal attribute
-- axis datasets holding one value per point, or bin edges (one more value), which
-  are converted to bin centers
+  ``@<axis>_indices`` attributes, or legacy ``axes`` signal attribute; ``@axes``
+  must give one entry per signal dimension
+- axis datasets holding one real value per point, or bin edges (one more value),
+  which are converted to bin centers
 - ``<signal>_errors`` (or legacy ``errors``) uncertainties of a 1D signal
 - ``units`` and ``long_name`` dataset attributes
 """
@@ -134,17 +135,39 @@ def _find_signal(group: h5py.Group) -> tuple[str | None, list[str]]:
     return None, []
 
 
-def _axis_dimensions(group: h5py.Group, names: list[str], ndim: int) -> list:
-    """Return the axis name of each signal dimension"""
+def _axis_dimensions(
+    group: h5py.Group, names: list[str], ndim: int
+) -> tuple[list[str | None], list[str]]:
+    """Return the axis name of each signal dimension, and the problems found"""
     axes: list[str | None] = [None] * ndim
+    problems: list[str] = []
+    if names and len(names) != ndim:
+        problems.append(f"{len(names)} axes for {ndim} dimensions")
     for position, name in enumerate(names):
         if name == ".":
             continue
         indices = group.attrs.get(f"{name}_indices")
-        dims = [position] if indices is None else [int(i) for i in np.ravel(indices)]
-        if len(dims) == 1 and 0 <= dims[0] < ndim:
+        if indices is None:
+            if position >= ndim:
+                continue  # Already reported as an axis count mismatch
+            dims = [position]
+        else:
+            try:
+                dims = [int(index) for index in np.ravel(indices)]
+            except (TypeError, ValueError):
+                problems.append(f"axis '{name}' has invalid indices")
+                continue
+        if len(dims) != 1:
+            problems.append(f"axis '{name}' spans {len(dims)} dimensions")
+        elif not 0 <= dims[0] < ndim:
+            problems.append(f"axis '{name}' refers to missing dimension {dims[0]}")
+        elif axes[dims[0]] is not None:
+            problems.append(
+                f"axes '{axes[dims[0]]}' and '{name}' describe dimension {dims[0]}"
+            )
+        else:
             axes[dims[0]] = name
-    return axes
+    return axes, problems
 
 
 def describe_nxdata(group: h5py.Group) -> NXdataDescription | None:
@@ -163,8 +186,16 @@ def describe_nxdata(group: h5py.Group) -> NXdataDescription | None:
     dset = group.get(signal) if signal else None
     if not isinstance(dset, h5py.Dataset) or not dset.shape:
         return None
-    axes = _axis_dimensions(group, names, dset.ndim)
-    return describe_signal(group, signal, axes, errors=(f"{signal}_errors", "errors"))
+    axes, problems = _axis_dimensions(group, names, dset.ndim)
+    desc = describe_signal(group, signal, axes, errors=(f"{signal}_errors", "errors"))
+    if desc is None or not problems:
+        return desc
+    return dataclasses.replace(desc, problems=tuple(problems) + desc.problems)
+
+
+def _is_real_number(dset: h5py.Dataset) -> bool:
+    """Return True if dataset holds real numbers (integers or floats)"""
+    return dset.dtype.kind in "iuf"
 
 
 def describe_signal(
@@ -179,8 +210,8 @@ def describe_signal(
         group: HDF5 group
         signal: signal dataset path, relative to the group
         axes: axis dataset path of each signal dimension (None: no axis)
-        errors: candidate uncertainties dataset paths; the first one with the
-         signal shape is used
+        errors: candidate uncertainties dataset paths; the first numeric one with
+         the signal shape is used
 
     Returns:
         Description, or None if signal is not a numeric dataset
@@ -204,6 +235,9 @@ def describe_signal(
         elif not isinstance(axis_dset, h5py.Dataset) or axis_dset.ndim != 1:
             problems.append(f"axis '{name}' is not a 1D dataset")
             axis_descs.append(None)
+        elif not _is_real_number(axis_dset):
+            problems.append(f"axis '{name}' does not hold real numbers")
+            axis_descs.append(None)
         elif axis_dset.shape[0] not in (dset.shape[dim], dset.shape[dim] + 1):
             problems.append(
                 f"axis '{name}' has {axis_dset.shape[0]} values "
@@ -225,7 +259,11 @@ def describe_signal(
     found = None
     for name in errors:
         candidate = group.get(name)
-        if isinstance(candidate, h5py.Dataset) and candidate.shape == dset.shape:
+        if (
+            isinstance(candidate, h5py.Dataset)
+            and candidate.shape == dset.shape
+            and _is_real_number(candidate)
+        ):
             found = name
             break
     return NXdataDescription(

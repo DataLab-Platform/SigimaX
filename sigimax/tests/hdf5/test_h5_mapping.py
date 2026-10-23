@@ -207,7 +207,9 @@ def test_mapped_nodes(h5fname: str, mappings) -> None:
         }
         assert set(nodes) == expected
         assert not nodes["Bad errors"].is_supported()
-        assert "do not match the signal shape" in nodes["Bad errors"].text
+        assert "is not a numeric dataset with the signal shape" in (
+            nodes["Bad errors"].text
+        )
         node = nodes["data_10"]
         assert node.id == "/entry/scan_data::Counters/data_10"
         assert importer.get(node.id) is node
@@ -252,7 +254,7 @@ def test_mapping_problems(h5fname: str) -> None:
         items = dict(describe_mapping(mapping, h5file["entry"]))
     assert "Missing" not in items
     assert items["Bad errors"].problems == (
-        "errors 'measurement/map' do not match the signal shape",
+        "errors 'measurement/map' is not a numeric dataset with the signal shape",
     )
 
 
