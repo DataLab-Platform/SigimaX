@@ -5,8 +5,9 @@ HDF5 browser preview test
 -------------------------
 
 Previews are read in a worker thread: the last selected node is shown, the
-previews of nodes selected before are discarded without being read, and closing
-a file or the browser dialog waits for the preview being read.
+previews of nodes selected before are discarded without being read, selecting a
+node that cannot be previewed clears the plot, and closing a file or the browser
+dialog waits for the preview being read.
 """
 
 from __future__ import annotations
@@ -20,6 +21,7 @@ import numpy as np
 import pytest
 from guidata.qthelpers import qt_app_context
 from plotpy.items import BaseImageItem, CurveItem
+from qtpy import QtCore as QC
 from qtpy import QtWidgets as QW
 from sigima.objects import create_signal
 
@@ -127,6 +129,51 @@ def test_stale_previews_are_not_read() -> None:
         _wait_until(lambda: node.done)
         preview.cleanup()
         preview.close()
+
+
+def _find_item(tree, node_id: str) -> QW.QTreeWidgetItem:
+    """Return the tree item of a node."""
+    for item in tree.find_all_items():
+        if item.data(0, QC.Qt.UserRole) == node_id:
+            return item
+    raise KeyError(node_id)
+
+
+def _curves(plot) -> list[CurveItem]:
+    """Return the curves shown in a plot."""
+    return [item for item in plot.get_items() if isinstance(item, CurveItem)]
+
+
+def test_unsupported_node_clears_preview(tmp_path) -> None:
+    """Selecting a node that cannot be previewed clears the plot, and the preview
+    being read for the node selected before is not shown."""
+    fname = str(tmp_path / f"{uuid.uuid4()}.h5")
+    with h5py.File(fname, "w") as h5file:
+        h5file.create_group("group")["signal"] = np.arange(10.0)
+    with qt_app_context():
+        browser = H5Browser()
+        browser.open_file(fname)
+        plot = browser.plotpreview.curvewidget.get_plot()
+        browser.tree.clicked(_find_item(browser.tree, "/group/signal"))
+        _wait_for_item(plot, CurveItem)
+        browser.tree.clicked(_find_item(browser.tree, "/group"))
+        assert not _curves(plot)
+        assert browser.groupandattrs.group.table.item(0, 0).text() == "/group"
+
+        release = threading.Event()
+        node = _SpyNode(release)
+        browser.plotpreview.update_plot_preview(node)
+        assert node.started.wait(10.0)
+        browser.tree.clicked(_find_item(browser.tree, "/group"))
+        release.set()
+        _wait_until(lambda: node.done)
+        deadline = time.monotonic() + 0.2
+        while time.monotonic() < deadline:
+            QW.QApplication.processEvents()
+            time.sleep(0.01)
+        assert not _curves(plot), "Discarded preview must not be shown"
+        browser.cleanup()
+        browser.close()
 
 
 @pytest.mark.parametrize("method", ["accept", "reject"])

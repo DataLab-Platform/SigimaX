@@ -523,13 +523,26 @@ class PlotPreview(QW.QStackedWidget):
         for widget in (self.imagewidget, self.curvewidget):
             widget.get_plot().del_all_items()
 
-    def wait(self) -> None:
-        """Discard the pending previews and wait until no data is read
-        (before closing HDF5 files or importing objects)"""
+    def discard(self) -> None:
+        """Discard the pending previews, without waiting: the preview being read,
+        if any, is not shown and the previews not started yet are not read"""
         self.__generation += 1
         if self.__pending is not None:
             self.__pending.cancel()
             self.__pending = None
+
+    def clear_preview(self) -> None:
+        """Discard the pending previews and clear the plot, without waiting (for
+        nodes that cannot be previewed)"""
+        self.discard()
+        plot: BasePlot = self.currentWidget().get_plot()
+        plot.del_all_items()
+        plot.replot()
+
+    def wait(self) -> None:
+        """Discard the pending previews and wait until no data is read
+        (before closing HDF5 files or importing objects)"""
+        self.discard()
         if self.__executor is not None:
             # The single worker runs calls in order: once this one is done, the
             # previous ones are done or were discarded
@@ -928,9 +941,14 @@ class H5Browser(QW.QSplitter):
         """
         # View the selected item
         node = self.get_node(item)
+        # Discard the previous preview first: its pending read is not started,
+        # so that reading the node description below does not wait for it
+        self.plotpreview.discard()
+        self.groupandattrs.update_from_node(node)
         if node.is_supported():
             self.plotpreview.update_plot_preview(node)
-        self.groupandattrs.update_from_node(node)
+        else:
+            self.plotpreview.clear_preview()
         # Update the file selector combo box
         with block_signals(self.selector.combo):
             # Avoid triggering current file changed signal, which would result in
