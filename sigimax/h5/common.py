@@ -365,7 +365,21 @@ class GroupNode(BaseNode):
 
     def collect_children(self, node_dict: dict[str, BaseNode]):
         """Construct tree"""
-        for dset in self.dset.values():
+        for name in self.dset:
+            dset = self.dset.get(name)
+            if dset is None:
+                # Broken link: soft link to a missing object, or external link to
+                # a missing file (e.g. detector data of synchrotron master files)
+                link = self.dset.get(name, getlink=True)
+                if isinstance(link, h5py.ExternalLink):
+                    reason = f"broken external link to '{link.filename}:{link.path}'"
+                elif isinstance(link, h5py.SoftLink):
+                    reason = f"broken soft link to '{link.path}'"
+                else:
+                    reason = "object cannot be opened"
+                path = f"{self.dset.name.rstrip('/')}/{name}"
+                print(f"Warning: Skipping '{path}': {reason}")
+                continue
             try:
                 child_cls = NODE_FACTORY.get(dset)
                 if child_cls is not None:

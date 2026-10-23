@@ -130,6 +130,39 @@ def test_uint32_image_is_exact(h5fname: str) -> None:
         importer.close()
 
 
+def test_broken_links_are_skipped(tmp_path, capsys) -> None:
+    """Files with broken soft or external links (e.g. synchrotron master files
+    without their detector files) are opened: the broken links are skipped."""
+    fname = str(tmp_path / f"{uuid.uuid4()}.nxs")
+    with h5py.File(fname, "w") as h5file:
+        entry = h5file.create_group("entry")
+        entry["signal"] = np.arange(10.0)
+        entry["dangling_soft"] = h5py.SoftLink("/entry/missing")
+        entry["dangling_external"] = h5py.ExternalLink("missing.h5", "/data")
+        h5file["root_link"] = h5py.SoftLink("/missing")
+        detector = entry.create_group("detector")
+        detector.attrs.update({"NX_class": "NXdata", "signal": "frames"})
+        detector["frames"] = h5py.ExternalLink("missing_detector.h5", "/frames")
+    importer = H5Importer(fname)
+    try:
+        ids = {node.id for node in importer.nodes}
+        assert {"/entry", "/entry/signal", "/entry/detector"} <= ids
+        assert not ids & {
+            "/entry/dangling_soft",
+            "/entry/dangling_external",
+            "/root_link",
+            "/entry/detector/frames",
+        }
+        assert importer.get("/entry/signal").get_native_object().y.size == 10
+        assert not importer.get("/entry/detector").is_supported()
+    finally:
+        importer.close()
+    output = capsys.readouterr().out
+    assert "'/entry/dangling_soft': broken soft link to '/entry/missing'" in output
+    assert "'/root_link': broken soft link" in output
+    assert "broken external link to 'missing.h5:/data'" in output
+
+
 def test_unregister_node_class(h5fname: str) -> None:
     """A node class registered by an application can be removed again."""
 
