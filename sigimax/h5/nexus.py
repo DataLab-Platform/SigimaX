@@ -427,7 +427,7 @@ class NXdataNode(common.GroupNode):
             dy = None
             if desc.errors is not None:
                 dy = np.asarray(group[desc.errors][()], dtype=float)
-            y = data if np.iscomplexobj(data) else data.astype(float)
+            y = common.to_signal_data(data)
             obj = create_signal(self.object_title, x, y, dy=dy)
             obj.ylabel, obj.yunit = desc.label, desc.units
             if axis is not None:

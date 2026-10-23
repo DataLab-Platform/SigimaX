@@ -54,6 +54,22 @@ def data_to_xy(data: np.ndarray) -> list[np.ndarray]:
     return x, y, dx, dy
 
 
+def to_signal_data(data: np.ndarray) -> np.ndarray:
+    """Return signal values as float64, or as complex128 for complex data.
+
+    Integers are converted with Sigima's converter, which warns when values cannot
+    be represented exactly.
+
+    Args:
+        data: numeric array read from a dataset
+
+    Returns:
+        Array with a data type supported by signals
+    """
+    valid = (np.complex128,) if np.iscomplexobj(data) else (np.float64,)
+    return convert_array_to_valid_dtype(np.asarray(data), valid)
+
+
 class BaseNode(metaclass=abc.ABCMeta):
     """Object representing a HDF5 node"""
 
@@ -191,15 +207,18 @@ class BaseNode(metaclass=abc.ABCMeta):
         return title
 
     def set_signal_data(self, obj: SignalObj) -> None:
-        """Set signal data (handles various issues)"""
-        data = self.data
-        if data.dtype not in (float, np.complex128):
-            data = np.array(data, dtype=float)
-        data = convert_array_to_valid_dtype(data, SignalObj.VALID_DTYPES)
+        """Set signal data (handles various issues)
+
+        Raises:
+            ValueError: if a 2D table has complex X values or uncertainties
+        """
+        data = to_signal_data(self.data)
         if len(data.shape) == 1:
             obj.set_xydata(np.arange(data.size), data)
         else:
             x, y, dx, dy = data_to_xy(data)
+            if any(np.iscomplexobj(array) for array in (x, dx, dy)):
+                raise ValueError("Complex X values or uncertainties are not supported")
             obj.set_xydata(x, y, dx, dy)
 
     def set_image_data(self, obj: ImageObj) -> None:
