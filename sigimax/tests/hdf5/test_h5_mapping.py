@@ -62,6 +62,11 @@ MEASUREMENT = {
             "signal": "measurement/map",
             "axes": ["measurement/y", {"path": "measurement/x", "units": "mm"}],
         },
+        {
+            "name": "Columns",
+            "signal": "measurement/map",
+            "axes": [None, "measurement/x"],
+        },
         {"name": "Missing", "signal": "measurement/absent"},
         {
             "name": "Bad errors",
@@ -191,7 +196,15 @@ def test_mapped_nodes(h5fname: str, mappings) -> None:
     importer = H5Importer(h5fname)
     try:
         nodes = _mapped_nodes(importer)
-        expected = {"data_1", "data_2", "data_10", "Transmission", "Map", "Bad errors"}
+        expected = {
+            "data_1",
+            "data_2",
+            "data_10",
+            "Transmission",
+            "Map",
+            "Columns",
+            "Bad errors",
+        }
         assert set(nodes) == expected
         assert not nodes["Bad errors"].is_supported()
         assert "do not match the signal shape" in nodes["Bad errors"].text
@@ -221,6 +234,13 @@ def test_mapped_nodes(h5fname: str, mappings) -> None:
         assert isinstance(image, ImageObj)
         assert (image.x0, image.y0, image.dx, image.dy) == (0.0, 5.0, 1.0, 2.0)
         assert (image.xunit, image.ylabel) == ("mm", "y")
+
+        # Dimensions without axis are recorded as '.', as in NeXus files
+        columns = nodes["Columns"].get_native_object()
+        assert get_experimental_source(columns)["selection"] == {
+            "signal": "measurement/map",
+            "axes": [".", "measurement/x"],
+        }
     finally:
         importer.close()
 

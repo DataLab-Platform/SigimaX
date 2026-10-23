@@ -316,7 +316,10 @@ class NXdataNode(common.GroupNode):
         return self.text
 
     def make_source(self, conversions: list[str]) -> dict:
-        """Return the experimental source of the imported object"""
+        """Return the experimental source of the imported object
+
+        Dimensions without axis are recorded as ``"."``, as in NeXus ``@axes``.
+        """
         desc = self.nxdata
         return make_experimental_source(
             "nexus",
@@ -324,7 +327,7 @@ class NXdataNode(common.GroupNode):
             entry=desc.path,
             selection={
                 "signal": desc.signal,
-                "axes": [axis.name if axis else None for axis in desc.axes],
+                "axes": [axis.name if axis else "." for axis in desc.axes],
             },
             conversions=conversions or None,
         )

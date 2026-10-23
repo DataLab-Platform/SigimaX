@@ -15,6 +15,7 @@ import uuid
 import h5py
 import numpy as np
 import pytest
+import sigima.io
 from sigima.objects import ImageObj, SignalObj, get_experimental_source
 
 from sigimax.h5 import H5Importer
@@ -65,6 +66,10 @@ def fixture_nxsfname(tmp_path) -> str:
         indexed["data"] = np.ones((2, 3))
         indexed["x"] = np.array([0.5, 1.0, 1.5])
         indexed["y"] = np.array([-1.0, 1.0])
+
+        partial = _nxdata(entry, "partial", "data", np.array([b".", b"x"]))
+        partial["data"] = np.ones((2, 3))
+        partial["x"] = np.array([0.0, 2.0, 4.0])
 
         legacy = entry.create_group("legacy")
         legacy.attrs["NX_class"] = b"NXdata"
@@ -158,6 +163,16 @@ def test_nxdata_image(nodes: dict) -> None:
     indexed = nodes["/entry/indexed"].get_native_object()
     assert indexed.is_uniform_coords
     assert (indexed.x0, indexed.dx, indexed.y0, indexed.dy) == (0.5, 0.5, -1.0, 2.0)
+
+
+def test_nxdata_missing_axis_source(nodes: dict, tmp_path) -> None:
+    """Dimensions without axis are recorded as '.', which files restore."""
+    obj = nodes["/entry/partial"].get_native_object()
+    source = get_experimental_source(obj)
+    assert source["selection"] == {"signal": "data", "axes": [".", "x"]}
+    fname = str(tmp_path / "partial.h5ima")
+    sigima.io.write_image(fname, obj)
+    assert get_experimental_source(sigima.io.read_image(fname)) == source
 
 
 if __name__ == "__main__":

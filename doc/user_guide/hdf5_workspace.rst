@@ -98,9 +98,10 @@ import; undeclared axes use indices. Signal Y uncertainties are read from
 are not imported.
 
 Imported objects record their file, group, signal, axes and conversions in
-``experimental_source`` metadata. This describes the measurement origin, not
-a reproducible acquisition or a processing history. The application must
-preserve object metadata in its own workspace serialization.
+``experimental_source`` metadata; a dimension without axis is recorded as
+``"."``, as in NeXus ``axes`` attributes. This describes the measurement
+origin, not a reproducible acquisition or a processing history. The
+application must preserve object metadata in its own workspace serialization.
 
 Declarative Data Mappings
 -------------------------
