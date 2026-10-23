@@ -1,5 +1,9 @@
 # Version 1.1.0 #
 
+## Unreleased ##
+
+* Python 3.10 or later is now required. Python 3.9 users must keep an earlier compatible release.
+
 ## SigimaX Version 1.1.0 ##
 
 ### PlotPy adapters ###

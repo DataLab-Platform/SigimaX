@@ -18,7 +18,7 @@ End-user apps (DataLab, custom scientific apps)
 
 ### Technology Stack
 
-- **Python**: 3.9+ (`from __future__ import annotations`)
+- **Python**: 3.10+ (`from __future__ import annotations`)
 - **Core**: guidata (≥3.13.4), PlotPy (≥2.8.2), Sigima (≥1.1.0), psutil (≥5.7)
 - **GUI**: Qt via QtPy (PyQt5/PyQt6/PySide6)
 - **Testing**: pytest

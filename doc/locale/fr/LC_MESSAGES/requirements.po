@@ -27,8 +27,8 @@ msgstr "Résumé"
 msgid "Python"
 msgstr "Python"
 
-msgid ">=3.9, <4"
-msgstr ">=3.9, <4"
+msgid ">=3.10, <4"
+msgstr ">=3.10, <4"
 
 msgid "Python programming language"
 msgstr "Langage de programmation Python"
