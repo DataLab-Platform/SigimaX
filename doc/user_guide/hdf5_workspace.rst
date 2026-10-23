@@ -202,7 +202,8 @@ Large Files and Multidimensional Views
 Dataset classification uses shape and type metadata; mixed compound datasets
 are checked on their first records. Text previews are bounded to 100 elements,
 and attributes above 10 000 elements are skipped. Graphical previews are read
-in a worker thread, and stale results are not displayed. File closure waits
+in a worker thread; previews of items selected meanwhile are not read, and
+stale results are not displayed. Closing a file or the browser dialog waits
 for the preview read to finish.
 
 Ordinary 1D arrays and 2D images exceeding ``2**24`` elements are previewed with a

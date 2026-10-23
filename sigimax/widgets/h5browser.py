@@ -475,8 +475,11 @@ class PlotPreview(QW.QStackedWidget):
     """Plot preview
 
     Preview data is read in a worker thread, so that the browser stays responsive
-    while a large dataset is read. Datasets larger than :attr:`MAX_ITEMS` are
-    decimated. The preview of a node replaces any pending one.
+    while a large dataset is read. Nodes may provide a decimated preview object
+    for datasets larger than :attr:`MAX_ITEMS` (see
+    :meth:`sigimax.h5.common.BaseNode.create_preview_object`). The preview of a
+    node replaces any pending one: previews of nodes selected meanwhile are not
+    read.
     """
 
     #: Maximum number of data elements read for a preview
@@ -487,7 +490,7 @@ class PlotPreview(QW.QStackedWidget):
     def __init__(self, parent: QW.QWidget) -> None:
         super().__init__(parent)
         self.__generation = 0
-        self.__executor = ThreadPoolExecutor(1, thread_name_prefix="h5preview")
+        self.__executor: ThreadPoolExecutor | None = None
         self.__pending: Future | None = None
         self.SIG_LOADED.connect(self.__show_loaded_object)
         self.curvewidget = PlotWidget(
@@ -512,21 +515,30 @@ class PlotPreview(QW.QStackedWidget):
         self.addWidget(self.imagewidget)
 
     def cleanup(self) -> None:
-        """Clean up widget"""
+        """Clean up widget, and stop its worker thread"""
         self.wait()
+        if self.__executor is not None:
+            self.__executor.shutdown(wait=True)
+            self.__executor = None
         for widget in (self.imagewidget, self.curvewidget):
             widget.get_plot().del_all_items()
 
     def wait(self) -> None:
-        """Discard the pending preview and wait until its data is no longer read
-        (before closing HDF5 files)"""
+        """Discard the pending previews and wait until no data is read
+        (before closing HDF5 files or importing objects)"""
         self.__generation += 1
         if self.__pending is not None:
-            self.__pending.result()
+            self.__pending.cancel()
             self.__pending = None
+        if self.__executor is not None:
+            # The single worker runs calls in order: once this one is done, the
+            # previous ones are done or were discarded
+            self.__executor.submit(int).result()
 
     def __load_object(self, generation: int, node: BaseNode) -> None:
         """Create the preview object of a node (worker thread)"""
+        if generation != self.__generation:
+            return  # Another node was selected meanwhile: do not read this one
         obj, error = None, None
         try:
             obj = node.create_preview_object(self.MAX_ITEMS)
@@ -548,7 +560,11 @@ class PlotPreview(QW.QStackedWidget):
     def update_plot_preview(self, node: BaseNode) -> None:
         """Update plot preview widget"""
         self.__generation += 1
+        if self.__pending is not None:
+            self.__pending.cancel()
         self.__show_message(_("Loading..."))
+        if self.__executor is None:
+            self.__executor = ThreadPoolExecutor(1, thread_name_prefix="h5preview")
         self.__pending = self.__executor.submit(
             self.__load_object, self.__generation, node
         )
@@ -987,6 +1003,12 @@ class H5BrowserDialog(QW.QDialog):
         """Accept changes"""
         self.nodes = self.browser.tree.get_nodes()
         QW.QDialog.accept(self)
+
+    def done(self, result: int) -> None:
+        """Close dialog, once the preview being read is done: the selected nodes
+        are then read by the caller, and the files closed"""
+        self.browser.plotpreview.wait()
+        super().done(result)
 
     def is_empty(self) -> bool:
         """Return True if tree is empty"""
