@@ -69,11 +69,21 @@ def preview_step(shape: tuple[int, ...], max_items: int) -> int:
     """
     if max_items < 1:
         raise ValueError("max_items must be positive")
-    size = math.prod(shape)
-    step = max(1, math.floor((size / max_items) ** (1 / max(len(shape), 1))))
-    while math.prod(math.ceil(dim / step) for dim in shape) > max_items:
-        step += 1
-    return step
+
+    def view_size(step: int) -> int:
+        """Return the number of elements of the view read with step"""
+        return math.prod(math.ceil(dim / step) for dim in shape)
+
+    # The view size decreases with the step: bisect for the smallest step (with
+    # one element per axis at the largest dimension, the view fits)
+    low, high = 1, max((1, *shape))
+    while low < high:
+        middle = (low + high) // 2
+        if view_size(middle) > max_items:
+            low = middle + 1
+        else:
+            high = middle
+    return low
 
 
 def read_selection(

@@ -228,14 +228,21 @@ def test_read_selection(h5fname: str, full_reads: list) -> None:
         ((101,), 100, 2),
         ((4096, 4096), 2**24, 1),
         ((300, 400), 1000, 12),
+        ((3, 100_000_000), 1000, 100_000),
+        ((2, 10**10), 2**24, 597),
+        ((0, 400), 10, 1),
+        ((), 1, 1),
     ],
-    ids=["fits", "1d", "2d-fits", "2d"],
+    ids=["fits", "1d", "2d-fits", "2d", "asymmetric", "huge", "empty", "scalar"],
 )
 def test_preview_step(shape: tuple, max_items: int, step: int) -> None:
     """The preview step is the smallest one keeping the view under the limit."""
     assert preview_step(shape, max_items) == step
     sizes = [len(range(0, dim, step)) for dim in shape]
     assert np.prod(sizes) <= max_items
+    if step > 1:
+        sizes = [len(range(0, dim, step - 1)) for dim in shape]
+        assert np.prod(sizes) > max_items
 
 
 def test_preview_is_decimated(h5fname: str, full_reads: list) -> None:
