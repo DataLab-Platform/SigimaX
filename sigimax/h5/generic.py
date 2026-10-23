@@ -303,10 +303,25 @@ class GenericArrayNode(BaseGenericNode):
         dtype, shape = dset.dtype, dset.shape
         if not shape:
             return None
-        if dtype.names is None:
-            if utils.is_supported_num_dtype(dset) and len(shape) in (1, 2):
-                return shape, dtype
-            return None
+        if dtype.names is not None:
+            return cls._compound_layout(dset)
+        if utils.is_supported_num_dtype(dset) and len(shape) in (1, 2):
+            return shape, dtype
+        return None
+
+    @classmethod
+    def _compound_layout(cls, dset) -> tuple[tuple[int, ...], np.dtype] | None:
+        """Return shape and dtype of the numeric array read from a compound
+        dataset (see :meth:`numeric_layout`).
+
+        Args:
+            dset: HDF5 compound dataset
+
+        Returns:
+            Shape and dtype of the 1D or 2D numeric array, or None if the dataset
+            does not provide one
+        """
+        dtype, shape = dset.dtype, dset.shape
         fields = {name: dtype.fields[name][0] for name in dtype.names}
         numeric = [
             name for name, fdt in fields.items() if np.issubdtype(fdt, np.number)

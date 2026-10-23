@@ -11,6 +11,7 @@ emit a warning instead of being rounded silently.
 
 from __future__ import annotations
 
+import contextlib
 import uuid
 import warnings
 
@@ -47,11 +48,8 @@ def fixture_nodes(tmp_path):
             group.attrs["NX_class"] = "NXdata"
             group.attrs["signal"] = "data"
             group["data"] = data
-    importer = H5Importer(fname)
-    try:
+    with contextlib.closing(H5Importer(fname)) as importer:
         yield {node.id: node for node in importer.nodes}
-    finally:
-        importer.close()
 
 
 @pytest.mark.parametrize("path", ["/complex", "/nx_complex"])

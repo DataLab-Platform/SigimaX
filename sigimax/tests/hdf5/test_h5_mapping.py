@@ -191,7 +191,8 @@ def test_describe_mapping(h5fname: str) -> None:
         assert not describe_mapping(counters, h5file["entry"])
 
 
-def test_mapped_nodes(h5fname: str, mappings) -> None:
+@pytest.mark.usefixtures("mappings")
+def test_mapped_nodes(h5fname: str) -> None:
     """Mapped objects are imported with their axes, labels, units and origin"""
     importer = H5Importer(h5fname)
     try:

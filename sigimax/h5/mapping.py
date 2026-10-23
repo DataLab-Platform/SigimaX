@@ -48,7 +48,6 @@ import re
 from typing import Any
 
 import h5py
-from sigima.objects import make_experimental_source
 
 from sigimax.h5 import common, nexus
 
@@ -415,6 +414,8 @@ class MappedDataNode(nexus.NXdataNode):
         nxdata: object description
     """
 
+    SOURCE_KIND = "hdf5"
+
     def __init__(
         self,
         h5file,
@@ -443,23 +444,10 @@ class MappedDataNode(nexus.NXdataNode):
         """Return node name"""
         return self.object_name
 
-    def make_source(self, conversions: list[str]) -> dict:
-        """Return the experimental source of the imported object
-
-        Dimensions without axis are recorded as ``"."``, as in NeXus ``@axes``.
-        """
-        desc = self.nxdata
-        return make_experimental_source(
-            "hdf5",
-            self.h5file.filename,
-            entry=desc.path,
-            selection={
-                "signal": desc.signal,
-                "axes": [axis.name if axis else "." for axis in desc.axes],
-            },
-            conversions=conversions or None,
-            details={"mapping": self.mapping.name},
-        )
+    def source_details(self) -> dict:
+        """Return the details of the experimental source of the imported object:
+        the name of the data mapping"""
+        return {"mapping": self.mapping.name}
 
 
 def _mapped_children(node: common.GroupNode) -> list[MappedDataNode]:
