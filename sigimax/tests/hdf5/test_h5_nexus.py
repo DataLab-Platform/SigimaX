@@ -20,6 +20,7 @@ import pytest
 import sigima.io
 from sigima.objects import ImageObj, SignalObj, get_experimental_source
 
+from sigimax.adapters_plotpy import create_adapter_from_object
 from sigimax.h5 import H5Importer
 from sigimax.h5.nexus import NXdataNode
 
@@ -238,6 +239,60 @@ def test_nxdata_invalid_axes(tmp_path) -> None:
         node = nodes["/text_errors"]
         assert node.is_supported() and node.nxdata.errors is None
         assert isinstance(node.get_native_object(), SignalObj)
+
+
+def _image_group(h5file: h5py.File, name: str, x, y=None) -> None:
+    """Create an NXdata image group with an X axis, and optionally a Y axis."""
+    ny = 2 if y is None else len(y)
+    group = _nxdata(h5file, name, "data", ["." if y is None else "y", "x"])
+    group["data"] = np.arange(ny * len(x), dtype=np.uint16).reshape(ny, len(x))
+    group["x"] = x
+    if y is not None:
+        group["y"] = y
+
+
+def test_nxdata_image_axes(tmp_path) -> None:
+    """Uniform axes are detected within the precision of their data type, and
+    decreasing axes are reversed (PlotPy images need increasing coordinates)."""
+
+    def build(h5file: h5py.File) -> None:
+        f32 = np.linspace(0.0, 1.0, 11, dtype=np.float32)
+        _image_group(h5file, "float32", f32, f32)
+        _image_group(h5file, "offset", np.linspace(1000.0, 1000.1, 1001))
+        _image_group(h5file, "decreasing", [3.0, 2.0, 1.0, 0.0], [10.0, 5.0])
+        _image_group(h5file, "decreasing_nu", [6.0, 3.0, 1.0, 0.0])
+        _image_group(h5file, "constant", np.zeros(4))
+        _image_group(h5file, "unordered", [0.0, 2.0, 1.0, 3.0])
+
+    with _nodes_of(tmp_path, build) as nodes:
+        image = nodes["/float32"].get_native_object()
+        assert image.is_uniform_coords
+        assert np.isclose(image.dx, 0.1) and np.isclose(image.dy, 0.1)
+
+        image = nodes["/offset"].get_native_object()
+        assert image.is_uniform_coords
+        assert image.x0 == 1000.0
+        assert np.isclose(image.dx, 1e-4, rtol=1e-12)
+
+        image = nodes["/decreasing"].get_native_object()
+        assert image.is_uniform_coords
+        assert (image.x0, image.dx, image.y0, image.dy) == (0.0, 1.0, 5.0, 5.0)
+        assert np.array_equal(image.data, np.arange(8).reshape(2, 4)[::-1, ::-1])
+        assert get_experimental_source(image)["conversions"] == [
+            "axis 'x': reversed to increasing order",
+            "axis 'y': reversed to increasing order",
+        ]
+        create_adapter_from_object(image).make_item()
+
+        image = nodes["/decreasing_nu"].get_native_object()
+        assert not image.is_uniform_coords
+        assert np.array_equal(image.xcoords, [0.0, 1.0, 3.0, 6.0])
+        assert np.array_equal(image.data, np.arange(8).reshape(2, 4)[:, ::-1])
+        create_adapter_from_object(image).make_item()
+
+        for name in ("constant", "unordered"):
+            with pytest.raises(ValueError, match="not strictly monotonic"):
+                nodes[f"/{name}"].get_native_object()
 
 
 if __name__ == "__main__":

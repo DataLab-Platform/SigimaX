@@ -15,7 +15,8 @@ Supported conventions (NeXus data model, ``NXdata`` base class):
   ``@<axis>_indices`` attributes, or legacy ``axes`` signal attribute; ``@axes``
   must give one entry per signal dimension
 - axis datasets holding one real value per point, or bin edges (one more value),
-  which are converted to bin centers
+  which are converted to bin centers; decreasing image axes are reversed, with
+  the image, as images need increasing coordinates
 - ``<signal>_errors`` (or legacy ``errors``) uncertainties of a 1D signal
 - ``units`` and ``long_name`` dataset attributes
 """
@@ -279,18 +280,55 @@ def describe_signal(
     )
 
 
-def _read_axis(group: h5py.Group, axis: NXAxis) -> np.ndarray:
-    """Return axis values, at bin centers"""
-    values = np.asarray(group[axis.name][()], dtype=float)
-    return (values[:-1] + values[1:]) / 2 if axis.edges else values
+def _read_axis(group: h5py.Group, axis: NXAxis) -> tuple[np.ndarray, np.dtype]:
+    """Return axis values, at bin centers, and the data type of the axis dataset"""
+    dset = group[axis.name]
+    values = np.asarray(dset[()], dtype=float)
+    if axis.edges:
+        values = (values[:-1] + values[1:]) / 2
+    return values, dset.dtype
 
 
-def _is_uniform(values: np.ndarray) -> bool:
-    """Return True if values are evenly spaced"""
-    if values.size < 2:
+def _is_uniform(values: np.ndarray, dtype: np.dtype) -> bool:
+    """Return True if monotonic values are evenly spaced, within the precision of
+    the data type they were stored with"""
+    if values.size < 3:
         return True
+    eps = np.finfo(dtype if dtype.kind == "f" else float).eps
+    tolerance = 4 * float(eps) * max(abs(values[0]), abs(values[-1]))
+    expected = np.linspace(values[0], values[-1], values.size)
+    return bool(np.all(np.abs(values - expected) <= tolerance))
+
+
+def _is_decreasing(values: np.ndarray, name: str) -> bool:
+    """Return True if axis values are strictly decreasing, False if they are
+    strictly increasing
+
+    Raises:
+        ValueError: if values are not strictly monotonic
+    """
     steps = np.diff(values)
-    return bool(np.allclose(steps, steps[0], rtol=1e-9, atol=0.0))
+    if np.all(steps > 0):
+        return False
+    if np.all(steps < 0):
+        return True
+    raise ValueError(f"Axis '{name}' is not strictly monotonic")
+
+
+def _image_axis(
+    group: h5py.Group, axis: NXAxis | None, size: int
+) -> tuple[np.ndarray, np.dtype, bool]:
+    """Return image axis values in increasing order, the data type they were
+    stored with, and True if they were reversed
+
+    Raises:
+        ValueError: if axis values are not strictly monotonic
+    """
+    if axis is None:
+        return np.arange(size, dtype=float), np.dtype(float), False
+    values, dtype = _read_axis(group, axis)
+    reverse = _is_decreasing(values, axis.name)
+    return (values[::-1] if reverse else values), dtype, reverse
 
 
 class NXdataNode(common.GroupNode):
@@ -385,7 +423,7 @@ class NXdataNode(common.GroupNode):
             axis = desc.axes[0]
             x = np.arange(data.size, dtype=float)
             if axis is not None:
-                x = _read_axis(group, axis)
+                x, _dtype = _read_axis(group, axis)
             dy = None
             if desc.errors is not None:
                 dy = np.asarray(group[desc.errors][()], dtype=float)
@@ -395,26 +433,27 @@ class NXdataNode(common.GroupNode):
             if axis is not None:
                 obj.xlabel, obj.xunit = axis.label, axis.units
         else:
-            obj = create_image(
-                self.object_title,
-                convert_array_to_valid_dtype(data, ImageObj.VALID_DTYPES),
-            )
-            obj.zlabel, obj.zunit = desc.label, desc.units
             yaxis, xaxis = desc.axes
             ny, nx = desc.shape
-            xc = (
-                np.arange(nx, dtype=float)
-                if xaxis is None
-                else _read_axis(group, xaxis)
+            # PlotPy images need increasing coordinates: decreasing axes are reversed
+            xc, xdtype, xreversed = _image_axis(group, xaxis, nx)
+            yc, ydtype, yreversed = _image_axis(group, yaxis, ny)
+            for axis, reverse, dim in ((xaxis, xreversed, 1), (yaxis, yreversed, 0)):
+                if reverse:
+                    data = np.flip(data, axis=dim)
+                    conversions.append(
+                        f"axis '{axis.name}': reversed to increasing order"
+                    )
+            obj = create_image(
+                self.object_title,
+                convert_array_to_valid_dtype(
+                    np.ascontiguousarray(data), ImageObj.VALID_DTYPES
+                ),
             )
-            yc = (
-                np.arange(ny, dtype=float)
-                if yaxis is None
-                else _read_axis(group, yaxis)
-            )
-            if _is_uniform(xc) and _is_uniform(yc):
-                dx = float(xc[1] - xc[0]) if nx > 1 else 1.0
-                dy = float(yc[1] - yc[0]) if ny > 1 else 1.0
+            obj.zlabel, obj.zunit = desc.label, desc.units
+            if _is_uniform(xc, xdtype) and _is_uniform(yc, ydtype):
+                dx = float(xc[-1] - xc[0]) / (nx - 1) if nx > 1 else 1.0
+                dy = float(yc[-1] - yc[0]) / (ny - 1) if ny > 1 else 1.0
                 obj.set_uniform_coords(dx, dy, float(xc[0]), float(yc[0]))
             else:
                 obj.set_coords(xc, yc)

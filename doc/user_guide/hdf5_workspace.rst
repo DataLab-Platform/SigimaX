@@ -92,7 +92,9 @@ scientific object; selecting a child dataset still gives access to raw values.
 
 Axis datasets must be 1D, hold real numbers and contain either one coordinate
 per point or one extra value for bin edges. Edges are converted to centers.
-Image coordinates may be non-uniform. The ``axes`` attribute must give one
+Image coordinates may be non-uniform; a decreasing image axis is reversed,
+with the image, and this conversion is recorded, while an image axis that is
+not strictly monotonic prevents import. The ``axes`` attribute must give one
 entry per signal dimension, and ``<axis>_indices`` attributes must designate
 distinct existing dimensions. Invalid declared axes are reported and prevent
 group import; undeclared axes use indices. Signal Y uncertainties are read from
