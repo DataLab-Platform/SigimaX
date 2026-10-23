@@ -256,9 +256,8 @@ def describe_signal(
                     size=axis_dset.shape[0],
                     edges=axis_dset.shape[0] == dset.shape[dim] + 1,
                     units=_text(axis_dset.attrs.get("units", "")).strip(),
-                    label=_text(
-                        axis_dset.attrs.get("long_name", name.split("/")[-1])
-                    ).strip(),
+                    label=_text(axis_dset.attrs.get("long_name", "")).strip()
+                    or name.split("/")[-1],
                 )
             )
     found = None
@@ -279,7 +278,7 @@ def describe_signal(
         axes=tuple(axis_descs),
         errors=found,
         units=_text(dset.attrs.get("units", "")).strip(),
-        label=_text(dset.attrs.get("long_name", signal.split("/")[-1])).strip(),
+        label=_text(dset.attrs.get("long_name", "")).strip() or signal.split("/")[-1],
         problems=tuple(problems),
     )
 

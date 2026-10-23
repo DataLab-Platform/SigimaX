@@ -159,6 +159,24 @@ def test_nxdata_signal(nodes: dict, nxsfname: str) -> None:
     assert np.array_equal(legacy.y, [1.0, 2.0, 3.0])
 
 
+def test_nxdata_blank_labels(tmp_path) -> None:
+    """Blank ``long_name`` attributes fall back to the dataset names."""
+
+    def build(h5file: h5py.File) -> None:
+        group = _nxdata(h5file, "spectrum", "counts", ["energy"])
+        group["counts"] = np.arange(4.0)
+        group["counts"].attrs["long_name"] = b" "
+        group["energy"] = np.arange(4.0)
+        group["energy"].attrs["long_name"] = ""
+
+    with _nodes_of(tmp_path, build) as nodes:
+        node = nodes["/spectrum"]
+        assert node.nxdata.label == "counts"
+        assert node.nxdata.axes[0].label == "energy"
+        obj = node.get_native_object()
+        assert (obj.xlabel, obj.ylabel) == ("energy", "counts")
+
+
 def test_nxdata_bin_edges(nodes: dict) -> None:
     """Bin edges are converted to bin centers, and the conversion is recorded."""
     obj = nodes["/entry/histogram"].get_native_object()
