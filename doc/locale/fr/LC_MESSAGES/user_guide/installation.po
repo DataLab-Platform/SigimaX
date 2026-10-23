@@ -108,8 +108,8 @@ msgstr "Description"
 msgid "Python"
 msgstr "Python"
 
-msgid ">=3.9, <4"
-msgstr ">=3.9, <4"
+msgid ">=3.10, <4"
+msgstr ">=3.10, <4"
 
 msgid "Python programming language"
 msgstr "Langage de programmation Python"
@@ -254,4 +254,3 @@ msgstr "pytest-xvfb"
 
 msgid "A pytest plugin to run Xvfb (or Xephyr/Xvnc) for tests."
 msgstr "Un plugin pytest pour exécuter Xvfb (ou Xephyr/Xvnc) pour les tests."
-

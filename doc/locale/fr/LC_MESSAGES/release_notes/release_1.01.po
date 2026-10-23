@@ -12,6 +12,12 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+msgid "Unreleased"
+msgstr "À paraître"
+
+msgid "Python 3.10 or later is now required. Python 3.9 users must keep an earlier compatible release."
+msgstr "Python 3.10 ou ultérieur est désormais requis. Les utilisateurs de Python 3.9 doivent conserver une version antérieure compatible."
+
 msgid "Version 1.1.0"
 msgstr "Version 1.1.0"
 
@@ -104,4 +110,3 @@ msgstr "Exigences"
 
 msgid "Sigima 1.4.0 or later is required: the HDF5 import modules use its experimental-source API, and integer conversions use its precision-preserving converter."
 msgstr "Sigima 1.4.0 ou ultérieur est requis : les modules d'import HDF5 utilisent son API d'origine expérimentale, et les conversions d'entiers utilisent son convertisseur préservant la précision."
-
