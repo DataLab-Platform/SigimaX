@@ -16,9 +16,12 @@ import h5py
 import numpy as np
 from guidata.utils.misc import to_string
 from sigima.io.common.converters import convert_array_to_valid_dtype
-from sigima.objects import ImageObj, SignalObj
+from sigima.objects import EXPERIMENTAL_SOURCE_KEY, ImageObj, SignalObj
 
 from sigimax.config import get_conf
+
+#: Attributes with more elements are not copied to object metadata
+MAX_ATTRIBUTE_ITEMS = 10000
 
 
 def data_to_xy(data: np.ndarray) -> list[np.ndarray]:
@@ -51,6 +54,22 @@ def data_to_xy(data: np.ndarray) -> list[np.ndarray]:
     return x, y, dx, dy
 
 
+def to_signal_data(data: np.ndarray) -> np.ndarray:
+    """Return signal values as float64, or as complex128 for complex data.
+
+    Integers are converted with Sigima's converter, which warns when values cannot
+    be represented exactly.
+
+    Args:
+        data: numeric array read from a dataset
+
+    Returns:
+        Array with a data type supported by signals
+    """
+    valid = (np.complex128,) if np.iscomplexobj(data) else (np.float64,)
+    return convert_array_to_valid_dtype(np.asarray(data), valid)
+
+
 class BaseNode(metaclass=abc.ABCMeta):
     """Object representing a HDF5 node"""
 
@@ -62,6 +81,7 @@ class BaseNode(metaclass=abc.ABCMeta):
         self.metadata = {}
         self.__obj = None
         self.children = []
+        # Kept for applications reading it: uint32 data is no longer clipped
         self.uint32_wng = False
 
     @property
@@ -124,6 +144,17 @@ class BaseNode(metaclass=abc.ABCMeta):
             self.__obj = obj
         return self.__obj
 
+    def create_preview_object(self, max_items: int):  # pylint: disable=unused-argument
+        """Return the object shown as a preview of the node, if supported.
+
+        Subclasses may return a decimated object reading at most ``max_items``
+        elements, instead of the native object.
+
+        Args:
+            max_items: maximum number of data elements to read
+        """
+        return self.get_native_object()
+
     def collect_attributes(self):
         """Collect attributes from node.
 
@@ -133,9 +164,15 @@ class BaseNode(metaclass=abc.ABCMeta):
         ``REFERENCE_LIST`` arrays produced by ``h4toh5convert``) are exposed by
         h5py as ``object``-dtype arrays of :class:`h5py.h5r.Reference`, which
         raise ``TypeError: no default __reduce__`` when DataLab pickles the
-        object to run a computation in a worker process.
+        object to run a computation in a worker process. Attributes with more than
+        :data:`MAX_ATTRIBUTE_ITEMS` elements are skipped without being read.
         """
-        for key, value in self.dset.attrs.items():
+        attrs = self.dset.attrs
+        for key in attrs:
+            shape = attrs.get_id(key).shape
+            if shape and int(np.prod(shape, dtype=np.int64)) > MAX_ATTRIBUTE_ITEMS:
+                continue
+            value = attrs[key]
             if isinstance(value, bytes):
                 value = to_string(value)
             if isinstance(value, np.ndarray):
@@ -149,10 +186,13 @@ class BaseNode(metaclass=abc.ABCMeta):
 
     def __process_metadata(self, obj):
         """Process metadata from dataset to obj"""
+        source = obj.metadata.get(EXPERIMENTAL_SOURCE_KEY)
         obj.reset_metadata_to_defaults()
         obj.set_metadata_option("HDF5Path", self.h5file.filename)
         obj.set_metadata_option("HDF5Dataset", self.id)
         obj.metadata.update(self.metadata)
+        if source is not None:
+            obj.metadata[EXPERIMENTAL_SOURCE_KEY] = source
 
     @property
     def object_title(self):
@@ -167,25 +207,23 @@ class BaseNode(metaclass=abc.ABCMeta):
         return title
 
     def set_signal_data(self, obj: SignalObj) -> None:
-        """Set signal data (handles various issues)"""
-        data = self.data
-        if data.dtype not in (float, np.complex128):
-            data = np.array(data, dtype=float)
-        data = convert_array_to_valid_dtype(data, SignalObj.VALID_DTYPES)
+        """Set signal data (handles various issues)
+
+        Raises:
+            ValueError: if a 2D table has complex X values or uncertainties
+        """
+        data = to_signal_data(self.data)
         if len(data.shape) == 1:
             obj.set_xydata(np.arange(data.size), data)
         else:
             x, y, dx, dy = data_to_xy(data)
+            if any(np.iscomplexobj(array) for array in (x, dx, dy)):
+                raise ValueError("Complex X values or uncertainties are not supported")
             obj.set_xydata(x, y, dx, dy)
 
     def set_image_data(self, obj: ImageObj) -> None:
         """Set image data (handles various issues)"""
-        data = self.data
-        if data.dtype == np.uint32:
-            self.uint32_wng = data.max() > np.iinfo(np.int32).max
-            clipped_data = data.clip(0, np.iinfo(np.int32).max)
-            data = np.array(clipped_data, dtype=np.int32)
-        obj.data = convert_array_to_valid_dtype(data, ImageObj.VALID_DTYPES)
+        obj.data = convert_array_to_valid_dtype(self.data, ImageObj.VALID_DTYPES)
 
 
 class H5Importer:
@@ -229,6 +267,7 @@ class NodeFactory:
         self.__generic_classes = []
         self.__thirdparty_classes = []
         self.__post_triggers = {}
+        self.__children_providers = []
 
     def add_ignored_datasets(self, names):
         """Add h5 dataset name to ignore list"""
@@ -247,6 +286,42 @@ class NodeFactory:
             self.__generic_classes.append(cls)
         else:
             self.__thirdparty_classes.append(cls)
+
+    def unregister(self, cls) -> None:
+        """Unregister node class and its post triggers, if registered.
+        This lets an application plugin remove its node classes when it is unloaded"""
+        for classes in (self.__thirdparty_classes, self.__generic_classes):
+            while cls in classes:
+                classes.remove(cls)
+        self.__post_triggers.pop(cls, None)
+
+    def add_children_provider(self, func: Callable) -> None:
+        """Add a function returning extra nodes to show under a group node.
+        Functions take the group node and return a list of nodes whose ids are
+        not HDF5 paths of the file"""
+        if func not in self.__children_providers:
+            self.__children_providers.append(func)
+
+    def remove_children_provider(self, func: Callable) -> None:
+        """Remove a function added with :meth:`add_children_provider`"""
+        if func in self.__children_providers:
+            self.__children_providers.remove(func)
+
+    def get_extra_children(self, node: GroupNode) -> list[BaseNode]:
+        """Return the extra nodes to show under a group node"""
+        children = []
+        for func in self.__children_providers:
+            try:
+                children.extend(func(node))
+            except (
+                UnicodeDecodeError,
+                TypeError,
+                ValueError,
+                KeyError,
+                OSError,
+            ) as exc:
+                print(f"Warning: Skipping extra nodes of '{node.id}': {exc}")
+        return children
 
     def get(self, dset):
         """Return node class that matches h5 dataset"""
@@ -290,7 +365,21 @@ class GroupNode(BaseNode):
 
     def collect_children(self, node_dict: dict[str, BaseNode]):
         """Construct tree"""
-        for dset in self.dset.values():
+        for name in self.dset:
+            dset = self.dset.get(name)
+            if dset is None:
+                # Broken link: soft link to a missing object, or external link to
+                # a missing file (e.g. detector data of synchrotron master files)
+                link = self.dset.get(name, getlink=True)
+                if isinstance(link, h5py.ExternalLink):
+                    reason = f"broken external link to '{link.filename}:{link.path}'"
+                elif isinstance(link, h5py.SoftLink):
+                    reason = f"broken soft link to '{link.path}'"
+                else:
+                    reason = "object cannot be opened"
+                path = f"{self.dset.name.rstrip('/')}/{name}"
+                print(f"Warning: Skipping '{path}': {reason}")
+                continue
             try:
                 child_cls = NODE_FACTORY.get(dset)
                 if child_cls is not None:
@@ -304,6 +393,13 @@ class GroupNode(BaseNode):
                 # Skip datasets that can't be processed due to various issues
                 print(f"Warning: Skipping dataset '{dset.name}' due to error: {exc}")
                 continue
+        for child in NODE_FACTORY.get_extra_children(self):
+            if child.id in node_dict:
+                print(f"Warning: Skipping node '{child.id}': id already used")
+                continue
+            child.collect_attributes()
+            node_dict[child.id] = child
+            self.children.append(child)
 
 
 class RootNode(GroupNode):

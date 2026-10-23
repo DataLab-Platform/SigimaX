@@ -63,8 +63,8 @@ msgstr "Bibliothèque multiplateforme pour la surveillance des processus et du s
 msgid "Sigima"
 msgstr "Sigima"
 
-msgid ">= 1.2.0"
-msgstr ">= 1.2.0"
+msgid ">= 1.4.0"
+msgstr ">= 1.4.0"
 
 msgid "Scientific computing engine for 1D signals and 2D images, part of the DataLab open-source platform."
 msgstr "Moteur de calcul scientifique pour les signaux 1D et les images 2D, faisant partie de la plateforme open-source DataLab."

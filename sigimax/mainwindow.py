@@ -978,7 +978,10 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
                     self,
                     _("Open"),
                     basedir,
-                    _("HDF5 files (*.h5 *.hdf5 *.hdf *.he5);;All files (*)"),
+                    _(
+                        "HDF5 files (*.h5 *.hdf5 *.hdf *.he5 *.nxs *.nx5);;"
+                        "All files (*)"
+                    ),
                 )
         if not h5files:
             return

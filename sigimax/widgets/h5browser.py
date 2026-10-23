@@ -18,6 +18,7 @@ from __future__ import annotations
 import abc
 import os
 import os.path as osp
+from concurrent.futures import Future, ThreadPoolExecutor
 from typing import TYPE_CHECKING, Any, Callable
 
 from guidata.qthelpers import (
@@ -471,10 +472,27 @@ class H5TreeWidget(AbstractTreeWidget):
 
 
 class PlotPreview(QW.QStackedWidget):
-    """Plot preview"""
+    """Plot preview
+
+    Preview data is read in a worker thread, so that the browser stays responsive
+    while a large dataset is read. Nodes may provide a decimated preview object
+    for datasets larger than :attr:`MAX_ITEMS` (see
+    :meth:`sigimax.h5.common.BaseNode.create_preview_object`). The preview of a
+    node replaces any pending one: previews of nodes selected meanwhile are not
+    read.
+    """
+
+    #: Maximum number of data elements read for a preview
+    MAX_ITEMS = 2**24
+
+    SIG_LOADED = QC.Signal(int, object, object)
 
     def __init__(self, parent: QW.QWidget) -> None:
         super().__init__(parent)
+        self.__generation = 0
+        self.__executor: ThreadPoolExecutor | None = None
+        self.__pending: Future | None = None
+        self.SIG_LOADED.connect(self.__show_loaded_object)
         self.curvewidget = PlotWidget(
             self,
             options=PlotOptions(
@@ -497,24 +515,86 @@ class PlotPreview(QW.QStackedWidget):
         self.addWidget(self.imagewidget)
 
     def cleanup(self) -> None:
-        """Clean up widget"""
+        """Clean up widget, and stop its worker thread"""
+        self.wait()
+        if self.__executor is not None:
+            self.__executor.shutdown(wait=True)
+            self.__executor = None
         for widget in (self.imagewidget, self.curvewidget):
             widget.get_plot().del_all_items()
 
+    def discard(self) -> None:
+        """Discard the pending previews, without waiting: the preview being read,
+        if any, is not shown and the previews not started yet are not read"""
+        self.__generation += 1
+        if self.__pending is not None:
+            self.__pending.cancel()
+            self.__pending = None
+
+    def clear_preview(self) -> None:
+        """Discard the pending previews and clear the plot, without waiting (for
+        nodes that cannot be previewed)"""
+        self.discard()
+        plot: BasePlot = self.currentWidget().get_plot()
+        plot.del_all_items()
+        plot.replot()
+
+    def wait(self) -> None:
+        """Discard the pending previews and wait until no data is read
+        (before closing HDF5 files or importing objects)"""
+        self.discard()
+        if self.__executor is not None:
+            # The single worker runs calls in order: once this one is done, the
+            # previous ones are done or were discarded
+            self.__executor.submit(int).result()
+
+    def __load_object(self, generation: int, node: BaseNode) -> None:
+        """Create the preview object of a node (worker thread)"""
+        if generation != self.__generation:
+            return  # Another node was selected meanwhile: do not read this one
+        obj, error = None, None
+        try:
+            obj = node.create_preview_object(self.MAX_ITEMS)
+        except Exception as exc:  # pylint: disable=broad-except
+            error = exc
+        try:
+            self.SIG_LOADED.emit(generation, obj, error)
+        except RuntimeError:
+            pass  # Widget deleted while the data was read
+
+    def __show_message(self, text: str) -> None:
+        """Show a message instead of the preview"""
+        label = make.label(text, "C", (0, 0), "C")
+        plot: BasePlot = self.currentWidget().get_plot()
+        plot.del_all_items()
+        plot.add_item(label)
+        plot.replot()
+
     def update_plot_preview(self, node: BaseNode) -> None:
         """Update plot preview widget"""
-        try:
-            obj = node.get_native_object()
-        except Exception as msg:  # pylint: disable=broad-except
-            qt_handle_error_message(self, msg)
+        self.__generation += 1
+        if self.__pending is not None:
+            self.__pending.cancel()
+        self.__show_message(_("Loading..."))
+        if self.__executor is None:
+            self.__executor = ThreadPoolExecutor(1, thread_name_prefix="h5preview")
+        self.__pending = self.__executor.submit(
+            self.__load_object, self.__generation, node
+        )
+
+    def __show_loaded_object(
+        self, generation: int, obj: SignalObj | ImageObj | None, error: Exception
+    ) -> None:
+        """Show the preview object, unless another node was selected meanwhile"""
+        if generation != self.__generation:
+            return
+        if error is not None:
+            self.__show_message(_("Unsupported data"))
+            qt_handle_error_message(self, error)
             return
         if obj is None:
             # An error occurred while creating the object (invalid data, ...)
-            label = make.label(_("Unsupported data"), "C", (0, 0), "C")
-            plot: BasePlot = self.currentWidget().get_plot()
-            plot.del_all_items()
-            plot.add_item(label)
-            plot.replot()
+            self.__show_message(_("Unsupported data"))
             return
         if isinstance(obj, SignalObj):
             obj: SignalObj
@@ -725,7 +805,7 @@ class H5FileSelector(QW.QWidget):
                 self,
                 _("Select HDF5 file"),
                 "",
-                _("HDF5 files (*.h5 *.hdf5 *.hdf *.he5);;All files (*)"),
+                _("HDF5 files (*.h5 *.hdf5 *.hdf *.he5 *.nxs *.nx5);;All files (*)"),
             )[0]
         if fname:
             self.SIG_ADD_FILENAME.emit(osp.abspath(fname))
@@ -812,6 +892,7 @@ class H5Browser(QW.QSplitter):
         Args:
             fname: HDF5 file name
         """
+        self.plotpreview.wait()
         self.tree.remove_root(fname)
         self.selector.remove_fname(fname)
 
@@ -836,8 +917,8 @@ class H5Browser(QW.QSplitter):
 
     def cleanup(self) -> None:
         """Clean up widget"""
-        self.tree.cleanup()
         self.plotpreview.cleanup()
+        self.tree.cleanup()
 
     def get_node(self, item: QW.QTreeWidgetItem | None = None) -> BaseNode:
         """Return (selected) dataset
@@ -860,9 +941,14 @@ class H5Browser(QW.QSplitter):
         """
         # View the selected item
         node = self.get_node(item)
+        # Discard the previous preview first: its pending read is not started,
+        # so that reading the node description below does not wait for it
+        self.plotpreview.discard()
+        self.groupandattrs.update_from_node(node)
         if node.is_supported():
             self.plotpreview.update_plot_preview(node)
-        self.groupandattrs.update_from_node(node)
+        else:
+            self.plotpreview.clear_preview()
         # Update the file selector combo box
         with block_signals(self.selector.combo):
             # Avoid triggering current file changed signal, which would result in
@@ -935,6 +1021,12 @@ class H5BrowserDialog(QW.QDialog):
         """Accept changes"""
         self.nodes = self.browser.tree.get_nodes()
         QW.QDialog.accept(self)
+
+    def done(self, result: int) -> None:
+        """Close dialog, once the preview being read is done: the selected nodes
+        are then read by the caller, and the files closed"""
+        self.browser.plotpreview.wait()
+        super().done(result)
 
     def is_empty(self) -> bool:
         """Return True if tree is empty"""
