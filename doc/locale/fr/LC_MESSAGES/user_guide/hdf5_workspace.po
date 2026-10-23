@@ -6,18 +6,11 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: PROJECT VERSION\n"
-"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-22 21:34+0200\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
-"Language-Team: fr <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.18.0\n"
 
 msgid "HDF5 Workspace"
 msgstr "Espace de travail HDF5"
@@ -128,8 +121,8 @@ msgstr "Le registre est commun au processus ; les fichiers JSON ne sont pas déc
 msgid "Large Files and Multidimensional Views"
 msgstr "Grands fichiers et vues multidimensionnelles"
 
-msgid "Dataset classification uses shape and type metadata; mixed compound datasets are checked on their first records. Text previews are bounded to 100 elements, and attributes above 10 000 elements are skipped. Graphical previews are read in a worker thread; previews of items selected meanwhile are not read, and stale results are not displayed. Closing a file or the browser dialog waits for the preview read to finish."
-msgstr "La classification des jeux de données utilise les métadonnées de forme et de type ; les jeux de données composites mixtes sont vérifiés sur leurs premiers enregistrements. Les aperçus textuels sont limités à 100 éléments, et les attributs de plus de 10 000 éléments sont ignorés. Les aperçus graphiques sont lus dans un fil d'exécution de travail ; les aperçus des éléments sélectionnés entre-temps ne sont pas lus, et les résultats périmés ne sont pas affichés. La fermeture d'un fichier ou du dialogue de l'explorateur attend la fin de la lecture de l'aperçu."
+msgid "Dataset classification uses shape and type metadata; mixed compound datasets are checked on their first records. Text previews are bounded to 100 elements, and attributes above 10 000 elements are skipped. Graphical previews are read in a worker thread; previews of items selected meanwhile are not read, and stale results are not displayed. Selecting an item that cannot be previewed, such as a group, clears the preview. Closing a file or the browser dialog waits for the preview read to finish. Broken soft or external links (e.g. to missing detector files) are skipped, with a console warning, when a file is opened."
+msgstr "La classification des jeux de données utilise les métadonnées de forme et de type ; les jeux de données composites mixtes sont vérifiés sur leurs premiers enregistrements. Les aperçus textuels sont limités à 100 éléments, et les attributs de plus de 10 000 éléments sont ignorés. Les aperçus graphiques sont lus dans un fil d'exécution de travail ; les aperçus des éléments sélectionnés entre-temps ne sont pas lus, et les résultats périmés ne sont pas affichés. La sélection d'un élément qui ne peut pas être prévisualisé, comme un groupe, efface l'aperçu. La fermeture d'un fichier ou du dialogue de l'explorateur attend la fin de la lecture de l'aperçu. Les liens symboliques ou externes rompus (par exemple vers des fichiers de détecteur absents) sont ignorés, avec un avertissement dans la console, à l'ouverture d'un fichier."
 
 msgid "Ordinary 1D arrays and 2D images, NeXus and mapped objects exceeding ``2**24`` elements are previewed with a sampling step along each axis. The full data is still read on import. Compound datasets and signals stored in 2D tables still use complete objects for graphical previews, so this is not a universal memory bound."
 msgstr "Les tableaux 1D ordinaires et les images 2D, les objets NeXus et décrits par un profil dépassant ``2**24`` éléments sont prévisualisés avec un pas d'échantillonnage le long de chaque axe. Les données complètes restent lues lors de l'import. Les jeux de données composites et les signaux stockés dans des tableaux 2D utilisent encore des objets complets pour leurs aperçus graphiques : ce n'est donc pas une borne mémoire universelle."
@@ -145,3 +138,4 @@ msgstr "DataLab"
 
 msgid "DataLab keeps its native workspace format, panel serialization, metadata, ROI, and analysis-result handling. Its ``save_h5_workspace`` override remains the owner of that format. The SigimaX HDF5 GUI and generic import infrastructure do not change DataLab's native HDF5 layout."
 msgstr "DataLab conserve son format d'espace de travail natif, la sérialisation de ses panneaux, ses métadonnées, ses ROI et la gestion des résultats d'analyse. Sa surcharge de ``save_h5_workspace`` reste propriétaire de ce format. L'interface HDF5 et l'infrastructure d'import générique de SigimaX ne modifient pas la disposition HDF5 native de DataLab."
+

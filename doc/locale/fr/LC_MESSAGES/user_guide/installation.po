@@ -42,14 +42,14 @@ msgstr "Impatient d'essayer la prochaine version de SigimaX ? Vous pouvez égale
 msgid "Conda package"
 msgstr "Paquet Conda"
 
+msgid ":octicon:`info;1em;sd-text-info` :bdg-info-line:`GNU/Linux` :bdg-info-line:`Windows` :bdg-info-line:`macOS`"
+msgstr ":octicon:`info;1em;sd-text-info` :bdg-info-line:`GNU/Linux` :bdg-info-line:`Windows` :bdg-info-line:`macOS`"
+
 msgid "To install ``sigimax`` package from the `conda-forge` channel (https://anaconda.org/conda-forge/sigimax), run the following command:"
 msgstr "Pour installer le paquet ``sigimax`` depuis le canal ``conda-forge`` (https://anaconda.org/conda-forge/sigimax), exécutez la commande suivante :"
 
 msgid "Package manager ``pip``"
 msgstr "Gestionnaire de paquets ``pip``"
-
-msgid ":octicon:`info;1em;sd-text-info` :bdg-info-line:`GNU/Linux` :bdg-info-line:`Windows` :bdg-info-line:`macOS`"
-msgstr ":octicon:`info;1em;sd-text-info` :bdg-info-line:`GNU/Linux` :bdg-info-line:`Windows` :bdg-info-line:`macOS`"
 
 msgid "SigimaX's package ``sigimax`` is available on the Python Package Index (PyPI) at: https://pypi.python.org/pypi/sigimax."
 msgstr "Le paquet ``sigimax`` de SigimaX est disponible sur le Python Package Index (PyPI) à l'adresse : https://pypi.python.org/pypi/sigimax."
@@ -144,8 +144,8 @@ msgstr "Bibliothèque multiplateforme pour la surveillance des processus et du s
 msgid "Sigima"
 msgstr "Sigima"
 
-msgid ">= 1.2.0"
-msgstr ">= 1.2.0"
+msgid ">= 1.4.0"
+msgstr ">= 1.4.0"
 
 msgid "Scientific computing engine for 1D signals and 2D images, part of the DataLab open-source platform."
 msgstr "Moteur de calcul scientifique pour les signaux 1D et les images 2D, partie de la plateforme open-source DataLab."
@@ -254,3 +254,4 @@ msgstr "pytest-xvfb"
 
 msgid "A pytest plugin to run Xvfb (or Xephyr/Xvnc) for tests."
 msgstr "Un plugin pytest pour exécuter Xvfb (ou Xephyr/Xvnc) pour les tests."
+
