@@ -18,6 +18,7 @@
 * Canonical annotation identifiers, metadata, extensions, and persistent lock
   state are preserved across PlotPy editing round trips. Application-specific
   opaque annotation entries continue to coexist with graphical annotations.
+* The tooltip of a rectangular ROI defined in pixel indices now shows the pixels selected by the ROI, i.e. those whose centers lie inside the rectangle: the corners of the rectangle were rounded to the nearest pixel indices, which could show a selection shifted by one pixel once the rectangle had been moved.
 
 ### Main window ###
 
@@ -54,4 +55,4 @@ See the [HDF5 guide](../user_guide/hdf5_workspace.rst) for a complete JSON mappi
 
 ### Requirements ###
 
-* Sigima 1.4.0 or later is required: the HDF5 import modules use its experimental-source API, and integer conversions use its precision-preserving converter.
+* Sigima 1.4.0 or later is required: the HDF5 import modules use its experimental-source API, integer conversions use its precision-preserving converter, and the tooltips of rectangular ROIs use its pixel-range conversions.
