@@ -102,7 +102,8 @@ class RectangularROIPlotPyAdapter(
             """Return info string for rectangular ROI"""
             x0, y0, x1, y1 = item.get_rect()
             if self.single_roi.indices:
-                x0, y0, x1, y1 = obj.physical_to_indices([x0, y0, x1, y1])
+                # Pixels whose centers lie in the rectangle (rectangular ROI rule)
+                x0, y0, x1, y1 = obj.physical_to_pixel_range([x0, y0, x1, y1])
             x0, y0, dx, dy = self.single_roi.rect_to_coords(x0, y0, x1, y1)
             return "<br>".join(
                 [
