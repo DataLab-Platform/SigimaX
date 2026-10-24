@@ -314,6 +314,48 @@ def test_nxdata_image_axes(tmp_path) -> None:
                 nodes[f"/{name}"].get_native_object()
 
 
+def test_nxdata_image_axis_precision(tmp_path) -> None:
+    """Image axes are imported as uniform coordinates only if they deviate from
+    even spacing by at most UNIFORM_AXIS_TOLERANCE ULP of their data type, and the
+    deviation is recorded; other axes keep their stored coordinates exactly."""
+    f32 = np.float32
+    # float32 axes with a large origin: the third step deviates by 4 ULP (0.25)
+    uneven = np.array([1e6, 1e6 + 1, 1e6 + 2.25, 1e6 + 3], dtype=f32)
+
+    def build(h5file: h5py.File) -> None:
+        _image_group(h5file, "uneven", uneven)
+        _image_group(h5file, "large_origin", np.linspace(8e3, 8.1e3, 1001, dtype=f32))
+        # Evenly spaced values computed in float32 arithmetic deviate by 1.87 ULP
+        arithmetic = f32(-50.0) + np.arange(300, dtype=f32) * f32(0.37)
+        _image_group(h5file, "arithmetic", arithmetic)
+
+    def uniform_conversions(image: ImageObj) -> list[str]:
+        conversions = get_experimental_source(image).get("conversions", [])
+        return [text for text in conversions if "uniform coordinates" in text]
+
+    with _nodes_of(tmp_path, build) as nodes:
+        image = nodes["/uneven"].get_native_object()
+        assert not image.is_uniform_coords
+        assert np.array_equal(image.xcoords, uneven.astype(float))
+        assert np.array_equal(image.ycoords, [0.0, 1.0])
+        assert not uniform_conversions(image)
+
+        image = nodes["/large_origin"].get_native_object()
+        assert image.is_uniform_coords
+        assert image.x0 == 8000.0 and np.isclose(image.dx, 0.1, rtol=1e-12)
+        assert (image.y0, image.dy) == (0.0, 1.0)
+        assert uniform_conversions(image) == [
+            "axis 'x': uniform coordinates (max deviation 0.000195, 0.4 ULP of float32)"
+        ]
+
+        image = nodes["/arithmetic"].get_native_object()
+        assert image.is_uniform_coords
+        assert image.x0 == -50.0 and np.isclose(image.dx, 0.37, rtol=1e-6)
+        assert uniform_conversions(image) == [
+            "axis 'x': uniform coordinates (max deviation 7.14e-06, 1.9 ULP of float32)"
+        ]
+
+
 def test_nxdata_decimated_preview(tmp_path) -> None:
     """Previews of large NXdata groups read one element out of a step, with the
     matching axis values; small groups are previewed with the native object."""

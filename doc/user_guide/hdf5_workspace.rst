@@ -94,12 +94,17 @@ Axis datasets must be 1D, hold real numbers and contain either one coordinate
 per point or one extra value for bin edges. Edges are converted to centers.
 Image coordinates may be non-uniform; a decreasing image axis is reversed,
 with the image, and this conversion is recorded, while an image axis that is
-not strictly monotonic prevents import. The ``axes`` attribute must give one
-entry per signal dimension, and ``<axis>_indices`` attributes must designate
-distinct existing dimensions. Invalid declared axes are reported and prevent
-group import; undeclared axes use indices. Signal Y uncertainties are read from
-``<signal>_errors`` or ``errors`` when they hold real numbers and their shape
-matches; image uncertainties are not imported.
+not strictly monotonic prevents import. An image gets uniform coordinates
+(origin and pixel size) only if the values of both axes deviate from even
+spacing by at most 2.5 units in the last place of their stored data type
+(``sigimax.h5.nexus.UNIFORM_AXIS_TOLERANCE``), so that evenly spaced
+``float32`` axes are recognized; the maximum deviation of each converted axis
+is recorded. Otherwise, the stored coordinates are kept unchanged. The ``axes``
+attribute must give one entry per signal dimension, and ``<axis>_indices``
+attributes must designate distinct existing dimensions. Invalid declared axes
+are reported and prevent group import; undeclared axes use indices. Signal Y
+uncertainties are read from ``<signal>_errors`` or ``errors`` when they hold
+real numbers and their shape matches; image uncertainties are not imported.
 
 Imported objects record their file, group, signal, axes and conversions in
 ``experimental_source`` metadata; a dimension without axis is recorded as

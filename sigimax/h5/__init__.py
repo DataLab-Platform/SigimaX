@@ -31,6 +31,7 @@ read with :func:`sigimax.h5.selection.read_selection`.
 .. autoclass:: sigimax.h5.nexus.NXdataNode
 .. autofunction:: sigimax.h5.nexus.describe_nxdata
 .. autofunction:: sigimax.h5.nexus.describe_signal
+.. autodata:: sigimax.h5.nexus.UNIFORM_AXIS_TOLERANCE
 
 Files without suitable ``NXdata`` groups are described by declarative data
 mappings (:mod:`sigimax.h5.mapping`), registered by applications or plugins.

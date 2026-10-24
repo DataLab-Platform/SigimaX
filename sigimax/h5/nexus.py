@@ -18,6 +18,9 @@ Supported conventions (NeXus data model, ``NXdata`` base class):
 - axis datasets holding one real value per point, or bin edges (one more value),
   which are converted to bin centers; decreasing image axes are reversed, with
   the image, as images need increasing coordinates
+- image axes evenly spaced within :data:`UNIFORM_AXIS_TOLERANCE` are imported as
+  uniform coordinates, their maximum deviation being recorded as a conversion;
+  other image axes keep their stored coordinates
 - ``<signal>_errors`` (or legacy ``errors``) uncertainties of a 1D signal
 - ``units`` and ``long_name`` dataset attributes
 """
@@ -45,12 +48,19 @@ from sigimax.h5 import common, utils
 from sigimax.h5.selection import preview_step
 
 __all__ = [
+    "UNIFORM_AXIS_TOLERANCE",
     "NXAxis",
     "NXdataDescription",
     "NXdataNode",
     "describe_nxdata",
     "describe_signal",
 ]
+
+#: Maximum deviation of image axis values from even spacing for the axis to be
+#: imported as uniform coordinates, in units in the last place (ULP) of the data
+#: type they were stored with, at the largest axis magnitude: evenly spaced values
+#: computed in their storage precision deviate by up to about 2 ULP
+UNIFORM_AXIS_TOLERANCE = 2.5
 
 
 def _text(value) -> str:
@@ -292,15 +302,22 @@ def _read_axis(group: h5py.Group, axis: NXAxis) -> tuple[np.ndarray, np.dtype]:
     return values, dset.dtype
 
 
-def _is_uniform(values: np.ndarray, dtype: np.dtype) -> bool:
-    """Return True if monotonic values are evenly spaced, within the precision of
-    the data type they were stored with"""
+def _precision_type(dtype: np.dtype) -> type[np.floating]:
+    """Return the floating type giving the precision of axis values stored with
+    ``dtype`` (axis values are read as float64)"""
+    return dtype.type if dtype.kind == "f" and dtype.itemsize < 8 else np.float64
+
+
+def _uniform_deviation(values: np.ndarray, dtype: np.dtype) -> tuple[float, float]:
+    """Return the maximum deviation of monotonic values from even spacing, and
+    this deviation in units in the last place (ULP) of the data type they were
+    stored with, at the largest axis magnitude"""
     if values.size < 3:
-        return True
-    eps = np.finfo(dtype if dtype.kind == "f" else float).eps
-    tolerance = 4 * float(eps) * max(abs(values[0]), abs(values[-1]))
+        return 0.0, 0.0
     expected = np.linspace(values[0], values[-1], values.size)
-    return bool(np.all(np.abs(values - expected) <= tolerance))
+    deviation = float(np.max(np.abs(values - expected)))
+    bound = max(abs(values[0]), abs(values[-1]))
+    return deviation, deviation / float(np.spacing(_precision_type(dtype)(bound)))
 
 
 def _is_decreasing(values: np.ndarray, name: str) -> bool:
@@ -343,23 +360,41 @@ def _image_axis(
 
 def _set_image_coords(
     obj: ImageObj,
-    xaxis: tuple[np.ndarray, np.dtype],
-    yaxis: tuple[np.ndarray, np.dtype],
+    xaxis: tuple[str | None, np.ndarray, np.dtype],
+    yaxis: tuple[str | None, np.ndarray, np.dtype],
+    conversions: list[str],
 ) -> None:
-    """Set image coordinates: uniform if axes are evenly spaced, else non-uniform
+    """Set image coordinates: uniform if both axes are evenly spaced within
+    :data:`UNIFORM_AXIS_TOLERANCE`, else the stored (non-uniform) coordinates
 
     Args:
         obj: image object
-        xaxis: X axis values in increasing order, and their stored data type
-        yaxis: Y axis values in increasing order, and their stored data type
+        xaxis: X axis name (None for a dimension without axis), values in
+         increasing order, and their stored data type
+        yaxis: Y axis name (None for a dimension without axis), values in
+         increasing order, and their stored data type
+        conversions: conversions applied to the source values, completed with the
+         deviation of the axes converted to uniform coordinates
     """
-    (xc, xdtype), (yc, ydtype) = xaxis, yaxis
-    if _is_uniform(xc, xdtype) and _is_uniform(yc, ydtype):
-        dx = float(xc[-1] - xc[0]) / (xc.size - 1) if xc.size > 1 else 1.0
-        dy = float(yc[-1] - yc[0]) / (yc.size - 1) if yc.size > 1 else 1.0
-        obj.set_uniform_coords(dx, dy, float(xc[0]), float(yc[0]))
-    else:
+    (xname, xc, xdtype), (yname, yc, ydtype) = xaxis, yaxis
+    xdev, ydev = _uniform_deviation(xc, xdtype), _uniform_deviation(yc, ydtype)
+    # Written so that a NaN deviation (non-finite axis values) is not uniform
+    if not (xdev[1] <= UNIFORM_AXIS_TOLERANCE and ydev[1] <= UNIFORM_AXIS_TOLERANCE):
         obj.set_coords(xc, yc)
+        return
+    dx = float(xc[-1] - xc[0]) / (xc.size - 1) if xc.size > 1 else 1.0
+    dy = float(yc[-1] - yc[0]) / (yc.size - 1) if yc.size > 1 else 1.0
+    obj.set_uniform_coords(dx, dy, float(xc[0]), float(yc[0]))
+    for name, dtype, (deviation, ulps) in (
+        (xname, xdtype, xdev),
+        (yname, ydtype, ydev),
+    ):
+        if name is not None and deviation > 0:
+            ptype = np.dtype(_precision_type(dtype)).name
+            conversions.append(
+                f"axis '{name}': uniform coordinates "
+                f"(max deviation {deviation:.3g}, {ulps:.2g} ULP of {ptype})"
+            )
 
 
 class NXdataNode(common.GroupNode):
@@ -546,7 +581,12 @@ class NXdataNode(common.GroupNode):
             ),
         )
         obj.zlabel, obj.zunit = desc.label, desc.units
-        _set_image_coords(obj, (xc, xdtype), (yc, ydtype))
+        _set_image_coords(
+            obj,
+            (xaxis.name if xaxis else None, xc, xdtype),
+            (yaxis.name if yaxis else None, yc, ydtype),
+            conversions,
+        )
         if xaxis is not None:
             obj.xlabel, obj.xunit = xaxis.label, xaxis.units
         if yaxis is not None:
