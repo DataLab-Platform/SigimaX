@@ -19,7 +19,7 @@ import numpy as np
 import pytest
 
 from sigimax.h5 import H5Importer
-from sigimax.h5.common import MAX_ATTRIBUTE_ITEMS, NODE_FACTORY, BaseNode
+from sigimax.h5.common import MAX_ATTRIBUTE_ITEMS, NODE_FACTORY, BaseNode, GroupNode
 from sigimax.h5.generic import (
     GenericArrayNode,
     GenericCompoundNode,
@@ -161,6 +161,68 @@ def test_broken_links_are_skipped(tmp_path, capsys) -> None:
     assert "'/entry/dangling_soft': broken soft link to '/entry/missing'" in output
     assert "'/root_link': broken soft link" in output
     assert "broken external link to 'missing.h5:/data'" in output
+
+
+def test_link_cycles_are_skipped(tmp_path, capsys) -> None:
+    """Links back to a parent group are skipped instead of being collected forever,
+    while other aliases of a group or a dataset are kept at each of their paths.
+
+    Regression: a group linked into itself raised a RecursionError.
+    """
+    fname = str(tmp_path / f"{uuid.uuid4()}.h5")
+    with h5py.File(fname, "w") as h5file:
+        entry = h5file.create_group("entry")
+        entry["signal"] = np.arange(10.0)
+        entry["self"] = entry  # hard link to itself
+        inner = entry.create_group("inner")
+        inner["up"] = entry  # hard link to its parent (two-group cycle)
+        inner["root"] = h5py.SoftLink("/")  # soft link to the root group
+        h5file["alias"] = entry["signal"]  # dataset alias, not a cycle
+        h5file["entry_alias"] = inner  # group alias, not a cycle
+    importer = H5Importer(fname)
+    try:
+        ids = {node.id for node in importer.nodes}
+        # The group alias is kept, with its own path to the parent group of the
+        # aliased group (which is not one of its own parents)
+        assert ids == {
+            "/",
+            "/entry",
+            "/entry/signal",
+            "/entry/inner",
+            "/alias",
+            "/entry_alias",
+            "/entry_alias/up",
+            "/entry_alias/up/signal",
+        }
+        assert importer.get("/alias").get_native_object().y.size == 10
+    finally:
+        importer.close()
+    output = capsys.readouterr().out
+    assert "'/entry/self': link back to its parent group '/entry'" in output
+    assert "'/entry/inner/up': link back to its parent group '/entry'" in output
+    assert "'/entry/inner/root': link back to its parent group '/'" in output
+
+
+def test_importer_closes_file_on_failure(tmp_path, monkeypatch) -> None:
+    """The HDF5 file is closed when the tree cannot be built."""
+    fname = str(tmp_path / f"{uuid.uuid4()}.h5")
+    with h5py.File(fname, "w") as h5file:
+        h5file["signal"] = np.arange(10.0)
+    opened: list[h5py.File] = []
+    original_file = h5py.File
+
+    def spy_file(*args, **kwargs):
+        opened.append(original_file(*args, **kwargs))
+        return opened[-1]
+
+    def fail(*_args, **_kwargs):
+        raise RuntimeError("tree failure")
+
+    monkeypatch.setattr(h5py, "File", spy_file)
+    monkeypatch.setattr(GroupNode, "collect_children", fail)
+    with pytest.raises(RuntimeError, match="tree failure"):
+        H5Importer(fname)
+    assert len(opened) == 1 and not opened[0].id.valid
 
 
 def test_unregister_node_class(h5fname: str) -> None:

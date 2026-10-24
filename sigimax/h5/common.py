@@ -231,11 +231,15 @@ class H5Importer:
 
     def __init__(self, filename):
         self.h5file = h5py.File(filename)
-        self.__nodes = {}
-        self.root = RootNode(self.h5file)
-        self.__nodes[self.root.id] = self.root
-        self.root.collect_children(self.__nodes)
-        NODE_FACTORY.run_post_triggers(self)
+        try:
+            self.__nodes = {}
+            self.root = RootNode(self.h5file)
+            self.__nodes[self.root.id] = self.root
+            self.root.collect_children(self.__nodes)
+            NODE_FACTORY.run_post_triggers(self)
+        except BaseException:
+            self.h5file.close()
+            raise
 
     @property
     def nodes(self):
@@ -363,8 +367,19 @@ class GroupNode(BaseNode):
         """Icon name associated to node"""
         return "h5group.svg"
 
-    def collect_children(self, node_dict: dict[str, BaseNode]):
-        """Construct tree"""
+    def collect_children(
+        self,
+        node_dict: dict[str, BaseNode],
+        ancestors: tuple[h5py.Group, ...] = (),
+    ):
+        """Construct tree
+
+        Args:
+            node_dict: nodes by identifier, completed with the collected nodes
+            ancestors: groups containing this group: a link back to one of them (or
+             to this group) closes a cycle and is skipped
+        """
+        ancestors = (*ancestors, self.dset)
         for name in self.dset:
             dset = self.dset.get(name)
             if dset is None:
@@ -380,6 +395,17 @@ class GroupNode(BaseNode):
                 path = f"{self.dset.name.rstrip('/')}/{name}"
                 print(f"Warning: Skipping '{path}': {reason}")
                 continue
+            if isinstance(dset, h5py.Group):
+                # Identity comparison (file and object): a group reached again
+                # through a hard, soft or external link would be collected forever
+                looped = next((group for group in ancestors if group == dset), None)
+                if looped is not None:
+                    path = f"{self.dset.name.rstrip('/')}/{name}"
+                    print(
+                        f"Warning: Skipping '{path}': link back to its parent group "
+                        f"'{looped.name}'"
+                    )
+                    continue
             try:
                 child_cls = NODE_FACTORY.get(dset)
                 if child_cls is not None:
@@ -387,7 +413,7 @@ class GroupNode(BaseNode):
                     node_dict[child.id] = child
                     self.children.append(child)
                     if isinstance(child, GroupNode):
-                        child.collect_children(node_dict)
+                        child.collect_children(node_dict, ancestors)
                     child.collect_attributes()
             except (UnicodeDecodeError, TypeError, ValueError, KeyError) as exc:
                 # Skip datasets that can't be processed due to various issues

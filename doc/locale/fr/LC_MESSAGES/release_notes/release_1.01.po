@@ -110,3 +110,6 @@ msgstr "Exigences"
 
 msgid "Sigima 1.4.0 or later is required: the HDF5 import modules use its experimental-source API, and integer conversions use its precision-preserving converter."
 msgstr "Sigima 1.4.0 ou ultérieur est requis : les modules d'import HDF5 utilisent son API d'origine expérimentale, et les conversions d'entiers utilisent son convertisseur préservant la précision."
+
+msgid "Files containing a link back to a parent group (a group linked into itself or into one of its subgroups) can now be opened: such links are skipped with a warning in the console, instead of raising a `RecursionError`. Other aliases of a group or dataset are still shown at each of their paths, and the HDF5 file is now closed when its tree cannot be built."
+msgstr "Les fichiers contenant un lien vers un groupe parent (un groupe lié dans lui-même ou dans l'un de ses sous-groupes) peuvent désormais être ouverts : ces liens sont ignorés avec un avertissement dans la console, au lieu de provoquer une `RecursionError`. Les autres alias d'un groupe ou d'un jeu de données restent affichés à chacun de leurs chemins, et le fichier HDF5 est désormais fermé lorsque son arborescence ne peut pas être construite."

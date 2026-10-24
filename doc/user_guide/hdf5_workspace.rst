@@ -211,7 +211,9 @@ in a worker thread; previews of items selected meanwhile are not read, and
 stale results are not displayed. Selecting an item that cannot be previewed,
 such as a group, clears the preview. Closing a file or the browser dialog waits
 for the preview read to finish. Broken soft or external links (e.g. to missing
-detector files) are skipped, with a console warning, when a file is opened.
+detector files) are skipped, with a console warning, when a file is opened, as
+are links back to a parent group, which would make the tree endless (other
+aliases of a group or dataset are shown at each of their paths).
 
 Ordinary 1D arrays and 2D images, NeXus and mapped objects exceeding ``2**24``
 elements are previewed with a sampling step along each axis. The full data is

@@ -48,6 +48,7 @@
 * 1D datasets of single-precision complex numbers (`complex64`) are now imported as complex signals: only their real part was kept (with a `ComplexWarning`). Integer signals beyond 2⁵³ now emit Sigima's precision warning instead of being rounded silently, and 2D tables with complex X values or uncertainties are reported as unsupported instead of being truncated.
 * `NodeFactory.unregister` removes a node class and its post triggers, so that an application plugin can remove the node classes it registered when it is unloaded.
 * Files containing broken links (soft links to a missing object, or external links to a missing file, as in synchrotron master files whose detector files are not available) can now be opened: the broken links are skipped with a warning in the console, instead of preventing the whole file from being browsed or imported.
+* Files containing a link back to a parent group (a group linked into itself or into one of its subgroups) can now be opened: such links are skipped with a warning in the console, instead of raising a `RecursionError`. Other aliases of a group or dataset are still shown at each of their paths, and the HDF5 file is now closed when its tree cannot be built.
 
 See the [HDF5 guide](../user_guide/hdf5_workspace.rst) for a complete JSON mapping and registration example, NeXus import limits and multidimensional selection examples.
 
