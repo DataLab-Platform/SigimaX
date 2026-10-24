@@ -293,12 +293,31 @@ def describe_signal(
     )
 
 
-def _read_axis(group: h5py.Group, axis: NXAxis) -> tuple[np.ndarray, np.dtype]:
-    """Return axis values, at bin centers, and the data type of the axis dataset"""
+def _read_axis(
+    group: h5py.Group, axis: NXAxis, step: int = 1
+) -> tuple[np.ndarray, np.dtype]:
+    """Return axis values, at bin centers, and the data type of the axis dataset
+
+    Args:
+        group: NXdata group
+        axis: axis description
+        step: step between the returned values (to read a decimated preview): only
+         the read values are loaded, giving the same values as a full read
+         followed by ``[::step]``
+    """
     dset = group[axis.name]
-    values = np.asarray(dset[()], dtype=float)
-    if axis.edges:
-        values = (values[:-1] + values[1:]) / 2
+    if step == 1:
+        values = np.asarray(dset[()], dtype=float)
+        if axis.edges:
+            values = (values[:-1] + values[1:]) / 2
+    elif axis.edges:
+        # Only the edges bounding the returned bins are read
+        nbins = dset.shape[0] - 1
+        lower = np.asarray(dset[0:nbins:step], dtype=float)
+        upper = np.asarray(dset[1 : nbins + 1 : step], dtype=float)
+        values = (lower + upper) / 2
+    else:
+        values = np.asarray(dset[::step], dtype=float)
     return values, dset.dtype
 
 
@@ -352,6 +371,7 @@ def _image_axis(
     """
     if axis is None:
         return np.arange(0, size, step, dtype=float), np.dtype(float), False
+    # Read entirely, even for a preview, to check monotonicity as on import
     values, dtype = _read_axis(group, axis)
     reverse = _is_decreasing(values, axis.name)
     values = values[::step]
@@ -539,7 +559,7 @@ class NXdataNode(common.GroupNode):
         axis = desc.axes[0]
         x = np.arange(0, desc.shape[0], step, dtype=float)
         if axis is not None:
-            x = _read_axis(group, axis)[0][::step]
+            x = _read_axis(group, axis, step)[0]
         dy = None
         if desc.errors is not None:
             dy = np.asarray(group[desc.errors][::step], dtype=float)

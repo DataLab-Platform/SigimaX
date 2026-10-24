@@ -369,6 +369,10 @@ def test_nxdata_decimated_preview(tmp_path) -> None:
         spectrum["counts"] = np.arange(5000.0)
         spectrum["counts_errors"] = np.full(5000, 0.5)
         spectrum["energy"] = np.linspace(8.0, 9.0, 5001)  # Bin edges
+        points = _nxdata(h5file, "points", "counts", "time")
+        points["counts"] = np.arange(5000.0)
+        points["counts_errors"] = np.full(5000, 0.25)
+        points["time"] = np.geomspace(1.0, 100.0, 5000)  # One value per point
 
     with _nodes_of(tmp_path, build) as nodes:
         preview = nodes["/image"].create_preview_object(1000)
@@ -382,15 +386,47 @@ def test_nxdata_decimated_preview(tmp_path) -> None:
         assert preview.data[0, 0] == 24 * step * 400
         assert preview.data[-1, 1] == step
 
-        node = nodes["/spectrum"]
-        preview = node.create_preview_object(1000)
-        native = node.get_native_object()
-        assert preview.y.size <= 1000
         step = preview_step((5000,), 1000)
-        assert np.allclose(preview.x, native.x[::step])
-        assert np.array_equal(preview.y, native.y[::step])
-        assert np.array_equal(preview.dy, native.dy[::step])
-        assert node.create_preview_object(5000) is native
+        for name in ("/spectrum", "/points"):
+            node = nodes[name]
+            preview = node.create_preview_object(1000)
+            native = node.get_native_object()
+            assert preview.y.size <= 1000
+            # Axis values read with a step are those of the full read
+            assert np.array_equal(preview.x, native.x[::step]), name
+            assert np.array_equal(preview.y, native.y[::step])
+            assert np.array_equal(preview.dy, native.dy[::step])
+            assert node.create_preview_object(5000) is native
+
+
+def test_nxdata_preview_axis_reads(tmp_path, monkeypatch) -> None:
+    """Decimated previews of signals read only the needed axis values (bin edges
+    or one value per point), never the complete axis dataset."""
+
+    def build(h5file: h5py.File) -> None:
+        for name, size in (("edges", 5001), ("points", 5000)):
+            group = _nxdata(h5file, name, "counts", "x")
+            group["counts"] = np.arange(5000.0)
+            group["x"] = np.linspace(0.0, 1.0, size)
+
+    reads = []
+    getitem = h5py.Dataset.__getitem__
+
+    def spy(dset: h5py.Dataset, args, new_dtype=None):
+        reads.append((dset.name, args))
+        return getitem(dset, args, new_dtype)
+
+    with _nodes_of(tmp_path, build) as nodes:
+        step = preview_step((5000,), 1000)
+        monkeypatch.setattr(h5py.Dataset, "__getitem__", spy)
+        for name in ("edges", "points"):
+            reads.clear()
+            nodes[f"/{name}"].create_preview_object(1000)
+            axis_reads = [args for path, args in reads if path == f"/{name}/x"]
+            assert axis_reads, name
+            assert all(
+                isinstance(args, slice) and args.step == step for args in axis_reads
+            ), axis_reads
 
 
 if __name__ == "__main__":
