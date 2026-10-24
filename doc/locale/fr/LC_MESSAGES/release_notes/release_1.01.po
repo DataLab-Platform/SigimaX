@@ -36,6 +36,9 @@ msgstr "Les annotations PlotPy existantes restent lisibles sans modifier l'objet
 msgid "Canonical annotation identifiers, metadata, extensions, and persistent lock state are preserved across PlotPy editing round trips. Application-specific opaque annotation entries continue to coexist with graphical annotations."
 msgstr "Les identifiants d'annotation canoniques, les métadonnées, les extensions et l'état de verrouillage persistant sont conservés lors des allers-retours d'édition PlotPy. Les entrées d'annotation opaques spécifiques à l'application continuent de coexister avec les annotations graphiques."
 
+msgid "The tooltip of a rectangular ROI defined in pixel indices now shows the pixels selected by the ROI, i.e. those whose centers lie inside the rectangle: the corners of the rectangle were rounded to the nearest pixel indices, which could show a selection shifted by one pixel once the rectangle had been moved."
+msgstr "L'info-bulle d'une ROI rectangulaire définie en indices de pixels affiche désormais les pixels sélectionnés par la ROI, c'est-à-dire ceux dont le centre est situé dans le rectangle : les coins du rectangle étaient arrondis aux indices de pixels les plus proches, ce qui pouvait afficher une sélection décalée d'un pixel une fois le rectangle déplacé."
+
 msgid "Main window"
 msgstr "Fenêtre principale"
 
@@ -108,8 +111,8 @@ msgstr "Le [guide HDF5](../user_guide/hdf5_workspace.rst) fournit un exemple com
 msgid "Requirements"
 msgstr "Exigences"
 
-msgid "Sigima 1.4.0 or later is required: the HDF5 import modules use its experimental-source API, and integer conversions use its precision-preserving converter."
-msgstr "Sigima 1.4.0 ou ultérieur est requis : les modules d'import HDF5 utilisent son API d'origine expérimentale, et les conversions d'entiers utilisent son convertisseur préservant la précision."
+msgid "Sigima 1.4.0 or later is required: the HDF5 import modules use its experimental-source API, integer conversions use its precision-preserving converter, and the tooltips of rectangular ROIs use its pixel-range conversions."
+msgstr "Sigima 1.4.0 ou ultérieur est requis : les modules d'import HDF5 utilisent son API d'origine expérimentale, les conversions d'entiers son convertisseur préservant la précision, et les info-bulles des ROI rectangulaires ses conversions en plages de pixels."
 
 msgid "Files containing a link back to a parent group (a group linked into itself or into one of its subgroups) can now be opened: such links are skipped with a warning in the console, instead of raising a `RecursionError`. Other aliases of a group or dataset are still shown at each of their paths, and the HDF5 file is now closed when its tree cannot be built."
 msgstr "Les fichiers contenant un lien vers un groupe parent (un groupe lié dans lui-même ou dans l'un de ses sous-groupes) peuvent désormais être ouverts : ces liens sont ignorés avec un avertissement dans la console, au lieu de provoquer une `RecursionError`. Les autres alias d'un groupe ou d'un jeu de données restent affichés à chacun de leurs chemins, et le fichier HDF5 est désormais fermé lorsque son arborescence ne peut pas être construite."

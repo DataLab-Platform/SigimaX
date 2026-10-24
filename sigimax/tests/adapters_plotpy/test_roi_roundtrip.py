@@ -31,6 +31,7 @@ from sigimax.adapters_plotpy.converters import (
 pytestmark = pytest.mark.gui
 
 __all__ = [
+    "test_image_roi_rectangle_info_in_indices",
     "test_image_roi_roundtrip_circle",
     "test_image_roi_roundtrip_polygon",
     "test_image_roi_roundtrip_rectangle",
@@ -130,3 +131,36 @@ def test_image_roi_roundtrip_polygon():
         orig_coords = np.array(original.get_physical_coords(img), dtype=float)
         rec_coords = np.array(recovered.get_physical_coords(img), dtype=float)
         np.testing.assert_allclose(rec_coords, orig_coords, rtol=1e-6)
+
+
+# ---------------------------------------------------------------------------
+# Image ROI tooltip — Rectangle in indices
+# ---------------------------------------------------------------------------
+
+
+def test_image_roi_rectangle_info_in_indices():
+    """The tooltip of a rectangular ROI in indices shows the ROI pixels."""
+    with qt_app_context(exec_loop=False):
+        img = create_multigaussian_image()
+        img.set_uniform_coords(0.5, 2.0, 10.0, -5.0)
+
+        roi = create_image_roi("rectangle", [3, 4, 5, 6], indices=True)
+        original = roi.get_single_roi(0)
+
+        # The plot item goes from the outer edges of the ROI pixels
+        item = singleroi_to_plotitem(original, img)
+        info = item.info_callback(item)
+        assert "= (3, 4)" in info, info
+        assert "= 5 × 6" in info, info
+
+        # Once moved by the user, the rectangle holds the pixels whose centers lie
+        # inside it: columns 3 to 7 (index range 2.3 to 7.3) and rows 4 to 9
+        # (index range 3.2 to 9.2), like the ROI itself
+        x0, x1 = 10.0 + 0.5 * np.array([2.3, 7.3])
+        y0, y1 = -5.0 + 2.0 * np.array([3.2, 9.2])
+        item.set_rect(x0, y0, x1, y1)
+        info = item.info_callback(item)
+        assert "= (3, 4)" in info, info
+        assert "= 5 × 6" in info, info
+        roi = plotitem_to_singleroi(item, img)
+        assert roi.get_indices_coords(img) == [3, 4, 5, 6]
