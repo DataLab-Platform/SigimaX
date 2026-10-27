@@ -8,22 +8,37 @@ SigimaX Generic HDF5 format support
 
 from __future__ import annotations
 
+import functools
 import math
 
 import h5py
 import numpy as np
 from guidata.utils.misc import to_string
 from sigima.io.common.converters import convert_array_to_valid_dtype
-from sigima.objects import ImageObj, SignalObj, create_image, create_signal
+from sigima.objects import (
+    ImageObj,
+    SignalObj,
+    create_image,
+    create_signal,
+    make_experimental_source,
+    set_experimental_source,
+)
 
 from sigimax.h5 import common, utils
 from sigimax.h5.selection import NDSelection, preview_step, read_selection
+from sigimax.h5.views import NDViewMixin
 
 #: Maximum number of elements read to show the textual preview of an array
 TEXT_PREVIEW_MAX_ITEMS = 100
 
 #: Number of compound records read to decide if their string fields matter
 COMPOUND_SAMPLE_SIZE = 1000
+
+
+def _unavailable_filters_text(missing: list[str]) -> str:
+    """Return the text of a dataset that cannot be read for want of filters"""
+    return "<compressed with unavailable filter: " + ", ".join(missing) + ">"
+
 
 # =============================================================================
 # Encoding and Data Reading Utilities
@@ -176,6 +191,12 @@ class BaseGenericNode(common.BaseNode):
     def match(cls, dset):
         """Return True if h5 dataset matches this node pattern."""
         return isinstance(dset, h5py.Dataset)
+
+    @functools.cached_property
+    def missing_filters(self) -> list[str]:
+        """Compression filters of the dataset that HDF5 cannot apply (see
+        :func:`sigimax.h5.utils.unavailable_filters`)"""
+        return utils.unavailable_filters(self.dset)
 
     @property
     def icon_name(self):
@@ -438,7 +459,7 @@ class GenericArrayNode(BaseGenericNode):
 
     def is_supported(self) -> bool:
         """Return True if node is associated to supported data"""
-        return int(np.prod(self.layout[0])) > 1
+        return int(np.prod(self.layout[0])) > 1 and not self.missing_filters
 
     @property
     def __is_signal(self):
@@ -466,6 +487,8 @@ class GenericArrayNode(BaseGenericNode):
     @property
     def text(self):
         """Return node textual representation"""
+        if self.missing_filters:
+            return _unavailable_filters_text(self.missing_filters)
         data, truncated = utils.read_bounded(self.dset, TEXT_PREVIEW_MAX_ITEMS)
         if self.dset.dtype.names is not None:
             data = self.extract_numeric_from_compound(data)
@@ -511,13 +534,17 @@ class GenericArrayNode(BaseGenericNode):
         return obj
 
 
-class GenericNDArrayNode(BaseGenericNode):
+class GenericNDArrayNode(BaseGenericNode, NDViewMixin):
     """Node for numeric HDF5 datasets with three dimensions or more.
 
-    Such datasets (image stacks, spectral cubes...) are listed and described, but
-    are not imported as a whole: their 1D or 2D views are read with
-    :func:`sigimax.h5.selection.read_selection`.
+    Such datasets (image stacks, spectral cubes...) are listed and described, and
+    imported through a view (:class:`~sigimax.h5.views.NDViewMixin`): one signal
+    or image per frame, read with :func:`sigimax.h5.selection.read_selection`.
     """
+
+    def __init__(self, h5file, dname):
+        super().__init__(h5file, dname)
+        self.init_view()
 
     @classmethod
     def match(cls, dset):
@@ -531,8 +558,28 @@ class GenericNDArrayNode(BaseGenericNode):
         )
 
     @property
+    def nd_shape(self) -> tuple[int, ...] | None:
+        """Return the shape of the dataset (None if it cannot be read)"""
+        return None if self.missing_filters else self.dset.shape
+
+    @property
+    def interpretation(self) -> str:
+        """Return the NeXus interpretation of the dataset (empty if not given)"""
+        return to_string(self.dset.attrs.get("interpretation", "")).strip()
+
+    def is_supported(self) -> bool:
+        """Return True if the frames of the view are to be imported"""
+        return self.import_view
+
+    def can_preview(self) -> bool:
+        """Return True if the dataset can be viewed"""
+        return self.view is not None
+
+    @property
     def icon_name(self):
         """Icon name associated to node"""
+        if self.import_view:
+            return "image.svg" if len(self.view.displayed) == 2 else "signal.svg"
         return "h5array.svg"
 
     @property
@@ -543,8 +590,48 @@ class GenericNDArrayNode(BaseGenericNode):
     @property
     def text(self):
         """Return node textual representation"""
+        if self.missing_filters:
+            return _unavailable_filters_text(self.missing_filters)
         data, truncated = utils.read_bounded(self.dset, TEXT_PREVIEW_MAX_ITEMS)
         return str(data) + (" ..." if truncated else "")
+
+    def create_preview_object(self, max_items: int):
+        """Return the first frame of the view, read with a step if it has more
+        than ``max_items`` elements"""
+        return self.preview_view_object(max_items)
+
+    def create_view_object(
+        self, selection: NDSelection, title: str, max_items: int | None = None
+    ):
+        """Create the signal or image of a frame, with pixel indices as
+        coordinates
+
+        Args:
+            selection: frame selection
+            title: object title
+            max_items: maximum number of elements to read (None: read the whole
+             frame and record the origin of the object)
+        """
+        sizes = tuple(self.dset.shape[axis] for axis in selection.displayed)
+        step = self.view_step(sizes, max_items)
+        data = read_selection(self.dset, selection, step)
+        if len(sizes) == 1:
+            x = np.arange(0, sizes[0], step, dtype=float)
+            obj = create_signal(title, x, common.to_signal_data(data))
+        else:
+            obj = create_image(
+                title, convert_array_to_valid_dtype(data, ImageObj.VALID_DTYPES)
+            )
+            obj.set_uniform_coords(float(step), float(step))
+        if max_items is None:
+            source = make_experimental_source(
+                "hdf5",
+                self.h5file.filename,
+                entry=self.dset.name,
+                selection={"view": selection.as_dict()},
+            )
+            set_experimental_source(obj, source)
+        return obj
 
 
 class GenericCompoundNode(BaseGenericNode):

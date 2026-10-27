@@ -90,6 +90,27 @@ With Sigima 1.4 or later, an ``NXdata`` group is importable as a 1D signal or
 (``signal=1`` and ``axes``) are supported. Selecting a group imports the
 scientific object; selecting a child dataset still gives access to raw values.
 
+Files written with the legacy NeXus conventions, such as the scans of
+synchrotron SOLEIL, designate axes by dimension: without ``axes`` attribute, the
+``axis`` attribute of an axis dataset gives the dimension it describes (from 1),
+the dataset with the lowest ``primary`` attribute being preferred, and an axis
+applies to a dimension only if its size fits. The other signals of a group, given
+by its ``auxiliary_signals`` attribute or by a legacy ``signal`` attribute of
+their dataset (whatever its value, as all the counters and detectors of a scan),
+are shown as nodes of their own, below the group, with the axes that fit their
+dimensions: a 1D counter is a signal versus the scanned motor, a detector writing
+a spectrum per point an image with the motor along Y, and a detector writing an
+image per point a stack of images (see below).
+
+When a NeXus file is opened, the browser selects its default ``NXdata`` group,
+designated by the ``default`` attributes of the file and of its entry
+(``sigimax.h5.nexus.default_nxdata_path``).
+
+Compressed detector data (bitshuffle/LZ4, Blosc, Zstandard...) is read with the
+HDF5 filters of hdf5plugin, a dependency of SigimaX. A dataset compressed with a
+filter that is still unavailable is reported in the browser, with the filter name
+and number, instead of failing when read.
+
 Axis datasets must be 1D, hold real numbers and contain either one coordinate
 per point or one extra value for bin edges. Edges are converted to centers.
 Image coordinates may be non-uniform; a decreasing image axis is reversed,
@@ -108,7 +129,9 @@ real numbers and their shape matches; image uncertainties are not imported.
 
 Imported objects record their file, group, signal, axes and conversions in
 ``experimental_source`` metadata; a dimension without axis is recorded as
-``"."``, as in NeXus ``axes`` attributes. This describes the measurement
+``"."``, as in NeXus ``axes`` attributes. The title of the ``NXentry`` group is
+recorded in the details (``entry_title``), and its start and end times in the
+timestamps. This describes the measurement
 origin, not a reproducible acquisition or a processing history. The
 application must preserve object metadata in its own workspace serialization.
 
@@ -146,9 +169,11 @@ then required in the object name and is replaced by each dataset name.
 Uncertainty datasets ending in ``_errors`` and declared axes are excluded
 from pattern expansion.
 
-``axes`` contains one entry per signal dimension, in array order (rows then
+``axes`` gives the axes of the first signal dimensions, in array order (rows then
 columns for an image). Each entry is a path, an object with ``path`` and optional
-``label`` and ``units``, or ``null`` to use indices. Omitting ``axes`` uses
+``label`` and ``units``, or ``null`` to use indices. The following dimensions use
+indices, so that a pattern may match signals of several ranks, e.g. the counters,
+spectra and images of a scan, with the scan axis first. Omitting ``axes`` uses
 indices for every dimension. The optional ``errors`` path overrides the
 default ``<signal>_errors`` dataset. Labels and units otherwise come from
 ``long_name`` and ``units`` attributes, with the dataset name as label fallback.
@@ -221,11 +246,57 @@ still read on import. Compound datasets and signals stored in 2D tables still
 use complete objects for graphical previews, so this is not a universal memory
 bound.
 
-Numeric datasets with three or more dimensions are listed but not imported as
-complete objects. There is no graphical slice selector. Use
+Numeric datasets and NeXus signals with three or more dimensions are imported
+through a view, as one signal or image per frame. When such an item is selected,
+the browser shows a view selector: the displayed axes (images of two axes, or
+signals along one axis), the axis along which frames are taken, with the first
+and last frame and a step, and the index of the other axes. The first frame of
+the view is previewed. Checking "Import these frames" makes the item checkable
+and checked; unchecking the item cancels the import. The browser asks for
+confirmation before importing more than 100 frames
+(``sigimax.widgets.h5browser.MAX_FRAMES_WITHOUT_CONFIRMATION``). The default view
+displays the last two axes as images, with every frame along the preceding axis,
+or follows the NeXus ``interpretation`` attribute of the signal: ``spectrum``
+displays signals along the last axis, ``rgba-image`` one image per channel. The
+frames of NeXus signals keep the axes of their displayed dimensions; their title
+and ``experimental_source`` give the frame indices (``view``) and the coordinates
+of the frame along the other axes (``positions``).
+
+Applications set views with :class:`sigimax.h5.selection.NDView`, and replace a
+node by the nodes of its frames with :func:`sigimax.h5.views.expand_views`, which
+the browser applies to the selected nodes:
+
+.. code-block:: python
+
+    from pathlib import Path
+    from tempfile import TemporaryDirectory
+
+    import h5py
+    import numpy as np
+
+    from sigimax.h5 import H5Importer
+    from sigimax.h5.selection import NDView
+    from sigimax.h5.views import expand_views
+
+    cube = np.arange(5 * 3 * 4).reshape(5, 3, 4)
+    with TemporaryDirectory() as directory:
+        filename = Path(directory) / "stack.h5"
+        with h5py.File(filename, "w") as h5file:
+            h5file["frames"] = cube
+        importer = H5Importer(str(filename))
+        try:
+            node = importer.get("/frames")
+            # Images of axes 1 and 2, frames 1 and 3 along axis 0
+            node.set_view(NDView((1, 2), (1,), frame_axis=0, last=3, step=2))
+            images = [frame.get_native_object() for frame in expand_views([node])]
+            np.testing.assert_array_equal(images[1].data, cube[3])
+        finally:
+            importer.close()
+
+To read a view as a NumPy array, without creating Sigima objects, use
 :class:`sigimax.h5.selection.NDSelection` and
-:func:`sigimax.h5.selection.read_selection` to read only a selected 1D or 2D
-view as a NumPy array:
+:func:`sigimax.h5.selection.read_selection`, which read only the selected
+elements:
 
 .. code-block:: python
 

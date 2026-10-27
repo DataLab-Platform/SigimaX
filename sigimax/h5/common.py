@@ -131,6 +131,11 @@ class BaseNode(metaclass=abc.ABCMeta):
         """Return True if node is associated to supported data"""
         return False
 
+    def can_preview(self) -> bool:
+        """Return True if the node can be previewed (by default, if it is
+        supported: multidimensional nodes are previewed before being enabled)"""
+        return self.is_supported()
+
     def create_native_object(self):
         """Create native object, if supported"""
         return None
@@ -197,11 +202,21 @@ class BaseNode(metaclass=abc.ABCMeta):
     @property
     def object_title(self):
         """Return signal/image object title"""
+        return self.make_title()
+
+    def make_title(self, suffix: str = "") -> str:
+        """Return the title of an object read from the node
+
+        Args:
+            suffix: text following the node name or path (e.g. frame indices),
+             before the file name
+        """
         conf = get_conf()
         if conf.h5_fullpath_in_title.get():
             title = self.id
         else:
             title = self.name
+        title += suffix
         if conf.h5_fname_in_title.get():
             title += f" ({osp.basename(self.h5file.filename)})"
         return title

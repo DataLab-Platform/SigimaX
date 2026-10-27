@@ -110,6 +110,28 @@ def get_size(dset: h5py.Dataset) -> int:
     return 0 if dset.shape is None else int(np.prod(dset.shape, dtype=np.int64))
 
 
+def unavailable_filters(dset: h5py.Dataset) -> list[str]:
+    """Return the compression filters of a dataset that HDF5 cannot apply
+
+    Such datasets cannot be read. Filters of detector data (bitshuffle/LZ4,
+    Blosc...) are made available by hdf5plugin, imported with :mod:`sigimax.h5`.
+
+    Args:
+        dset: HDF5 dataset
+
+    Returns:
+        Name and identifier of each unavailable filter, e.g. ``"bitshuffle (32008)"``
+    """
+    plist = dset.id.get_create_plist()
+    names = []
+    for index in range(plist.get_nfilters()):
+        code, _flags, _values, name = plist.get_filter(index)
+        if not h5py.h5z.filter_avail(code):
+            text = to_string(name).strip() or "filter"
+            names.append(f"{text} ({code})")
+    return names
+
+
 def read_bounded(dset: h5py.Dataset, max_items: int) -> tuple[Any, bool]:
     """Read the first elements of a dataset, along each axis
 
