@@ -93,6 +93,23 @@ def test_default_views() -> None:
         default_view((5,))
 
 
+def test_interpretation(tmp_path) -> None:
+    """The interpretation of a signal is read on its dataset or on its group."""
+
+    def build(h5file: h5py.File) -> None:
+        rgb = h5file.create_group("rgb")
+        rgb.attrs.update(NX_class="NXdata", signal="img", interpretation="rgba-image")
+        rgb["img"] = np.zeros((6, 4, 3), dtype=np.uint8)
+        spectra = h5file.create_group("spectra")
+        spectra.attrs.update(NX_class="NXdata", signal="counts")
+        spectra["counts"] = np.zeros((2, 3, 16))
+        spectra["counts"].attrs["interpretation"] = "spectrum"
+
+    with _nodes_of(tmp_path, build) as nodes:
+        assert nodes["/rgb"].view == NDView((0, 1), (0,), 2, 2)
+        assert nodes["/spectra"].view == NDView((2,), (0, 0), 1, 2)
+
+
 def _step_scan(h5file: h5py.File) -> None:
     """Scan written as by SOLEIL: legacy attributes, counters and detectors of
     several ranks all designated as signals, time stamps with axis 0"""

@@ -642,10 +642,14 @@ class NXdataNode(common.GroupNode, NDViewMixin):
 
     @property
     def interpretation(self) -> str:
-        """Return the ``interpretation`` attribute of the signal (empty if not
-        given)"""
+        """Return the ``interpretation`` attribute of the signal, or of the group
+        (empty if not given)"""
         dset = self.dset.get(self.nxdata.signal)
-        return _text(dset.attrs.get("interpretation", "")).strip()
+        for item in (dset, self.dset):
+            text = _text(item.attrs.get("interpretation", "")).strip()
+            if text:
+                return text
+        return ""
 
     def is_supported(self) -> bool:
         """Return True if the signal is 1D or 2D and its axes are valid, or if the
