@@ -377,7 +377,7 @@ class H5TreeWidget(AbstractTreeWidget):
         datasets = []
         for item in self.find_all_items():
             if item.flags() & QC.Qt.ItemIsUserCheckable:
-                if only_checked_items and item.checkState(0) == 0:
+                if only_checked_items and item.checkState(0) == QC.Qt.Unchecked:
                     continue
                 if item is not self.topLevelItem(0):
                     node = self.get_node(item)
@@ -404,7 +404,7 @@ class H5TreeWidget(AbstractTreeWidget):
     def is_any_item_checked(self) -> bool:
         """Return True if any item is checked"""
         for item in self.find_all_items():
-            if item.checkState(0) > 0:
+            if item.checkState(0) != QC.Qt.Unchecked:
                 return True
         return False
 
