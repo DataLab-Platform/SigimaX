@@ -34,9 +34,12 @@ as an extra node, imported like an ``NXdata`` group. Mapping layout (version 1):
 Paths are relative to the matching group. The last component of a signal path may
 be a pattern (``*``, ``?``, ``[...]``): the object is then repeated for each
 matching dataset, and ``{name}`` in its name is replaced by the dataset name.
-``axes`` gives one entry per signal dimension (``null``: no axis), as a path or as
-an object overriding the axis label and units; without ``axes``, dimensions have
-no axis.
+``axes`` gives the axis of the first signal dimensions (``null``: no axis), as a
+path or as an object overriding the axis label and units; the following
+dimensions have no axis, so that a pattern may match signals of several ranks
+(e.g. counters and detector images of a scan, with the scan axis first). Without
+``axes``, dimensions have no axis. Objects of three dimensions or more are
+imported through a view (:mod:`sigimax.h5.views`).
 """
 
 from __future__ import annotations
@@ -95,8 +98,8 @@ class MappedObject:
          ``signal`` is a pattern
         signal: signal dataset path, relative to the matching group; its last
          component may be a pattern
-        axes: axis of each signal dimension (None: no axis), or None if no
-         dimension has an axis
+        axes: axis of the first signal dimensions (None: no axis), the following
+         dimensions having no axis, or None if no dimension has an axis
         errors: uncertainties dataset path (default: ``<signal>_errors``, if any)
         label: signal label (default: ``long_name`` attribute, or dataset name)
         units: signal units (default: ``units`` attribute)
@@ -353,6 +356,8 @@ def _describe(
         axes: list[str | None] = [None] * dset.ndim
     else:
         axes = [None if axis is None else axis.path for axis in obj.axes]
+        # Axes describe the first dimensions: the following ones have no axis
+        axes += [None] * (dset.ndim - len(axes))
     errors = (obj.errors,) if obj.errors else (f"{signal}_errors",)
     desc = nexus.describe_signal(group, signal, axes, errors=errors)
     if desc is None:

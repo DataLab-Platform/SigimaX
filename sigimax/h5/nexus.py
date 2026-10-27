@@ -6,8 +6,11 @@ SigimaX NeXus support: interpretation of ``NXdata`` groups
 A NeXus ``NXdata`` group designates its plottable signal and the axes of each
 signal dimension. :class:`NXdataNode` shows such a group as a single node of the
 HDF5 browser, which is imported as a signal (1D) or an image (2D) with its axes,
-units and uncertainties. Only metadata is read until the object is created, and
-previews of large groups read one element out of a step along each dimension.
+units and uncertainties, or, for signals of three dimensions or more, through a
+view: one signal or image per frame (:mod:`sigimax.h5.views`). Auxiliary signals
+of the group are shown as nodes of their own (:class:`AuxiliarySignalNode`).
+Only metadata is read until the object is created, and previews of large groups
+read one element out of a step along each dimension.
 
 Supported conventions (NeXus data model, ``NXdata`` base class):
 
@@ -15,6 +18,12 @@ Supported conventions (NeXus data model, ``NXdata`` base class):
 - ``@axes`` group attribute (``"."`` for a dimension without axis), with optional
   ``@<axis>_indices`` attributes, or legacy ``axes`` signal attribute; ``@axes``
   must give one entry per signal dimension
+- without ``@axes``, legacy ``axis`` attributes of axis datasets (dimension number,
+  from 1), the dataset with the lowest ``primary`` attribute being preferred for
+  each dimension; an axis applies to a dimension only if its size fits
+- auxiliary signals: ``@auxiliary_signals`` group attribute, and the other
+  datasets having a legacy ``signal`` attribute (whatever its value), with the
+  axes that fit their dimensions
 - axis datasets holding one real value per point, or bin edges (one more value),
   which are converted to bin centers; decreasing image axes are reversed, with
   the image, as images need increasing coordinates
@@ -22,7 +31,14 @@ Supported conventions (NeXus data model, ``NXdata`` base class):
   uniform coordinates, their maximum deviation being recorded as a conversion;
   other image axes keep their stored coordinates
 - ``<signal>_errors`` (or legacy ``errors``) uncertainties of a 1D signal
-- ``units`` and ``long_name`` dataset attributes
+- ``units`` and ``long_name`` dataset attributes, ``interpretation`` signal
+  attribute (default view of multidimensional signals)
+- ``@default`` attributes of the file and its entries, designating the default
+  ``NXdata`` group (:func:`default_nxdata_path`)
+- ``title``, ``start_time`` and ``end_time`` of the ``NXentry`` group, recorded in
+  the origin of the imported objects
+
+Signals compressed with a filter that HDF5 cannot apply are reported as problems.
 """
 
 from __future__ import annotations
@@ -45,15 +61,20 @@ from sigima.objects import (
 )
 
 from sigimax.h5 import common, utils
-from sigimax.h5.selection import preview_step
+from sigimax.h5.selection import NDSelection, preview_step, read_selection
+from sigimax.h5.views import NDViewMixin
 
 __all__ = [
     "UNIFORM_AXIS_TOLERANCE",
+    "AuxiliarySignalNode",
     "NXAxis",
     "NXdataDescription",
     "NXdataNode",
+    "default_nxdata_path",
+    "describe_auxiliary_signals",
     "describe_nxdata",
     "describe_signal",
+    "entry_information",
 ]
 
 #: Maximum deviation of image axis values from even spacing for the axis to be
@@ -131,6 +152,53 @@ def _is_nxdata(group: h5py.Group) -> bool:
     return _text(group.attrs.get("NX_class", "")) == "NXdata"
 
 
+def _attr_rank(item: h5py.Dataset, name: str) -> int | None:
+    """Return a positive integer attribute (legacy ``signal``, ``axis`` or
+    ``primary``), or None if it is missing or invalid; ``True`` stands for 1"""
+    if name not in item.attrs:
+        return None
+    text = _text(item.attrs[name]).strip()
+    if text == "True":
+        return 1
+    try:
+        value = float(text)
+    except ValueError:
+        return None
+    return int(value) if value.is_integer() and value >= 1 else None
+
+
+def _natural_key(name: str) -> list:
+    """Return sort key ordering numbered names numerically"""
+    return [int(part) if part.isdigit() else part for part in re.split(r"(\d+)", name)]
+
+
+def _legacy_axes(group: h5py.Group, shape: tuple[int, ...]) -> list[str | None]:
+    """Return the axis of each signal dimension designated by legacy ``axis``
+    attributes (dimension number, from 1), or None
+
+    An axis applies to a dimension only if it holds one real value per point (or
+    bin edges); among the axes of a dimension, the one with the lowest ``primary``
+    attribute is preferred.
+    """
+    candidates: dict[int, list[tuple[float, str]]] = {}
+    for name, item in group.items():
+        if not isinstance(item, h5py.Dataset) or "axis" not in item.attrs:
+            continue
+        number = _attr_rank(item, "axis")
+        if number is None or number > len(shape) or item.ndim != 1:
+            continue
+        size = shape[number - 1]
+        if not _is_real_number(item) or item.shape[0] not in (size, size + 1):
+            continue
+        primary = _attr_rank(item, "primary")
+        rank = math.inf if primary is None else primary
+        candidates.setdefault(number - 1, []).append((rank, name))
+    return [
+        min(candidates[dim])[1] if dim in candidates else None
+        for dim in range(len(shape))
+    ]
+
+
 def _find_signal(group: h5py.Group) -> tuple[str | None, list[str]]:
     """Return signal dataset name and axis names declared by an NXdata group"""
     if "signal" in group.attrs:
@@ -201,11 +269,62 @@ def describe_nxdata(group: h5py.Group) -> NXdataDescription | None:
     dset = group.get(signal) if signal else None
     if not isinstance(dset, h5py.Dataset) or not dset.shape:
         return None
-    axes, problems = _axis_dimensions(group, names, dset.ndim)
+    if names:
+        axes, problems = _axis_dimensions(group, names, dset.ndim)
+    else:
+        axes, problems = _legacy_axes(group, dset.shape), []
     desc = describe_signal(group, signal, axes, errors=(f"{signal}_errors", "errors"))
     if desc is None or not problems:
         return desc
     return dataclasses.replace(desc, problems=tuple(problems) + desc.problems)
+
+
+def describe_auxiliary_signals(
+    group: h5py.Group, main: NXdataDescription | None = None
+) -> list[NXdataDescription]:
+    """Describe the auxiliary signals of an ``NXdata`` group, without reading its
+    datasets
+
+    Auxiliary signals are those of the ``@auxiliary_signals`` group attribute,
+    then the datasets having a legacy ``signal`` attribute, by attribute value and
+    name, except the signal of the group. They have the axes of the signal if they
+    have its shape, otherwise the axes designated by legacy ``axis`` attributes
+    that fit their dimensions.
+
+    Args:
+        group: HDF5 group
+        main: description of the group (default: described from its attributes)
+
+    Returns:
+        Descriptions of the numeric auxiliary signals
+    """
+    main = describe_nxdata(group) if main is None else main
+    if main is None:
+        return []
+    names: list[str] = []
+    if "auxiliary_signals" in group.attrs:
+        names.extend(_text_list(group.attrs["auxiliary_signals"]))
+    legacy = []
+    for name, item in group.items():
+        if isinstance(item, h5py.Dataset):
+            rank = _attr_rank(item, "signal")
+            if rank is not None:
+                legacy.append((rank, _natural_key(name), name))
+    names.extend(name for *_key, name in sorted(legacy) if name not in names)
+    main_axes = [axis.name if axis is not None else None for axis in main.axes]
+    descs = []
+    for name in names:
+        dset = group.get(name)
+        if name == main.signal or not isinstance(dset, h5py.Dataset) or not dset.shape:
+            continue
+        if dset.shape == main.shape and not main.problems:
+            axes = main_axes
+        else:
+            axes = _legacy_axes(group, dset.shape)
+        desc = describe_signal(group, name, axes, errors=(f"{name}_errors",))
+        if desc is not None:
+            descs.append(desc)
+    return descs
 
 
 def _is_real_number(dset: h5py.Dataset) -> bool:
@@ -239,6 +358,9 @@ def describe_signal(
     ):
         return None
     problems: list[str] = []
+    missing = utils.unavailable_filters(dset)
+    if missing:
+        problems.append("compressed with unavailable filter: " + ", ".join(missing))
     if len(axes) != dset.ndim:
         problems.append(f"{len(axes)} axes for {dset.ndim} dimensions")
         axes = (list(axes) + [None] * dset.ndim)[: dset.ndim]
@@ -417,8 +539,81 @@ def _set_image_coords(
             )
 
 
-class NXdataNode(common.GroupNode):
-    """Node for NeXus ``NXdata`` groups, imported as a signal or an image
+def _entry_group(group: h5py.Group) -> h5py.Group | None:
+    """Return the ``NXentry`` group containing a group, if any"""
+    while group.name != "/":
+        group = group.parent
+        if _text(group.attrs.get("NX_class", "")) == "NXentry":
+            return group
+    return None
+
+
+def _entry_field(entry: h5py.Group, name: str) -> str:
+    """Return a text field of an ``NXentry`` group (empty if missing)"""
+    item = entry.get(name)
+    if not isinstance(item, h5py.Dataset) or item.size != 1:
+        return ""
+    if item.dtype.kind not in "SUO":
+        return ""
+    return _text(item[()]).strip()
+
+
+def entry_information(group: h5py.Group) -> tuple[dict[str, str], dict[str, str]]:
+    """Return the title and the start and end times of the ``NXentry`` group
+    containing a group, as ``experimental_source`` details and timestamps
+
+    Args:
+        group: HDF5 group
+
+    Returns:
+        Details (``{"entry_title": ...}``) and timestamps (``{"start": ...,
+        "end": ...}``), without the missing fields
+    """
+    entry = _entry_group(group)
+    if entry is None:
+        return {}, {}
+    title = _entry_field(entry, "title")
+    details = {"entry_title": title} if title else {}
+    timestamps = {
+        key: value
+        for key, value in (
+            ("start", _entry_field(entry, "start_time")),
+            ("end", _entry_field(entry, "end_time")),
+        )
+        if value
+    }
+    return details, timestamps
+
+
+def default_nxdata_path(h5file: h5py.File) -> str | None:
+    """Return the path of the default ``NXdata`` group of a NeXus file
+
+    The ``@default`` attribute of the file designates its default entry, whose
+    ``@default`` attribute designates its default ``NXdata`` group (or a subentry,
+    designating its own).
+
+    Args:
+        h5file: HDF5 file
+
+    Returns:
+        Group path, or None if the file does not designate an ``NXdata`` group
+    """
+    group: h5py.Group = h5file
+    for _level in range(8):
+        if "default" not in group.attrs:
+            return None
+        child = group.get(_text(group.attrs["default"]).strip())
+        if not isinstance(child, h5py.Group):
+            return None
+        if _is_nxdata(child):
+            return child.name
+        group = child
+    return None
+
+
+class NXdataNode(common.GroupNode, NDViewMixin):
+    """Node for NeXus ``NXdata`` groups, imported as a signal or an image, or
+    through a view for signals of three dimensions or more
 
     Args:
         h5file: HDF5 file
@@ -433,24 +628,44 @@ class NXdataNode(common.GroupNode):
         super().__init__(h5file, dname)
         self.nxdata = describe_nxdata(self.dset) if nxdata is None else nxdata
         self.text_prefix = "NXdata"
+        self.init_view()
 
     @classmethod
     def match(cls, dset):
         """Return True if h5 group is an ``NXdata`` group with a numeric signal"""
         return describe_nxdata(dset) is not None
 
+    @property
+    def nd_shape(self) -> tuple[int, ...] | None:
+        """Return the signal shape (None if the signal cannot be imported)"""
+        return None if self.nxdata.problems else self.nxdata.shape
+
+    @property
+    def interpretation(self) -> str:
+        """Return the ``interpretation`` attribute of the signal (empty if not
+        given)"""
+        dset = self.dset.get(self.nxdata.signal)
+        return _text(dset.attrs.get("interpretation", "")).strip()
+
     def is_supported(self) -> bool:
-        """Return True if the signal is 1D or 2D and its axes are valid"""
+        """Return True if the signal is 1D or 2D and its axes are valid, or if the
+        view of a multidimensional signal is enabled"""
         desc = self.nxdata
-        return (
-            not desc.problems
-            and len(desc.shape) in (1, 2)
-            and int(np.prod(desc.shape)) > 1
-        )
+        if desc.problems:
+            return False
+        if len(desc.shape) >= 3:
+            return self.import_view
+        return int(np.prod(desc.shape)) > 1
+
+    def can_preview(self) -> bool:
+        """Return True if the signal is supported or can be viewed"""
+        return self.view is not None or self.is_supported()
 
     @property
     def icon_name(self):
         """Icon name associated to node"""
+        if len(self.nxdata.shape) >= 3 and self.import_view:
+            return "image.svg" if len(self.view.displayed) == 2 else "signal.svg"
         if self.is_supported():
             return "signal.svg" if len(self.nxdata.shape) == 1 else "image.svg"
         return "h5group.svg"
@@ -485,27 +700,45 @@ class NXdataNode(common.GroupNode):
         (None: no details)"""
         return None
 
-    def make_source(self, conversions: list[str]) -> dict:
+    def make_source(
+        self, conversions: list[str], selection: NDSelection | None = None
+    ) -> dict:
         """Return the experimental source of the imported object
 
-        Dimensions without axis are recorded as ``"."``, as in NeXus ``@axes``.
+        Dimensions without axis are recorded as ``"."``, as in NeXus ``@axes``. The
+        title and times of the entry are recorded in the details and timestamps.
+
+        Args:
+            conversions: conversions applied to the source values
+            selection: frame of a multidimensional signal (None: whole signal),
+             recorded as ``view``, with the coordinates of the frame along the
+             hidden axes as ``positions``
         """
         desc = self.nxdata
+        chosen = {
+            "signal": desc.signal,
+            "axes": [axis.name if axis else "." for axis in desc.axes],
+        }
+        if selection is not None:
+            chosen["view"] = selection.as_dict()
+            positions = self.frame_positions(selection)
+            if positions:
+                chosen["positions"] = positions
+        details, timestamps = entry_information(self.dset)
+        details.update(self.source_details() or {})
         return make_experimental_source(
             self.SOURCE_KIND,
             self.h5file.filename,
             entry=desc.path,
-            selection={
-                "signal": desc.signal,
-                "axes": [axis.name if axis else "." for axis in desc.axes],
-            },
+            selection=chosen,
+            timestamps=timestamps or None,
             conversions=conversions or None,
-            details=self.source_details(),
+            details=details or None,
         )
 
     def create_native_object(self):
         """Create signal or image object from the ``NXdata`` group"""
-        if not self.is_supported():
+        if not self.is_supported() or len(self.nxdata.shape) >= 3:
             return None
         obj, conversions = self._build_object(1)
         set_experimental_source(obj, self.make_source(conversions))
@@ -513,17 +746,74 @@ class NXdataNode(common.GroupNode):
 
     def create_preview_object(self, max_items: int):
         """Return the native object, or a decimated one if the signal has more
-        than ``max_items`` elements (only the read elements of its axes are kept)
+        than ``max_items`` elements (only the read elements of its axes are kept);
+        for multidimensional signals, the first frame of the view
 
         Args:
             max_items: maximum number of signal elements to read
         """
+        if len(self.nxdata.shape) >= 3 and self.view is not None:
+            return self.preview_view_object(max_items)
         if not self.is_supported():
             return None
         shape = self.nxdata.shape
         if math.prod(shape) <= max_items:
             return self.get_native_object()
         obj, _conversions = self._build_object(preview_step(shape, max_items))
+        return obj
+
+    def axis_name(self, dim: int) -> str:
+        """Return the name of the axis of a dimension (empty if it has none)"""
+        axis = self.nxdata.axes[dim]
+        return "" if axis is None else axis.name
+
+    def frame_positions(self, selection: NDSelection) -> dict[str, float]:
+        """Return the coordinates of a frame along the hidden axes which have an
+        axis, by axis name (bin centers for bin edges)"""
+        positions = {}
+        ndim = len(self.nxdata.shape)
+        hidden = [dim for dim in range(ndim) if dim not in selection.displayed]
+        for dim, index in zip(hidden, selection.indices):
+            axis = self.nxdata.axes[dim]
+            if axis is None:
+                continue
+            dset = self.dset[axis.name]
+            values = np.asarray(dset[index : index + 2 if axis.edges else index + 1])
+            positions[axis.name] = float(np.mean(values, dtype=float))
+        return positions
+
+    def create_view_object(
+        self, selection: NDSelection, title: str, max_items: int | None = None
+    ) -> SignalObj | ImageObj:
+        """Create the signal or image of a frame of a multidimensional signal, with
+        the axes of its displayed dimensions
+
+        Args:
+            selection: frame selection
+            title: object title
+            max_items: maximum number of elements to read (None: read the whole
+             frame and record the origin of the object)
+        """
+        desc, group = self.nxdata, self.dset
+        sizes = tuple(desc.shape[dim] for dim in selection.displayed)
+        step = self.view_step(sizes, max_items)
+        data = read_selection(group[desc.signal], selection, step)
+        axes = tuple(desc.axes[dim] for dim in selection.displayed)
+        conversions = [
+            f"axis '{axis.name}': bin edges -> bin centers"
+            for axis in axes
+            if axis is not None and axis.edges
+        ]
+        if len(sizes) == 1:
+            dy = None
+            if desc.errors is not None:
+                errors = read_selection(group[desc.errors], selection, step)
+                dy = np.asarray(errors, dtype=float)
+            obj = self._build_signal(data, step, axes[0], sizes[0], dy, title)
+        else:
+            obj = self._build_image(data, step, conversions, axes, sizes, title)
+        if max_items is None:
+            set_experimental_source(obj, self.make_source(conversions, selection))
         return obj
 
     def _build_object(self, step: int) -> tuple[SignalObj | ImageObj, list[str]]:
@@ -542,51 +832,73 @@ class NXdataNode(common.GroupNode):
             if axis is not None and axis.edges
         ]
         if len(desc.shape) == 1:
-            return self._build_signal(data, step), conversions
-        return self._build_image(data, step, conversions), conversions
+            dy = None
+            if desc.errors is not None:
+                dy = np.asarray(self.dset[desc.errors][::step], dtype=float)
+            obj = self._build_signal(data, step, desc.axes[0], desc.shape[0], dy)
+            return obj, conversions
+        obj = self._build_image(data, step, conversions, desc.axes, desc.shape)
+        return obj, conversions
 
-    def _build_signal(self, data: np.ndarray, step: int) -> SignalObj:
-        """Create the signal object of a 1D ``NXdata`` group
+    def _build_signal(
+        self,
+        data: np.ndarray,
+        step: int,
+        axis: NXAxis | None,
+        size: int,
+        dy: np.ndarray | None = None,
+        title: str | None = None,
+    ) -> SignalObj:
+        """Create a signal object from 1D values of the ``NXdata`` group
 
         Args:
             data: signal values, read with step
             step: step between the read elements
+            axis: axis of the values (None: no axis)
+            size: number of values along the dimension
+            dy: uncertainties, read with step (None: no uncertainties)
+            title: object title (default: node title)
 
         Returns:
             Signal object
         """
         desc, group = self.nxdata, self.dset
-        axis = desc.axes[0]
-        x = np.arange(0, desc.shape[0], step, dtype=float)
+        x = np.arange(0, size, step, dtype=float)
         if axis is not None:
             x = _read_axis(group, axis, step)[0]
-        dy = None
-        if desc.errors is not None:
-            dy = np.asarray(group[desc.errors][::step], dtype=float)
         y = common.to_signal_data(data)
-        obj = create_signal(self.object_title, x, y, dy=dy)
+        obj = create_signal(title or self.object_title, x, y, dy=dy)
         obj.ylabel, obj.yunit = desc.label, desc.units
         if axis is not None:
             obj.xlabel, obj.xunit = axis.label, axis.units
         return obj
 
     def _build_image(
-        self, data: np.ndarray, step: int, conversions: list[str]
+        self,
+        data: np.ndarray,
+        step: int,
+        conversions: list[str],
+        axes: tuple[NXAxis | None, ...],
+        sizes: tuple[int, ...],
+        title: str | None = None,
     ) -> ImageObj:
-        """Create the image object of a 2D ``NXdata`` group
+        """Create an image object from 2D values of the ``NXdata`` group
 
         Args:
             data: image values, read with step along both dimensions
             step: step between the read elements
             conversions: conversions applied to the source values, completed with
              the ones applied to the image
+            axes: axes of the rows and of the columns (None: no axis)
+            sizes: number of rows and columns
+            title: object title (default: node title)
 
         Returns:
             Image object
         """
         desc, group = self.nxdata, self.dset
-        yaxis, xaxis = desc.axes
-        ny, nx = desc.shape
+        yaxis, xaxis = axes
+        ny, nx = sizes
         # PlotPy images need increasing coordinates: decreasing axes are reversed
         xc, xdtype, xreversed = _image_axis(group, xaxis, nx, step)
         yc, ydtype, yreversed = _image_axis(group, yaxis, ny, step)
@@ -595,7 +907,7 @@ class NXdataNode(common.GroupNode):
                 data = np.flip(data, axis=dim)
                 conversions.append(f"axis '{axis.name}': reversed to increasing order")
         obj = create_image(
-            self.object_title,
+            title or self.object_title,
             convert_array_to_valid_dtype(
                 np.ascontiguousarray(data), ImageObj.VALID_DTYPES
             ),
@@ -616,4 +928,48 @@ class NXdataNode(common.GroupNode):
         return obj
 
 
+class AuxiliarySignalNode(NXdataNode):
+    """Node of an auxiliary signal of an ``NXdata`` group, imported with the axes
+    that fit its dimensions
+
+    Args:
+        h5file: HDF5 file
+        dname: path of the ``NXdata`` group
+        nxdata: auxiliary signal description
+    """
+
+    def __init__(self, h5file, dname: str, nxdata: NXdataDescription):
+        super().__init__(h5file, dname, nxdata)
+        self.text_prefix = "NXdata auxiliary signal"
+
+    @classmethod
+    def match(cls, dset):
+        """Auxiliary signal nodes are created with their group, not by HDF5 items"""
+        return False
+
+    @property
+    def id(self):
+        """Return node id, distinct from the HDF5 paths of the file"""
+        return f"{self.dset.name.rstrip('/')}::{self.nxdata.signal}"
+
+    @property
+    def name(self):
+        """Return node name"""
+        return self.nxdata.signal
+
+    def collect_children(self, node_dict, ancestors=()):
+        """Auxiliary signals have no children"""
+
+
+def _auxiliary_children(node: common.GroupNode) -> list[AuxiliarySignalNode]:
+    """Return the nodes of the auxiliary signals of an ``NXdata`` group node"""
+    if type(node) is not NXdataNode:  # pylint: disable=unidiomatic-typecheck
+        return []
+    return [
+        AuxiliarySignalNode(node.h5file, node.dset.name, desc)
+        for desc in describe_auxiliary_signals(node.dset, node.nxdata)
+    ]
+
+
 common.NODE_FACTORY.register(NXdataNode, is_generic=True)
+common.NODE_FACTORY.add_children_provider(_auxiliary_children)
