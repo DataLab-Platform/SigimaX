@@ -8,6 +8,7 @@ SigimaX Generic HDF5 format support
 
 from __future__ import annotations
 
+import functools
 import math
 
 import h5py
@@ -190,6 +191,12 @@ class BaseGenericNode(common.BaseNode):
     def match(cls, dset):
         """Return True if h5 dataset matches this node pattern."""
         return isinstance(dset, h5py.Dataset)
+
+    @functools.cached_property
+    def missing_filters(self) -> list[str]:
+        """Compression filters of the dataset that HDF5 cannot apply (see
+        :func:`sigimax.h5.utils.unavailable_filters`)"""
+        return utils.unavailable_filters(self.dset)
 
     @property
     def icon_name(self):
@@ -452,9 +459,7 @@ class GenericArrayNode(BaseGenericNode):
 
     def is_supported(self) -> bool:
         """Return True if node is associated to supported data"""
-        return int(np.prod(self.layout[0])) > 1 and not utils.unavailable_filters(
-            self.dset
-        )
+        return int(np.prod(self.layout[0])) > 1 and not self.missing_filters
 
     @property
     def __is_signal(self):
@@ -482,9 +487,8 @@ class GenericArrayNode(BaseGenericNode):
     @property
     def text(self):
         """Return node textual representation"""
-        missing = utils.unavailable_filters(self.dset)
-        if missing:
-            return _unavailable_filters_text(missing)
+        if self.missing_filters:
+            return _unavailable_filters_text(self.missing_filters)
         data, truncated = utils.read_bounded(self.dset, TEXT_PREVIEW_MAX_ITEMS)
         if self.dset.dtype.names is not None:
             data = self.extract_numeric_from_compound(data)
@@ -556,9 +560,7 @@ class GenericNDArrayNode(BaseGenericNode, NDViewMixin):
     @property
     def nd_shape(self) -> tuple[int, ...] | None:
         """Return the shape of the dataset (None if it cannot be read)"""
-        if utils.unavailable_filters(self.dset):
-            return None
-        return self.dset.shape
+        return None if self.missing_filters else self.dset.shape
 
     @property
     def interpretation(self) -> str:
@@ -588,9 +590,8 @@ class GenericNDArrayNode(BaseGenericNode, NDViewMixin):
     @property
     def text(self):
         """Return node textual representation"""
-        missing = utils.unavailable_filters(self.dset)
-        if missing:
-            return _unavailable_filters_text(missing)
+        if self.missing_filters:
+            return _unavailable_filters_text(self.missing_filters)
         data, truncated = utils.read_bounded(self.dset, TEXT_PREVIEW_MAX_ITEMS)
         return str(data) + (" ..." if truncated else "")
 
