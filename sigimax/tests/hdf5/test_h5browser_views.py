@@ -7,7 +7,8 @@ HDF5 browser view selector test
 The default NXdata group of a NeXus file is selected when the file is opened.
 Multidimensional datasets are shown with a view selector: their frames are
 previewed, and imported once enabled, which makes their item checkable; the
-item expands into one node per frame when importing.
+item expands into one node per frame when importing, once confirmed beyond
+``MAX_FRAMES_WITHOUT_CONFIRMATION`` frames.
 """
 
 from __future__ import annotations
@@ -21,8 +22,9 @@ from guidata.qthelpers import qt_app_context
 from qtpy import QtCore as QC
 from qtpy import QtWidgets as QW
 
+from sigimax.env import execenv
 from sigimax.h5.views import FrameNode
-from sigimax.widgets.h5browser import H5BrowserDialog
+from sigimax.widgets.h5browser import MAX_FRAMES_WITHOUT_CONFIRMATION, H5BrowserDialog
 
 pytestmark = pytest.mark.gui
 
@@ -83,6 +85,47 @@ def test_view_selector(tmp_path) -> None:
             data_item = tree.find_node_item(tree.topLevelItem(0), "/entry/data")
             tree.clicked(data_item)
             assert selector.node is None and selector.isHidden()
+        finally:
+            dialog.browser.plotpreview.wait()
+            dialog.cleanup()
+            dialog.close()
+
+
+def test_frames_created_once_confirmed(
+    tmp_path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Beyond MAX_FRAMES_WITHOUT_CONFIRMATION frames, the import is confirmed
+    before the frames are created: none is created if the user cancels."""
+    fname = str(tmp_path / f"{uuid.uuid4()}.h5")
+    count = MAX_FRAMES_WITHOUT_CONFIRMATION + 50
+    with h5py.File(fname, "w") as h5file:
+        h5file["stack"] = np.zeros((count, 2, 2))
+    created: list[FrameNode] = []
+    frame_init = FrameNode.__init__
+
+    def counting_init(self, *args, **kwargs) -> None:
+        created.append(self)
+        frame_init(self, *args, **kwargs)
+
+    answers: list[int] = []
+    monkeypatch.setattr(FrameNode, "__init__", counting_init)
+    monkeypatch.setattr(QW.QMessageBox, "question", lambda *_args: answers.pop(0))
+    with qt_app_context():
+        dialog = H5BrowserDialog()
+        try:
+            dialog.open_file(fname)
+            tree = dialog.browser.tree
+            tree.clicked(tree.find_node_item(tree.topLevelItem(0), "/stack"))
+            dialog.browser.viewselector.import_check.setChecked(True)
+            monkeypatch.setattr(execenv, "unattended", False)
+            answers.append(QW.QMessageBox.No)
+            dialog.accept()
+            assert not answers and not created and not dialog.get_nodes()
+            assert dialog.result() != QW.QDialog.Accepted
+            answers.append(QW.QMessageBox.Yes)
+            dialog.accept()
+            assert dialog.result() == QW.QDialog.Accepted
+            assert len(dialog.get_nodes()) == len(created) == count
         finally:
             dialog.browser.plotpreview.wait()
             dialog.cleanup()

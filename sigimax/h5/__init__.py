@@ -63,6 +63,7 @@ mappings (:mod:`sigimax.h5.mapping`), registered by applications or plugins.
     :members:
 .. autoclass:: sigimax.h5.views.FrameNode
 .. autofunction:: sigimax.h5.views.expand_views
+.. autofunction:: sigimax.h5.views.count_frames
 .. autofunction:: sigimax.h5.utils.unavailable_filters
 """
 
