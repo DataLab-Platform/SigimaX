@@ -72,6 +72,9 @@ msgstr "La fenêtre d'ajustement planckien part d'une courbe correspondant au pi
 msgid "The exponential fit dialog now evaluates the same model as Sigima, and its rate slider covers short time constants whatever the X unit (e.g. 1 ms with X in seconds)."
 msgstr "La fenêtre d'ajustement exponentiel évalue désormais le même modèle que Sigima, et son curseur de taux couvre les constantes de temps courtes quelle que soit l'unité de X (par exemple 1 ms avec X en secondes)."
 
+msgid "Interactive fitting dialogs now open even when their initial automatic fit fails, e.g. on a signal with fewer points than the model parameters: the dialog shows the initial parameter values, which may be adjusted manually. Such a failure used to raise an error, and the dialog was not shown. This closes [Issue #26](https://github.com/DataLab-Platform/SigimaX/issues/26)."
+msgstr "Les fenêtres d'ajustement interactif s'ouvrent désormais même lorsque leur ajustement automatique initial échoue, par exemple sur un signal comportant moins de points que le modèle n'a de paramètres : la fenêtre affiche les valeurs initiales des paramètres, qui peuvent être ajustées manuellement. Un tel échec provoquait auparavant une erreur, et la fenêtre ne s'affichait pas. Cela corrige [l'issue #26](https://github.com/DataLab-Platform/SigimaX/issues/26)."
+
 msgid "HDF5 import"
 msgstr "Import HDF5"
 

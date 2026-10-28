@@ -130,7 +130,9 @@ def guifit(
     win.set_data(x, y, fitfunc, fitparams, fitargs, fitkwargs)
     try:
         win.autofit()  # TODO: [P3] make this optional
-    except ValueError:
+    except Exception:  # pylint: disable=broad-except
+        # The initial fit only gives a better starting point: if it fails (e.g. with
+        # fewer points than parameters), the dialog shows the initial values
         pass
     if parent is None:
         win.setWindowIcon(get_icon(get_conf().app_logo_path.get()))

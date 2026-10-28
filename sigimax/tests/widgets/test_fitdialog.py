@@ -331,6 +331,46 @@ def test_guifit_displays_formula(monkeypatch):
         assert label.textInteractionFlags() & QC.Qt.TextSelectableByMouse
 
 
+@pytest.mark.parametrize("error", [TypeError, OverflowError, ZeroDivisionError])
+def test_guifit_opens_when_initial_fit_fails(monkeypatch, error):
+    """`guifit` shows the dialog with the initial values if the initial fit fails."""
+    dialogs = []
+
+    def reject_dialog(dialog):
+        dialogs.append(dialog)
+        return False
+
+    def failing_autofit(_dialog):
+        raise error("initial fit failure")
+
+    monkeypatch.setattr(fdlg, "exec_dialog", reject_dialog)
+    monkeypatch.setattr(fdlg.FitDialog, "autofit", failing_autofit)
+    x = np.linspace(0.0, 1.0, 50)
+    with qt_app_context():
+        params = [fdlg.FitParam("a", 1.0, -5.0, 5.0), fdlg.FitParam("b", 0.0, -5, 5)]
+        result = fdlg.guifit(x, 2.0 * x + 1.0, lambda x, p: p[0] * x + p[1], params)
+        assert result is None
+        assert len(dialogs) == 1
+        assert [param.value for param in params] == [1.0, 0.0]
+
+
+def test_gaussian_fit_dialog_opens_with_too_few_points(monkeypatch):
+    """The Gaussian fit dialog opens on fewer points than model parameters.
+
+    The initial least squares fit raises a `TypeError` in this case.
+    """
+    dialogs = []
+
+    def reject_dialog(dialog):
+        dialogs.append(dialog)
+        return False
+
+    monkeypatch.setattr(fdlg, "exec_dialog", reject_dialog)
+    with qt_app_context():
+        assert fdlg.gaussian_fit(np.arange(3.0), np.array([0.0, 1.0, 0.0])) is None
+        assert len(dialogs) == 1
+
+
 def test_exponential_dialog_reaches_short_time_constants(monkeypatch):
     """The rate slider reaches b = -1000 for a 1 ms time constant (X in s).
 
