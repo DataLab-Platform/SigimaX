@@ -36,6 +36,7 @@
 * Polynomial and linear fit coefficients are now labelled `a`, `b`, `c`... as in the model formula and in the fitted signal metadata, instead of `c2`, `c1`, `c0`.
 * The Planckian fit dialog starts from a curve matching the data peak (its initial amplitude was about 147 times too low on blackbody data in physical units), and its "width factor" is now labelled "temperature factor": for wavelengths in meters, the temperature is `h c σ / (5 k_B x₀)`.
 * The exponential fit dialog now evaluates the same model as Sigima, and its rate slider covers short time constants whatever the X unit (e.g. 1 ms with X in seconds).
+* Interactive fitting dialogs now open even when their initial automatic fit fails, e.g. on a signal with fewer points than the model parameters: the dialog shows the initial parameter values, which may be adjusted manually. Such a failure used to raise an error, and the dialog was not shown. This closes [Issue #26](https://github.com/DataLab-Platform/SigimaX/issues/26).
 
 ### HDF5 import ###
 
