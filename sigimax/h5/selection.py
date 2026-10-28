@@ -113,6 +113,19 @@ class NDView:
                 f"{shape[self.frame_axis] - 1}]"
             )
 
+    def first_selection(self, shape: tuple[int, ...]) -> NDSelection:
+        """Return the selection of the first frame, without building the others
+
+        Args:
+            shape: shape of the dataset
+
+        Raises:
+            ValueError: if the view does not apply to the shape
+        """
+        self.validate(shape)
+        # The index along the frame axis is the one of the first frame
+        return NDSelection(self.displayed, self.indices)
+
     def selections(self, shape: tuple[int, ...]) -> list[NDSelection]:
         """Return the selection of each frame
 

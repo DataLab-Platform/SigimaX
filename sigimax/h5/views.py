@@ -9,7 +9,8 @@ image per frame. Nodes of such datasets derive from :class:`NDViewMixin`: a
 default view is proposed (and previewed), and the node is imported once its view
 is enabled (:meth:`NDViewMixin.set_view`). When importing, each enabled node is
 replaced by one :class:`FrameNode` per frame (:func:`expand_views`), so that
-applications import frames as they import other nodes.
+applications import frames as they import other nodes; :func:`count_frames`
+counts them without creating them (e.g. to confirm a large import first).
 """
 
 from __future__ import annotations
@@ -19,7 +20,13 @@ import math
 from sigimax.h5 import common
 from sigimax.h5.selection import NDSelection, NDView, default_view, preview_step
 
-__all__ = ["FrameNode", "NDViewMixin", "expand_views", "frame_index_text"]
+__all__ = [
+    "FrameNode",
+    "NDViewMixin",
+    "count_frames",
+    "expand_views",
+    "frame_index_text",
+]
 
 
 def frame_index_text(selection: NDSelection, ndim: int) -> str:
@@ -131,7 +138,7 @@ class NDViewMixin:
     def preview_view_object(self, max_items: int):
         """Return the object of the first frame of the view, read with a step if
         it has more than ``max_items`` elements"""
-        selection = self.view.selections(self.nd_shape)[0]
+        selection = self.view.first_selection(self.nd_shape)
         return self.create_view_object(
             selection, self.frame_title(selection), max_items
         )
@@ -224,3 +231,20 @@ def expand_views(nodes: list[common.BaseNode]) -> list[common.BaseNode]:
         elif not isinstance(node, NDViewMixin) or node.is_supported():
             expanded.append(node)
     return expanded
+
+
+def count_frames(nodes: list[common.BaseNode]) -> int:
+    """Return the number of frames :func:`expand_views` would give, without
+    creating them
+
+    Args:
+        nodes: nodes selected for import
+
+    Returns:
+        Number of frames of the multidimensional nodes whose view is enabled
+    """
+    return sum(
+        node.frame_count()
+        for node in nodes
+        if isinstance(node, NDViewMixin) and node.import_view
+    )

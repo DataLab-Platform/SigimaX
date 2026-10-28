@@ -36,7 +36,7 @@ from sigimax.h5.nexus import (
     entry_information,
 )
 from sigimax.h5.selection import NDSelection, NDView, default_view
-from sigimax.h5.views import FrameNode, expand_views
+from sigimax.h5.views import FrameNode, count_frames, expand_views
 
 pytestmark = pytest.mark.unit
 
@@ -81,6 +81,17 @@ def test_view_frames() -> None:
     ):
         with pytest.raises(ValueError, match=message):
             invalid.validate((6, 4, 5))
+
+
+def test_first_selection() -> None:
+    """The first frame of a view is selected without building the selections of
+    the other frames, even for a huge number of frames."""
+    view = NDView((1, 2), (1,), 0, 5, 2)
+    assert view.first_selection((6, 4, 5)) == view.selections((6, 4, 5))[0]
+    huge = NDView((1, 2), (3,), 0, 10**9 - 1)
+    assert huge.first_selection((10**9, 4, 5)) == NDSelection((1, 2), (3,))
+    with pytest.raises(ValueError, match="Last frame 6 out of range"):
+        NDView((1, 2), (0,), 0, 6).first_selection((6, 4, 5))
 
 
 def test_default_views() -> None:
@@ -194,10 +205,11 @@ def test_nxdata_frames(tmp_path) -> None:
     with _nodes_of(tmp_path, build) as nodes:
         node = nodes["/stack"]
         assert not node.is_supported() and node.create_native_object() is None
-        assert not expand_views([node])
+        assert not expand_views([node]) and count_frames([node]) == 0
         node.set_view(NDView((1, 2), (1,), 0, 3, 2))
         assert node.is_supported() and node.frame_count() == 2
         frames = expand_views([node])
+        assert count_frames([node]) == len(frames)
         assert all(isinstance(frame, FrameNode) for frame in frames)
         first, second = (frame.get_native_object() for frame in frames)
         assert first.title.startswith("stack[1, :, :] (theta=0.1)")
@@ -216,8 +228,9 @@ def test_nxdata_frames(tmp_path) -> None:
         assert get_experimental_source(preview) is None
 
 
-def test_generic_frames(tmp_path) -> None:
-    """Frames of a plain dataset have pixel coordinates."""
+def test_generic_frames(tmp_path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Frames of a plain dataset have pixel coordinates; the preview reads the
+    first frame without building the selections of the others."""
 
     def build(h5file: h5py.File) -> None:
         h5file["cube"] = np.arange(2 * 3 * 4, dtype=float).reshape(2, 3, 4)
@@ -236,6 +249,11 @@ def test_generic_frames(tmp_path) -> None:
         np.testing.assert_array_equal(images[1].data, np.arange(12, 24).reshape(3, 4))
         source = get_experimental_source(images[1])
         assert source["kind"] == "hdf5" and source["entry"] == "/cube"
+
+        def no_selections(*_args) -> None:
+            raise AssertionError("The selections of all frames were built")
+
+        monkeypatch.setattr(NDView, "selections", no_selections)
         assert node.create_preview_object(4).data.shape == (2, 2)
 
 

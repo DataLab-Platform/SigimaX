@@ -46,7 +46,7 @@ from sigimax.env import execenv
 from sigimax.h5 import H5Importer
 from sigimax.h5.nexus import default_nxdata_path
 from sigimax.h5.selection import NDView
-from sigimax.h5.views import FrameNode, NDViewMixin, expand_views
+from sigimax.h5.views import NDViewMixin, count_frames, expand_views
 from sigimax.utils.qthelpers import block_signals, qt_handle_error_message
 
 __all__ = [
@@ -362,14 +362,19 @@ class H5TreeWidget(AbstractTreeWidget):
             return importer.get(node_id)
         return None
 
-    def get_nodes(self, only_checked_items: bool = True) -> list[BaseNode]:
+    def get_nodes(
+        self, only_checked_items: bool = True, expand: bool = True
+    ) -> list[BaseNode]:
         """Get all nodes associated to checked items
 
         Multidimensional nodes are replaced by the nodes of the frames of their
-        view (see :func:`sigimax.h5.views.expand_views`).
+        view (see :func:`sigimax.h5.views.expand_views`), unless ``expand`` is
+        False.
 
         Args:
             only_checked_items: If True, only checked items are returned
+            expand: If True, multidimensional nodes are replaced by the nodes of
+             their frames
 
         Returns:
             List of HDF5 nodes
@@ -382,7 +387,7 @@ class H5TreeWidget(AbstractTreeWidget):
                 if item is not self.topLevelItem(0):
                     node = self.get_node(item)
                     datasets.append(node)
-        return expand_views(datasets)
+        return expand_views(datasets) if expand else datasets
 
     def activated(self, item: QW.QTreeWidgetItem) -> None:
         """Double-click event"""
@@ -1325,9 +1330,10 @@ class H5BrowserDialog(QW.QDialog):
 
     def accept(self) -> None:
         """Accept changes, once confirmed if many frames of multidimensional
-        datasets are to be imported"""
-        nodes = self.browser.tree.get_nodes()
-        frames = sum(isinstance(node, FrameNode) for node in nodes)
+        datasets are to be imported (the frames are counted, and only created
+        once confirmed)"""
+        nodes = self.browser.tree.get_nodes(expand=False)
+        frames = count_frames(nodes)
         if (
             frames > MAX_FRAMES_WITHOUT_CONFIRMATION
             and not execenv.unattended
@@ -1341,7 +1347,7 @@ class H5BrowserDialog(QW.QDialog):
             != QW.QMessageBox.Yes
         ):
             return
-        self.nodes = nodes
+        self.nodes = expand_views(nodes)
         QW.QDialog.accept(self)
 
     def done(self, result: int) -> None:
