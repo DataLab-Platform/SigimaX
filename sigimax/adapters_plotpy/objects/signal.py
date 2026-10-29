@@ -217,15 +217,21 @@ class CurveStyles:
         """Use an alternative style generator"""
         old_style_generator = self.curve_style
         self.curve_style = other_style_generator
-        yield
-        self.curve_style = old_style_generator
+        try:
+            yield
+        finally:
+            self.curve_style = old_style_generator
 
     @contextmanager
     def suspend(self) -> Generator[None, None, None]:
-        """Suspend style generator"""
+        """Suspend style generator: curves are given the first style of the cycle,
+        without using the next style of the cycle"""
+        old_suspend = self.__suspend
         self.__suspend = True
-        yield
-        self.__suspend = False
+        try:
+            yield
+        finally:
+            self.__suspend = old_suspend
 
 
 CURVESTYLES = CurveStyles()  # This is the unique instance of the CurveStyles class

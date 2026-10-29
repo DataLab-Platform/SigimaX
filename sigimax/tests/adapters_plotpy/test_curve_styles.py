@@ -218,3 +218,26 @@ def test_dock_grid_after_color_mode_change() -> None:
         major = (GRID_COLORS_DARK if is_dark_theme() else GRID_COLORS_LIGHT)[0]
         assert plot.grid.gridparam.maj_line.color == major
         assert plot.grid.gridparam.maj_line.style == "SolidLine"
+
+
+def test_style_contexts_are_exception_safe() -> None:
+    """Style contexts are left in their initial state after an exception"""
+    with qt_app_context(exec_loop=False):
+        CURVESTYLES.reset_styles()
+        with pytest.raises(RuntimeError):
+            with CURVESTYLES.suspend():
+                raise RuntimeError
+        with pytest.raises(RuntimeError):
+            with CURVESTYLES.alternative(CurveStyles.style_generator()):
+                raise RuntimeError
+        with CURVESTYLES.suspend():
+            assert _line_style(_make_signal_adapter().make_item()) == (
+                CurveStyles.style_at(0)
+            )
+        # Neither context used a style of the cycle:
+        assert _line_style(_make_signal_adapter().make_item()) == (
+            CurveStyles.style_at(0)
+        )
+        assert _line_style(_make_signal_adapter().make_item()) == (
+            CurveStyles.style_at(1)
+        )
