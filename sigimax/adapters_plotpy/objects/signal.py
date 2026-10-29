@@ -260,22 +260,29 @@ def apply_line_width(item: CurveItem) -> None:
 
 
 def apply_downsampling(item: CurveItem, do_not_update: bool = False) -> None:
-    """Apply downsampling to curve item
+    """Apply automatic downsampling to curve item
+
+    When the ``sig_autodownsampling`` option is enabled, a curve with more points
+    than the ``sig_autodownsampling_maxpoints`` option is downsampled for display,
+    with the smallest factor drawing at most this number of points. The data of
+    the curve are not modified.
 
     Args:
         item: curve item
         do_not_update: if True, do not update the item even if the downsampling
          parameters have changed
     """
-    old_use_dsamp = item.param.use_dsamp
-    item.param.use_dsamp = False
+    param = item.param
+    old_state = (param.use_dsamp, param.dsamp_factor)
+    param.use_dsamp = False
     if get_conf().sig_autodownsampling.get():
         nbpoints = item.get_data()[0].size
         maxpoints = get_conf().sig_autodownsampling_maxpoints.get()
-        if nbpoints > 5 * maxpoints:
-            item.param.use_dsamp = True
-            item.param.dsamp_factor = nbpoints // maxpoints
-    if not do_not_update and old_use_dsamp != item.param.use_dsamp:
+        if nbpoints > maxpoints:
+            param.use_dsamp = True
+            param.dsamp_factor = -(-nbpoints // maxpoints)  # Rounded up
+    new_state = (param.use_dsamp, param.dsamp_factor)
+    if not do_not_update and old_state != new_state:
         item.update_data()
 
 
