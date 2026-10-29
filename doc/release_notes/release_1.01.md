@@ -19,6 +19,7 @@
   state are preserved across PlotPy editing round trips. Application-specific
   opaque annotation entries continue to coexist with graphical annotations.
 * The tooltip of a rectangular ROI defined in pixel indices now shows the pixels selected by the ROI, i.e. those whose centers lie inside the rectangle: the corners of the rectangle were rounded to the nearest pixel indices, which could show a selection shifted by one pixel once the rectangle had been moved.
+* Auto downsampling of signals now starts as soon as a signal has more points than the maximum number of points set by the `sig_autodownsampling_maxpoints` option, and draws at most this number of points (closes [Issue #30](https://github.com/DataLab-Platform/SigimaX/issues/30)). It only started above 5 times this number (500 000 points with the default value of 100 000), so that signals of a few hundred thousand points were drawn in full and slowed down the display, and it could draw up to 20 % more points than the maximum. A change of this option is now also applied to curves which were already downsampled.
 
 ### Curve styles ###
 

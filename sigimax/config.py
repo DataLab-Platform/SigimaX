@@ -1484,7 +1484,10 @@ class SigimaXOptions(AppOptionsContainer):
             category="view",
             default=100000,
             expected_type=int,
-            description="Maximum number of points before auto-downsampling kicks in.",
+            description=(
+                "Maximum number of points displayed for a signal: signals with more "
+                "points are downsampled for display (data are not modified)."
+            ),
         )
         self.sig_autoscale_margin_percent = TypedOptionField(
             self,
