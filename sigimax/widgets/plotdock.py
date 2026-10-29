@@ -26,10 +26,12 @@ __all__ = [
     "SigimaXPlotWidget",
 ]
 
+import os.path as osp
 import warnings
 from typing import TYPE_CHECKING
 
 import numpy as np
+from guidata.configtools import get_pixmap
 from guidata.qthelpers import is_dark_theme
 from guidata.widgets.dockable import DockableWidget
 from plotpy.constants import PlotType
@@ -329,12 +331,17 @@ class DockablePlotWidget(DockableWidget):
     def _setup_watermark(self) -> None:
         """Create the watermark label from the configured image path.
 
-        If ``Conf.watermark_image_path`` is empty, no watermark is created.
+        If ``Conf.watermark_image_path`` is empty, no watermark is created. On
+        high-DPI displays, the ``@2x`` high-resolution variant of the image is used
+        if available (see :func:`guidata.configtools.get_pixmap`).
         """
         path = get_conf().watermark_image_path.get()
         if path:
             self.watermark = QW.QLabel()
-            pixmap = QG.QPixmap(path)
+            if osp.isfile(path):
+                pixmap = get_pixmap(osp.abspath(path), default=None)
+            else:
+                pixmap = QG.QPixmap(path)
             self.watermark.setPixmap(pixmap)
         else:
             self.watermark = None

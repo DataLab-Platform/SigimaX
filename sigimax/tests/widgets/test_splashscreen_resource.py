@@ -6,6 +6,8 @@ from __future__ import annotations
 
 from unittest.mock import patch
 
+from guidata.configtools import get_pixmap
+from qtpy import QtCore as QC
 from qtpy import QtGui as QG
 
 from sigimax.widgets.splashscreen import SigimaXSplashScreen, SplashScreenConfig
@@ -32,6 +34,32 @@ def test_splash_resolves_image_basename(tmp_path) -> None:
     splash.close()
 
 
+def test_splash_uses_hidpi_variant(tmp_path) -> None:
+    """The ``@2x`` variant of the image is used on high-DPI displays."""
+    image_path = tmp_path / "splash.png"
+    for path, size, color in (
+        (image_path, (64, 32), "red"),
+        (tmp_path / "splash@2x.png", (128, 64), "blue"),
+    ):
+        pixmap = QG.QPixmap(*size)
+        pixmap.fill(QG.QColor(color))
+        assert pixmap.save(str(path))
+
+    config = SplashScreenConfig(image_path=str(image_path), show_progress=False)
+    with patch(
+        "sigimax.widgets.splashscreen.get_pixmap",
+        side_effect=lambda name, default: get_pixmap(name, default, 2.0),
+    ):
+        splash = SigimaXSplashScreen(config)
+
+    pixmap = splash.pixmap()
+    assert pixmap.devicePixelRatio() == 2.0
+    assert pixmap.size() == QC.QSize(128, 64)
+    assert pixmap.toImage().pixelColor(0, 0) == QG.QColor("blue")
+    assert splash.size() == QC.QSize(64, 32)
+    splash.close()
+
+
 def test_missing_splash_resource_uses_fallback() -> None:
     """An unresolved configured image must not prevent application startup."""
     config = SplashScreenConfig(
@@ -45,8 +73,8 @@ def test_missing_splash_resource_uses_fallback() -> None:
         splash = SigimaXSplashScreen(config)
 
     assert not splash.pixmap().isNull()
-    assert splash.pixmap().size().width() == 480
-    assert splash.pixmap().size().height() == 280
+    pixmap = splash.pixmap()
+    assert pixmap.size() / pixmap.devicePixelRatio() == QC.QSize(480, 280)
     splash.close()
 
 
