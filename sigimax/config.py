@@ -104,6 +104,7 @@ from typing import TYPE_CHECKING, Any
 
 import guidata.dataset as gds
 from guidata import configtools
+from guidata.qthelpers import is_dark_theme
 from plotpy import config as plotpy_config
 from plotpy.config import CONF as PLOTPY_CONF
 from sigima.config import OptionsContainer
@@ -1016,6 +1017,11 @@ ROI_SEL_LINE_COLOR = "#9393ff"
 MARKER_LINE_COLOR = "#A11818"
 #: Marker text color
 MARKER_TEXT_COLOR = "#440909"
+#: Plot grid line colors (major, minor) on light backgrounds: discreet solid lines,
+#: so that curves stand out
+GRID_COLORS_LIGHT = ("#dddddd", "#eeeeee")
+#: Plot grid line colors (major, minor) on dark backgrounds
+GRID_COLORS_DARK = ("#3c3c3c", "#2d2d2d")
 
 
 class SigimaXOptions(AppOptionsContainer):
@@ -1457,7 +1463,7 @@ class SigimaXOptions(AppOptionsContainer):
             default=1000,
             expected_type=int,
             description=(
-                "Number of curves above which line width is forced to 1 "
+                "Number of points above which line width is forced to 1 "
                 "for performance reasons."
             ),
         )
@@ -1801,11 +1807,18 @@ class SigimaXOptions(AppOptionsContainer):
         # module globals when the color theme changes.
         main_fg = plotpy_config.MAIN_FG_COLOR
         main_bg = plotpy_config.MAIN_BG_COLOR
+        grid_major, grid_minor = (
+            GRID_COLORS_DARK if is_dark_theme() else GRID_COLORS_LIGHT
+        )
         return {
             "plot": {
                 # Overriding default plot settings from PlotPy
                 "title/font/size": 11,
                 "title/font/bold": False,
+                "grid/maj_line/color": grid_major,
+                "grid/maj_line/style": "SolidLine",
+                "grid/min_line/color": grid_minor,
+                "grid/min_line/style": "SolidLine",
                 "selected_curve_symbol/marker": "Ellipse",
                 "selected_curve_symbol/edgecolor": "#a0a0a4",
                 "selected_curve_symbol/facecolor": main_fg,

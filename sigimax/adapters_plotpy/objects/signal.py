@@ -9,6 +9,8 @@ PlotPy Adapter Signal Module
 
 from __future__ import annotations
 
+import itertools
+import weakref
 from contextlib import contextmanager
 from typing import Generator
 
@@ -16,6 +18,7 @@ import numpy as np
 from guidata.dataset import restore_dataset, update_dataset
 from plotpy.builder import make
 from plotpy.items import CurveItem, ErrorBarCurveItem
+from qtpy import QtGui as QG
 from sigima.objects import SignalObj
 
 from sigimax.adapters_plotpy.objects.base import (
@@ -23,54 +26,185 @@ from sigimax.adapters_plotpy.objects.base import (
 )
 from sigimax.config import get_conf
 
+#: Signal metadata keys storing the curve color and line style
+LINE_STYLE_KEYS = ("color", "style")
+
+
+def _normalize_color(color: str) -> str:
+    """Return a color as a lower-case ``#rrggbb`` string"""
+    return QG.QColor(color).name()
+
 
 class CurveStyles:
-    """Object to manage curve styles"""
+    """Object to manage curve styles
 
-    #: Curve colors
+    Curves are given an *automatic* style, cycling through :py:attr:`COLORS` with
+    each line style of :py:attr:`LINESTYLES`. Automatic styles are not stored in
+    signal metadata: only a color or a line style chosen by the user is stored,
+    and is then restored instead of the automatic style.
+    """
+
+    #: Curve colors: contrast ratio of at least 3:1 against both the light (white)
+    #: and the dark (#222222) plot backgrounds, and hues as distinct as possible,
+    #: also for deuteranopia (none of them belongs to :py:attr:`LEGACY_COLORS`)
     COLORS = (
-        "#1f77b4",  # muted blue
-        "#ff7f0e",  # safety orange
-        "#2ca02c",  # cooked asparagus green
-        "#d62728",  # brick red
-        "#9467bd",  # muted purple
-        "#8c564b",  # chestnut brown
-        "#e377c2",  # raspberry yogurt pink
-        "#7f7f7f",  # gray
-        "#bcbd22",  # curry yellow-green
-        "#17becf",  # blue-teal
+        "#2a77ae",  # blue
+        "#d47900",  # orange
+        "#23814c",  # green
+        "#df324f",  # red
+        "#8a7aca",  # lavender
+        "#8a6c07",  # ochre
+        "#c42da4",  # magenta
+        "#149a98",  # teal
+        "#759105",  # olive
+        "#b88272",  # rosewood
     )
-    #: Curve line styles
-    LINESTYLES = ("SolidLine", "DashLine", "DashDotLine", "DashDotDotLine")
+    #: Curve line styles (dotted styles are hard to read with thin lines)
+    LINESTYLES = ("SolidLine", "DashLine")
+    #: Colors of the automatic style cycle of SigimaX 1.0 and DataLab 1.3 or earlier
+    LEGACY_COLORS = (
+        "#1f77b4",
+        "#ff7f0e",
+        "#2ca02c",
+        "#d62728",
+        "#9467bd",
+        "#8c564b",
+        "#e377c2",
+        "#7f7f7f",
+        "#bcbd22",
+        "#17becf",
+    )
+    #: Line styles of the automatic style cycle of SigimaX 1.0 and DataLab 1.3 or
+    #: earlier
+    LEGACY_LINESTYLES = ("SolidLine", "DashLine", "DashDotLine", "DashDotDotLine")
 
     def __init__(self) -> None:
         self.__suspend = False
         self.curve_style = self.style_generator()
+        self.__automatic: weakref.WeakKeyDictionary[CurveItem, tuple[str, str]] = (
+            weakref.WeakKeyDictionary()
+        )
+
+    @staticmethod
+    def style_at(index: int) -> tuple[str, str]:
+        """Return the automatic style at a given position of the cycle
+
+        Args:
+            index: position in the style cycle (0 for the first curve)
+
+        Returns:
+            Tuple (color, line style)
+        """
+        ncolors = len(CurveStyles.COLORS)
+        color = CurveStyles.COLORS[index % ncolors]
+        linestyle = CurveStyles.LINESTYLES[
+            (index // ncolors) % len(CurveStyles.LINESTYLES)
+        ]
+        return color, linestyle
 
     @staticmethod
     def style_generator() -> Generator[tuple[str, str], None, None]:
         """Cycling through curve styles"""
-        while True:
-            for linestyle in CurveStyles.LINESTYLES:
-                for color in CurveStyles.COLORS:
-                    yield (color, linestyle)
+        for index in itertools.count():
+            yield CurveStyles.style_at(index)
 
-    def apply_style(self, item: CurveItem) -> None:
-        """Apply style to curve
+    @staticmethod
+    def is_legacy_automatic(color: str | None, linestyle: str | None) -> bool:
+        """Return True if a stored style comes from the automatic style cycle of
+        earlier versions, which stored automatic styles in signal metadata
+
+        Args:
+            color: stored color (None if not stored)
+            linestyle: stored line style (None if not stored)
+
+        Returns:
+            True if both the color and the line style are stored and belong to the
+            automatic style cycle of earlier versions
+        """
+        if not isinstance(color, str) or not isinstance(linestyle, str):
+            return False
+        return (
+            _normalize_color(color) in CurveStyles.LEGACY_COLORS
+            and linestyle in CurveStyles.LEGACY_LINESTYLES
+        )
+
+    def apply_style(
+        self, item: CurveItem, update_from: CurveItem | None = None
+    ) -> None:
+        """Apply automatic style to curve
+
+        Args:
+            item: curve item
+            update_from: curve item replaced by ``item``, if any: its automatic
+             style is kept, instead of taking the next style of the cycle
+        """
+        automatic = None if update_from is None else self.__automatic.get(update_from)
+        if automatic is not None:
+            color, linestyle = automatic
+        elif self.__suspend:
+            # Suspend mode: always apply the first style
+            color, linestyle = self.style_at(0)
+        else:
+            color, linestyle = next(self.curve_style)
+        self.set_automatic_style(item, color, linestyle)
+        item.param.symbol.marker = "NoSymbol"
+        # Note: line width is set separately via apply_line_width()
+        # to ensure it's always recalculated based on current data size and settings
+
+    def set_automatic_style(self, item: CurveItem, color: str, linestyle: str) -> None:
+        """Set the automatic style of a curve and apply it to the curve parameters
+
+        The plot item itself is not updated: call ``item.param.update_item(item)``
+        to update it.
+
+        Args:
+            item: curve item
+            color: curve color
+            linestyle: curve line style
+        """
+        color = _normalize_color(color)
+        item.param.line.color = color
+        item.param.line.style = linestyle
+        self.__automatic[item] = (color, linestyle)
+
+    def get_automatic_style(self, item: CurveItem) -> tuple[str, str] | None:
+        """Return the automatic style of a curve
+
+        Args:
+            item: curve item
+
+        Returns:
+            Tuple (color, line style), or None if the curve was not given an
+            automatic style
+        """
+        return self.__automatic.get(item)
+
+    def has_automatic_style(self, item: CurveItem) -> bool:
+        """Return True if a curve is shown with its automatic style, i.e. if its
+        color and line style were not chosen by the user
+
+        Args:
+            item: curve item
+
+        Returns:
+            True if the curve is shown with its automatic style
+        """
+        automatic = self.__automatic.get(item)
+        line = item.param.line
+        return automatic is not None and automatic == (
+            _normalize_color(line.color),
+            line.style,
+        )
+
+    def restore_automatic_style(self, item: CurveItem) -> None:
+        """Restore the automatic style of a curve (curve parameters only)
 
         Args:
             item: curve item
         """
-        if self.__suspend:
-            # Suspend mode: always apply the first style
-            color, linestyle = CurveStyles.COLORS[0], CurveStyles.LINESTYLES[0]
-        else:
-            color, linestyle = next(self.curve_style)
-        item.param.line.color = color
-        item.param.line.style = linestyle
-        item.param.symbol.marker = "NoSymbol"
-        # Note: line width is set separately via apply_line_width()
-        # to ensure it's always recalculated based on current data size and settings
+        automatic = self.__automatic.get(item)
+        if automatic is not None:
+            self.set_automatic_style(item, *automatic)
 
     def reset_styles(self) -> None:
         """Reset styles"""
@@ -83,15 +217,21 @@ class CurveStyles:
         """Use an alternative style generator"""
         old_style_generator = self.curve_style
         self.curve_style = other_style_generator
-        yield
-        self.curve_style = old_style_generator
+        try:
+            yield
+        finally:
+            self.curve_style = old_style_generator
 
     @contextmanager
     def suspend(self) -> Generator[None, None, None]:
-        """Suspend style generator"""
+        """Suspend style generator: curves are given the first style of the cycle,
+        without using the next style of the cycle"""
+        old_suspend = self.__suspend
         self.__suspend = True
-        yield
-        self.__suspend = False
+        try:
+            yield
+        finally:
+            self.__suspend = old_suspend
 
 
 CURVESTYLES = CurveStyles()  # This is the unique instance of the CurveStyles class
@@ -152,13 +292,22 @@ class SignalObjPlotPyAdapter(BaseObjPlotPyAdapter[SignalObj, CurveItem]):
         have been overriden by object metadata entries or other object data. The goal
         is to update the plot item accordingly.
 
+        A color and a line style stored by earlier versions from their automatic
+        style cycle are ignored, so that the curve keeps its automatic style.
+
         This is *almost* the inverse operation of `update_metadata_from_plot_item`.
 
         Args:
             item: plot item
         """
-        update_dataset(item.param.line, self.obj.metadata)
-        update_dataset(item.param.symbol, self.obj.metadata)
+        metadata = self.obj.metadata
+        line_source = metadata
+        if CURVESTYLES.is_legacy_automatic(*(metadata.get(k) for k in LINE_STYLE_KEYS)):
+            line_source = {
+                k: v for k, v in metadata.items() if k not in LINE_STYLE_KEYS
+            }
+        update_dataset(item.param.line, line_source)
+        update_dataset(item.param.symbol, metadata)
         super().update_plot_item_parameters(item)
 
     def update_metadata_from_plot_item(self, item: CurveItem) -> None:
@@ -168,6 +317,9 @@ class SignalObjPlotPyAdapter(BaseObjPlotPyAdapter[SignalObj, CurveItem]):
         have been modified by the user through the plot item GUI. The goal is to
         update the metadata accordingly.
 
+        The color and the line style are stored only if they were chosen by the
+        user, i.e. if they differ from the automatic style of the curve.
+
         This is *almost* the inverse operation of `update_plot_item_parameters`.
 
         Args:
@@ -176,6 +328,9 @@ class SignalObjPlotPyAdapter(BaseObjPlotPyAdapter[SignalObj, CurveItem]):
         super().update_metadata_from_plot_item(item)
         restore_dataset(item.param.line, self.obj.metadata)
         restore_dataset(item.param.symbol, self.obj.metadata)
+        if CURVESTYLES.has_automatic_style(item):
+            for key in LINE_STYLE_KEYS:
+                self.obj.metadata.pop(key, None)
 
     def make_item(self, update_from: CurveItem | None = None) -> CurveItem:
         """Make plot item from data.
@@ -202,7 +357,7 @@ class SignalObjPlotPyAdapter(BaseObjPlotPyAdapter[SignalObj, CurveItem]):
                     dy = np.zeros_like(y) if dy is None else dy
                     item = make.merror(x.real, y.real, dx.real, dy.real, label=o.title)
             # Apply style (without linewidth, will be set separately)
-            CURVESTYLES.apply_style(item)
+            CURVESTYLES.apply_style(item, update_from=update_from)
             apply_downsampling(item, do_not_update=True)
             # Apply linewidth with smart clamping based on actual data size
             apply_line_width(item)

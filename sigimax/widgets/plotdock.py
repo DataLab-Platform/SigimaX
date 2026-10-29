@@ -390,6 +390,10 @@ class DockablePlotWidget(DockableWidget):
             widget.setBackgroundRole(QG.QPalette.Window)
             widget.setAutoFillBackground(True)
             widget.setPalette(palette)
+        # PlotPy updates the plot grid as soon as the color mode changes, before the
+        # application defaults (see `SigimaXOptions.get_plotpy_defaults`) are
+        # applied again for the new color mode: update the grid with these defaults
+        self.plotwidget.get_plot().update_color_mode()
 
     def get_plot(self) -> BasePlot:
         """Return plot instance"""
