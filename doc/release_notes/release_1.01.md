@@ -36,6 +36,10 @@
 * With Qt 5, the dock widget sizes saved on exit are now restored at startup: the window is sized and laid out before its state is restored, so tabified docks no longer shrink to the default window size and leave the extra width to the central widget.
 * Closing the main window (unless it is only hidden, see `hide_on_close`) now releases it as the instance returned by `get_instance`, which creates a new window afterwards: the closed window, with its widgets and data, is no longer kept in memory until another main window is created.
 
+### High-DPI displays ###
+
+* The splash screen and the watermark of empty plots are no longer blurry with a display scaling greater than 100% (e.g. 125%): when their image has a `@2x` high-resolution variant (e.g. `splash@2x.png` next to `splash.png`), it is used to display them at the resolution of the screen instead of upscaling the image. The fallback splash screen, shown when no image is available, is also drawn at the resolution of the screen.
+
 ### Qt helpers ###
 
 * `block_signals` now restores the previous signal-blocking state of the widget and of its children instead of unblocking them unconditionally: nested blocking contexts and widgets already blocked by the caller keep their state.

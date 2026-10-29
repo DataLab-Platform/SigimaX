@@ -51,6 +51,12 @@ msgstr "Avec Qt 5, les tailles des panneaux ancrables enregistrées à la fermet
 msgid "Closing the main window (unless it is only hidden, see `hide_on_close`) now releases it as the instance returned by `get_instance`, which creates a new window afterwards: the closed window, with its widgets and data, is no longer kept in memory until another main window is created."
 msgstr "La fermeture de la fenêtre principale (sauf si elle est seulement masquée, voir `hide_on_close`) la libère désormais en tant qu'instance renvoyée par `get_instance`, qui crée ensuite une nouvelle fenêtre : la fenêtre fermée, avec ses widgets et ses données, n'est plus conservée en mémoire jusqu'à la création d'une autre fenêtre principale."
 
+msgid "High-DPI displays"
+msgstr "Écrans haute résolution"
+
+msgid "The splash screen and the watermark of empty plots are no longer blurry with a display scaling greater than 100% (e.g. 125%): when their image has a `@2x` high-resolution variant (e.g. `splash@2x.png` next to `splash.png`), it is used to display them at the resolution of the screen instead of upscaling the image. The fallback splash screen, shown when no image is available, is also drawn at the resolution of the screen."
+msgstr "L'écran de démarrage et le filigrane des graphiques vides ne sont plus flous avec une mise à l'échelle de l'affichage supérieure à 100 % (par exemple 125 %) : lorsque leur image dispose d'une variante haute résolution `@2x` (par exemple `splash@2x.png` à côté de `splash.png`), celle-ci est utilisée pour les afficher à la résolution de l'écran au lieu d'agrandir l'image. L'écran de démarrage de repli, affiché lorsqu'aucune image n'est disponible, est lui aussi dessiné à la résolution de l'écran."
+
 msgid "Qt helpers"
 msgstr "Utilitaires Qt"
 
