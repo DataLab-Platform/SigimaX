@@ -2169,11 +2169,15 @@ class SigimaXOptions(AppOptionsContainer):
     def set_plotpy_application(
         self, config_app_name: str = "", load: bool = False
     ) -> None:
-        """Set the application name used for PlotPy's INI file.
+        """Set the application name used for PlotPy's configuration directory.
+
+        This directory contains PlotPy's INI file and, with PlotPy 2.12 or later,
+        the custom colormaps created by the user.
 
         Args:
-            config_app_name: Application name for the PlotPy INI file
-             (e.g., ``"MyApp_v1"``). If empty, PlotPy uses its own default.
+            config_app_name: Application name whose configuration directory stores
+             PlotPy's files, in a ``plotpy`` subdirectory (e.g., ``"MyApp_v1"``).
+             If empty, PlotPy's own ``.plotpy`` directory is used.
             load: If True, load existing user settings from the INI file.
         """
         PLOTPY_CONF.set_application(
@@ -2189,8 +2193,10 @@ class SigimaXOptions(AppOptionsContainer):
         :meth:`set_plotpy_application`.
 
         Args:
-            config_app_name: Application name for the PlotPy INI file
-             (e.g., ``"MyApp_v1"``). If empty, PlotPy uses its own default.
+            config_app_name: Application name whose configuration directory stores
+             PlotPy's files (INI file, custom colormaps), in a ``plotpy``
+             subdirectory (e.g., ``"MyApp_v1"``). If empty, PlotPy's own
+             ``.plotpy`` directory is used.
             load: If True, load existing user settings from the INI file.
         """
         self.apply_plotpy_defaults()
