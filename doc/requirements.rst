@@ -11,10 +11,13 @@ The `sigimax` package requires the following Python modules:
       - >=3.10, <4
       - Python programming language
     * - guidata
-      - >= 3.15.0
+      - >= 3.17.0
       - Automatic GUI generation for easy dataset editing and display
+    * - hdf5plugin
+      - >= 4.0
+      - HDF5 Plugins for Windows, MacOS, and Linux
     * - PlotPy
-      - >= 2.11.0
+      - >= 2.12.0
       - Curve and image plotting tools for Python/Qt applications
     * - psutil
       - >= 5.7
