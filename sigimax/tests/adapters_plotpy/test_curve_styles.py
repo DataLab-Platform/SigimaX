@@ -22,6 +22,7 @@ from sigimax.adapters_plotpy.converters import create_adapter_from_object
 from sigimax.adapters_plotpy.objects.signal import (
     CURVESTYLES,
     LINE_STYLE_KEYS,
+    LINE_WIDTH_KEY,
     CurveStyles,
     SignalObjPlotPyAdapter,
 )
@@ -115,8 +116,10 @@ def test_automatic_style_not_stored() -> None:
         adapter.update_metadata_from_plot_item(item)
         for key in LINE_STYLE_KEYS:
             assert key not in adapter.obj.metadata
-        # Other line parameters are still stored
-        assert "width" in adapter.obj.metadata
+        # Nor is the configured line width (see test_curve_line_width.py), but
+        # symbol parameters are still stored
+        assert LINE_WIDTH_KEY not in adapter.obj.metadata
+        assert "marker" in adapter.obj.metadata
 
 
 def test_explicit_style_roundtrip() -> None:
