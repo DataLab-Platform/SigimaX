@@ -949,6 +949,7 @@ class GroupAndAttributes(QW.QTabWidget):
         """Clean up widget"""
         self.group.clear()
         self.attrs.clear()
+        self.__show_array_btn.setEnabled(False)
 
     def update_from_node(self, node: BaseNode) -> None:
         """Update widget from node
@@ -1179,6 +1180,7 @@ class H5Browser(QW.QSplitter):
         """
         self.plotpreview.wait()
         self.__current_item = None
+        self.groupandattrs.cleanup()
         self.viewselector.set_node(None)
         self.tree.remove_root(fname)
         self.selector.remove_fname(fname)
@@ -1279,9 +1281,15 @@ class H5Browser(QW.QSplitter):
                 self.viewselector.set_node(node)
 
     def show_array(self) -> None:
-        """Show array"""
-        node = self.get_node()
-        assert node.IS_ARRAY
+        """Show array of the current node, if it is an array
+
+        The "Show array" button is enabled when an array is selected with the
+        mouse: the current node may have changed since (e.g. with the keyboard).
+        """
+        item = self.tree.currentItem()
+        node = None if item is None else self.get_node(item)
+        if node is None or not node.IS_ARRAY:
+            return
         arrayeditor = ArrayEditor(self)
         arrayeditor.setup_and_check(
             node.data, title=node.name, readonly=True, add_title_suffix=False

@@ -58,5 +58,15 @@ def test_mem_status():
     config.CONF.reset_to_defaults()
 
 
+def test_mem_status_stopped_on_close():
+    """Memory status updates stop when the main window is closed"""
+    with sigimax_test_app_context() as win:
+        assert win.memorystatus.timer.isActive()
+        assert win.memorystatus.timer.parent() is win.memorystatus
+        assert win.close()
+        assert not win.memorystatus.timer.isActive()
+
+
 if __name__ == "__main__":
     test_mem_status()
+    test_mem_status_stopped_on_close()

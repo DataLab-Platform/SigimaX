@@ -29,6 +29,7 @@ import os.path as osp
 import sys
 import time
 import webbrowser
+from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -55,6 +56,7 @@ from sigimax.config import (
 )
 from sigimax.env import execenv
 from sigimax.h5 import H5Importer
+from sigimax.h5.utils import split_h5_file_selector
 from sigimax.utils import qthelpers as qth
 from sigimax.utils.qthelpers import (
     add_corner_menu,
@@ -125,6 +127,8 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
 
         self.consolestatus: status.ConsoleStatus | None = None
         self.console: DockableConsole | None = None
+        #: True if the console is shown when an error occurs
+        self.__console_shown_on_error = False
 
         self.main_toolbar: QW.QToolBar | None = None
         self.tabwidget: QW.QTabWidget | None = None
@@ -317,12 +321,21 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
                 self.move(QC.QPoint(posx, posy))
 
     def _restore_state(self) -> None:
-        """Restore main window state from configuration"""
-        state = get_conf().window_state.get()
+        """Restore main window state from configuration
+
+        An invalid saved state (e.g. in a configuration file edited by hand) is
+        ignored and cleared, so that the window starts with its default layout.
+        """
+        conf = get_conf()
+        state = conf.window_state.get()
         if state:
+            try:
+                state = base64.b64decode(state, validate=True)
+            except ValueError:  # binascii.Error
+                conf.window_state.set("")
+                return
             # Qt 5 refits half-restored docks unless the window was laid out first
             self.layout().activate()
-            state = base64.b64decode(state)
             self.restoreState(QC.QByteArray(state), self.WINDOW_STATE_VERSION)
             for widget in self.children():
                 if isinstance(widget, QW.QDockWidget):
@@ -571,9 +584,26 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         """Adding menus"""
         for name, title in self._get_menubar_layout():
             setattr(self, f"{name}_menu", self.menuBar().addMenu(title))
-        configure_menu_about_to_show(self.file_menu, self._update_file_menu)
-        configure_menu_about_to_show(self.view_menu, self._update_view_menu)
+        configure_menu_about_to_show(
+            self.file_menu,
+            lambda: self.__rebuild_menu(self.file_menu, self._update_file_menu),
+        )
+        configure_menu_about_to_show(
+            self.view_menu,
+            lambda: self.__rebuild_menu(self.view_menu, self._update_view_menu),
+        )
         add_actions(self.help_menu, self._get_help_menu_actions())
+
+    @staticmethod
+    def __rebuild_menu(menu: QW.QMenu, update: Callable[[], None]) -> None:
+        """Clear a dynamic menu, then populate it before it is shown
+
+        Args:
+            menu: menu to rebuild
+            update: method populating the menu (e.g. :meth:`_update_file_menu`)
+        """
+        menu.clear()
+        update()
 
     def _update_console_show_mode(self) -> None:
         """Update console show mode from configuration option
@@ -585,10 +615,13 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
             cdock = self.docks[self.console]
             if not state and cdock.isVisible():
                 cdock.hide()
-            if state:
+            # The connection is tracked: with PyQt5, connecting twice requires two
+            # disconnections
+            if state and not self.__console_shown_on_error:
                 self.console.exception_occurred.connect(self.console.show_console)
-            else:
+            elif not state and self.__console_shown_on_error:
                 self.console.exception_occurred.disconnect(self.console.show_console)
+            self.__console_shown_on_error = state
 
     def _get_console_namespace(self) -> dict[str, object]:
         """Return the namespace dict exposed in the internal console.
@@ -639,6 +672,8 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         ns = self._get_console_namespace()
         msg = self._get_console_message()
         self.console = DockableConsole(self, namespace=ns, message=msg, debug=DEBUG)
+        # guidata's console is shown when an error occurs, once created
+        self.__console_shown_on_error = True
         self.console.setMaximumBlockCount(get_conf().console_max_line_count.get())
         self.console.go_to_error.connect(go_to_error)
         cdock = self._add_dockwidget(self.console, _("Console"), name="console")
@@ -736,7 +771,8 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         """Update file menu before showing up.
 
         Updates action states (via :meth:`_is_save_enabled`) and populates
-        the menu with actions returned by :meth:`_get_file_menu_actions`.
+        the menu with actions returned by :meth:`_get_file_menu_actions`. The
+        menu is cleared before this method is called.
 
         Override in subclasses to add extra logic (e.g., appending a
         submenu).  Call ``super()._update_file_menu()`` first to populate
@@ -760,9 +796,9 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
     def _update_view_menu(self) -> None:
         """Update view menu before showing up.
 
-        Override in subclasses to add extra logic.  Call
-        ``super()._update_view_menu()`` first to populate the default
-        actions.
+        The menu is cleared before this method is called. Override in subclasses
+        to add extra logic.  Call ``super()._update_view_menu()`` first to
+        populate the default actions.
         """
         add_actions(self.view_menu, self._get_view_menu_actions())
 
@@ -901,8 +937,8 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         """Notify that an HDF5 open/import is about to be performed.
 
         Called by :meth:`open_h5_files` once all arguments are resolved and
-        before any file is read. Override in derived applications to react to
-        the operation (e.g. record it in an application history).
+        checked, and before any file is read. Override in derived applications to
+        react to the operation (e.g. record it in an application history).
 
         Args:
             h5files: Resolved HDF5 filenames (optionally with dataset name,
@@ -944,9 +980,13 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         """Open/import HDF5 files.
 
         Args:
-            h5files: HDF5 filenames (optionally with dataset name, separated by ",")
+            h5files: HDF5 filenames (optionally with dataset name, separated by ",",
+             see :func:`sigimax.h5.utils.split_h5_file_selector`)
             import_all: Import all datasets from HDF5 files
             reset_all: Reset all application data before importing
+
+        Raises:
+            ValueError: if a selector of ``h5files`` is invalid (nothing is opened)
         """
         if not self.confirm_memory_state():
             return
@@ -985,16 +1025,12 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
                 )
         if not h5files:
             return
-        self._on_h5_open_requested(h5files, import_all, reset_all)
         filenames, dsetnames = [], []
-        for fname_with_dset in h5files:
-            if "," in fname_with_dset:
-                filename, dsetname = fname_with_dset.split(",")
-                dsetnames.append(dsetname)
-            else:
-                filename = fname_with_dset
-                dsetnames.append(None)
+        for selector in h5files:
+            filename, dsetname = split_h5_file_selector(selector)
             filenames.append(filename)
+            dsetnames.append(dsetname)
+        self._on_h5_open_requested(h5files, import_all, reset_all)
         if import_all is None and all(dsetname is None for dsetname in dsetnames):
             self.browse_h5_files(filenames, reset_all)
             return
@@ -1363,6 +1399,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
             elif answer == QW.QMessageBox.Cancel:
                 return False
         self.hide()  # Avoid showing individual widgets closing one after the other
+        self.memorystatus.stop_updates()
         self._close_managed_widgets()
         self._cleanup_before_reset()
         self.reset_all()

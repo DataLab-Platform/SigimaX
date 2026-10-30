@@ -46,9 +46,11 @@ class ConnectionThread(QC.QThread):
         """Run thread"""
         try:
             self.connect_callback()
+        except Exception as exc:  # pylint: disable=broad-except
+            # Any failure must end the connection attempt shown by the dialog
+            self.SIG_CONNECTION_KO.emit(str(exc) or type(exc).__name__)
+        else:
             self.SIG_CONNECTION_OK.emit()
-        except ConnectionRefusedError as exc:
-            self.SIG_CONNECTION_KO.emit(str(exc))
 
 
 class ConnectionDialog(QW.QDialog):

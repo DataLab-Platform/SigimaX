@@ -28,6 +28,8 @@ from sigimax.config import get_conf
 
 #: Signal metadata keys storing the curve color and line style
 LINE_STYLE_KEYS = ("color", "style")
+#: Signal metadata key storing the curve line width chosen by the user
+LINE_WIDTH_KEY = "width"
 
 
 def _normalize_color(color: str) -> str:
@@ -242,27 +244,71 @@ class CurveStyles:
 
 CURVESTYLES = CurveStyles()  # This is the unique instance of the CurveStyles class
 
+#: Line widths applied to curves by :func:`apply_line_width`, to tell them from
+#: line widths changed by the user
+_APPLIED_LINE_WIDTHS: weakref.WeakKeyDictionary[CurveItem, float] = (
+    weakref.WeakKeyDictionary()
+)
 
-def apply_line_width(item: CurveItem) -> None:
+
+def clamp_line_width(width: float, size: int) -> float:
+    """Return the line width drawn for a curve, clamped for large datasets
+
+    Thick lines cause a ~10x rendering slowdown (Qt raster engine): curves with
+    more points than the ``sig_linewidth_perfs_threshold`` option are drawn with
+    a line width of at most 1.0.
+
+    Args:
+        width: requested line width
+        size: number of points of the curve
+
+    Returns:
+        Line width to draw
+    """
+    threshold = get_conf().sig_linewidth_perfs_threshold.get()
+    if size > threshold and width > 1.0:
+        return 1.0
+    return width
+
+
+def apply_line_width(item: CurveItem, width: float | None = None) -> None:
     """Apply line width to curve item with smart clamping for large datasets
 
     Args:
         item: curve item
+        width: line width chosen by the user (None: ``sig_linewidth`` option),
+         clamped like the configured line width (see :func:`clamp_line_width`)
     """
-    # Get data size
-    data_size = item.get_data()[0].size
+    if width is None:
+        width = get_conf().sig_linewidth.get()
+    width = clamp_line_width(float(width), item.get_data()[0].size)
+    item.param.line.width = width
+    _APPLIED_LINE_WIDTHS[item] = width
 
-    # Get configured line width
-    line_width = get_conf().sig_linewidth.get()
 
-    # For large datasets, clamp linewidth to 1.0 for performance
-    # (thick lines cause ~10x rendering slowdown due to Qt raster engine)
-    threshold = get_conf().sig_linewidth_perfs_threshold.get()
-    if data_size > threshold and line_width > 1.0:
-        line_width = 1.0
+def chosen_line_width(item: CurveItem, stored: float | None) -> float | None:
+    """Return the line width of a curve chosen by the user, to store in signal
+    metadata
 
-    # Apply the line width
-    item.param.line.width = line_width
+    Like automatic styles, the configured line width (``sig_linewidth`` option) is
+    not stored, so that a change of this option applies to all curves. A line
+    width that was not changed since it was applied (see :func:`apply_line_width`)
+    keeps the stored value: the drawn width may be clamped.
+
+    Args:
+        item: curve item
+        stored: line width stored in signal metadata (None if not stored)
+
+    Returns:
+        Line width chosen by the user, or None if the curve has the configured
+        line width
+    """
+    width = item.param.line.width
+    if width == _APPLIED_LINE_WIDTHS.get(item):
+        return stored
+    if width == get_conf().sig_linewidth.get():
+        return None
+    return width
 
 
 def apply_downsampling(item: CurveItem, do_not_update: bool = False) -> None:
@@ -306,7 +352,9 @@ class SignalObjPlotPyAdapter(BaseObjPlotPyAdapter[SignalObj, CurveItem]):
         is to update the plot item accordingly.
 
         A color or a line style stored in the signal metadata is always restored:
-        it has been chosen by the user (automatic styles are not stored).
+        it has been chosen by the user (automatic styles are not stored). So is a
+        stored line width, clamped like the configured one for large datasets
+        (see :func:`apply_line_width`).
 
         This is *almost* the inverse operation of `update_metadata_from_plot_item`.
 
@@ -315,6 +363,7 @@ class SignalObjPlotPyAdapter(BaseObjPlotPyAdapter[SignalObj, CurveItem]):
         """
         update_dataset(item.param.line, self.obj.metadata)
         update_dataset(item.param.symbol, self.obj.metadata)
+        apply_line_width(item, self.obj.metadata.get(LINE_WIDTH_KEY))
         super().update_plot_item_parameters(item)
 
     def update_metadata_from_plot_item(self, item: CurveItem) -> None:
@@ -324,20 +373,27 @@ class SignalObjPlotPyAdapter(BaseObjPlotPyAdapter[SignalObj, CurveItem]):
         have been modified by the user through the plot item GUI. The goal is to
         update the metadata accordingly.
 
-        The color and the line style are stored only if they were chosen by the
-        user, i.e. if they differ from the automatic style of the curve.
+        The color, the line style and the line width are stored only if they were
+        chosen by the user, i.e. if they differ from the automatic style of the
+        curve and from the configured line width (see :func:`chosen_line_width`).
 
         This is *almost* the inverse operation of `update_plot_item_parameters`.
 
         Args:
             item: plot item
         """
+        stored_width = self.obj.metadata.get(LINE_WIDTH_KEY)
         super().update_metadata_from_plot_item(item)
         restore_dataset(item.param.line, self.obj.metadata)
         restore_dataset(item.param.symbol, self.obj.metadata)
         if CURVESTYLES.has_automatic_style(item):
             for key in LINE_STYLE_KEYS:
                 self.obj.metadata.pop(key, None)
+        width = chosen_line_width(item, stored_width)
+        if width is None:
+            self.obj.metadata.pop(LINE_WIDTH_KEY, None)
+        else:
+            self.obj.metadata[LINE_WIDTH_KEY] = width
 
     def make_item(self, update_from: CurveItem | None = None) -> CurveItem:
         """Make plot item from data.

@@ -6,7 +6,8 @@ Tests for warningerror.py utilities
 
 Covers:
 - insert_spaces: pure text utility
-- WarningErrorMessageBox: basic construction with sample error/warning
+- WarningErrorMessageBox: basic construction with sample error/warning, with or
+  without parent widget
 """
 
 from __future__ import annotations
@@ -15,6 +16,7 @@ import pytest
 from guidata.qthelpers import exec_dialog, qt_app_context
 from qtpy import QtWidgets as QW
 
+from sigimax.config import get_conf
 from sigimax.widgets.warningerror import WarningErrorMessageBox, insert_spaces
 
 pytestmark = pytest.mark.unit
@@ -92,6 +94,24 @@ class TestWarningErrorMessageBox:
     def test_warning_message_box(self):
         """A warning message box can be constructed and shown."""
         _show_message_box("warning")
+
+    @pytest.mark.parametrize("category", ["error", "warning"])
+    def test_message_box_without_parent(self, category: str):
+        """A message box without parent is titled with the application name."""
+        with qt_app_context():
+            dlg = WarningErrorMessageBox(None, category, "Context", "Message")
+            assert dlg.windowTitle() == get_conf().app_name.get()
+            dlg.deleteLater()
+
+    def test_message_box_title_from_parent(self):
+        """A message box is titled with the object name of its parent window."""
+        with qt_app_context():
+            win = QW.QMainWindow()
+            win.setObjectName("ParentApp")
+            widget = QW.QWidget(win)
+            dlg = WarningErrorMessageBox(widget, "warning", "Context", "Message")
+            assert dlg.windowTitle() == "ParentApp"
+            win.deleteLater()
 
 
 if __name__ == "__main__":

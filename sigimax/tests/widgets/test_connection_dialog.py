@@ -57,6 +57,34 @@ def test_connection_thread_failure():
     assert errors == ["no server listening"]
 
 
+@pytest.mark.parametrize(
+    "exc, message",
+    [
+        (TimeoutError("timed out"), "timed out"),
+        (OSError("name resolution failed"), "name resolution failed"),
+        (RuntimeError(), "RuntimeError"),
+    ],
+)
+def test_connection_thread_other_failures(exc: Exception, message: str):
+    """The thread emits SIG_CONNECTION_KO whatever the error raised by the
+    callback, so that the dialog does not wait forever."""
+
+    def failing_connect() -> None:
+        raise exc
+
+    with qt_app_context():
+        errors: list[str] = []
+        successes: list[bool] = []
+        thread = ConnectionThread(failing_connect)
+        thread.SIG_CONNECTION_KO.connect(errors.append)
+        thread.SIG_CONNECTION_OK.connect(lambda: successes.append(True))
+        thread.start()
+        thread.wait(2000)
+        qt_wait(0.2)
+    assert errors == [message]
+    assert not successes
+
+
 def test_connection_dialog_construction_defaults():
     """A dialog builds with no icon/banner and an empty error message."""
     with qt_app_context():
@@ -76,5 +104,6 @@ def test_connection_dialog_construction_with_icon_and_banner():
 if __name__ == "__main__":
     test_connection_thread_success()
     test_connection_thread_failure()
+    test_connection_thread_other_failures(TimeoutError("timed out"), "timed out")
     test_connection_dialog_construction_defaults()
     test_connection_dialog_construction_with_icon_and_banner()

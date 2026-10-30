@@ -7,7 +7,8 @@ HDF5 browser preview test
 Previews are read in a worker thread: the last selected node is shown, the
 previews of nodes selected before are discarded without being read, selecting a
 node that cannot be previewed clears the plot, and closing a file or the browser
-dialog waits for the preview being read.
+dialog waits for the preview being read. "Show array" only shows the current
+node if it is an array.
 """
 
 from __future__ import annotations
@@ -193,6 +194,54 @@ def test_dialog_waits_for_preview(method: str) -> None:
         timer.join()
         dialog.cleanup()
         dialog.close()
+
+
+def _tree_item(browser: H5Browser, node_id: str) -> QW.QTreeWidgetItem:
+    """Return the tree item of a node"""
+    iterator = QW.QTreeWidgetItemIterator(browser.tree)
+    while iterator.value() is not None:
+        item = iterator.value()
+        if item.data(0, QC.Qt.UserRole) == node_id:
+            return item
+        iterator += 1
+    raise KeyError(node_id)
+
+
+def test_show_array_follows_current_node(tmp_path, monkeypatch) -> None:
+    """The "Show array" button only shows the current node if it is an array,
+    even if the button state is stale (current item changed with the keyboard,
+    file closed)"""
+    fname = str(tmp_path / f"{uuid.uuid4()}.h5")
+    with h5py.File(fname, "w") as h5file:
+        h5file["array"] = np.arange(10.0)
+        h5file.create_group("group")["data"] = np.arange(5.0)
+    shown = []
+    monkeypatch.setattr(
+        "sigimax.widgets.h5browser.exec_dialog", lambda dlg: shown.append(dlg)
+    )
+    with qt_app_context():
+        browser = H5Browser()
+        browser.open_file(fname)
+        # pylint: disable=protected-access
+        button = browser.groupandattrs._GroupAndAttributes__show_array_btn
+        array_item = _tree_item(browser, "/array")
+        browser.tree.setCurrentItem(array_item)
+        browser.tree.clicked(array_item)
+        assert button.isEnabled()
+        browser.show_array()
+        assert len(shown) == 1
+        # Current item changed without click (e.g. with the keyboard)
+        browser.tree.setCurrentItem(_tree_item(browser, "/group"))
+        assert button.isEnabled()
+        browser.show_array()
+        assert len(shown) == 1
+        browser.tree.setCurrentItem(array_item)
+        browser.close_file(fname)
+        assert not button.isEnabled()
+        browser.show_array()
+        assert len(shown) == 1
+        browser.cleanup()
+        browser.close()
 
 
 if __name__ == "__main__":

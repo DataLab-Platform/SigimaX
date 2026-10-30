@@ -5,13 +5,15 @@ Tests for fileviewer.py utilities and widget
 --------------------------------------------
 
 Covers:
-- read_text_file: reads UTF-8 and latin1 files
+- read_text_file: reads UTF-8, latin1, cp1252 and Unicode files with a byte order
+  mark, converting line endings
 - get_title_contents: returns (title, contents) tuple
 - FileViewerWidget: basic construction and set_data
 """
 
 from __future__ import annotations
 
+import codecs
 import os
 import tempfile
 
@@ -68,6 +70,33 @@ class TestReadTextFile:
             assert result == "plain ascii"
         finally:
             os.unlink(path)
+
+    @pytest.mark.parametrize(
+        "encoding", ["utf-8-sig", "utf-16", "utf-16-be", "utf-32", "cp1252"]
+    )
+    def test_read_encodings(self, tmp_path, encoding: str):
+        """Files with a byte order mark and Windows (cp1252) files are decoded
+        with their encoding."""
+        # "—" and "€" are encoded differently in cp1252 and latin1
+        text = "Température : 25 °C — 3 €\nfin"
+        path = tmp_path / "file.txt"
+        data = text.encode(encoding)
+        if encoding == "utf-16-be":
+            data = codecs.BOM_UTF16_BE + data
+        path.write_bytes(data)
+        assert read_text_file(str(path)) == text
+
+    def test_read_line_endings(self, tmp_path):
+        """Windows and old Mac line endings are converted."""
+        path = tmp_path / "file.txt"
+        path.write_bytes(b"a\r\nb\rc\n")
+        assert read_text_file(str(path)) == "a\nb\nc\n"
+
+    def test_read_binary(self, tmp_path):
+        """Any file can be read (bytes which are not text are decoded as latin1)."""
+        path = tmp_path / "file.bin"
+        path.write_bytes(bytes(range(256)))
+        assert len(read_text_file(str(path))) > 0
 
 
 class TestGetTitleContents:

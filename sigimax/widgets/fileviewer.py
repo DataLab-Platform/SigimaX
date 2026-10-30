@@ -6,6 +6,7 @@ Module providing a file viewer widget
 
 from __future__ import annotations
 
+import codecs
 from pathlib import Path
 
 from guidata.configtools import get_icon
@@ -22,27 +23,41 @@ __all__ = [
 
 
 def read_text_file(path: str) -> str:
-    """Read text file using multiple encodings
+    """Read text file, guessing its encoding
+
+    Files starting with a byte order mark are decoded with the corresponding
+    Unicode encoding (UTF-8, UTF-16 or UTF-32). Other files are decoded as UTF-8,
+    then as cp1252 (Windows), and finally as latin1, which decodes any file.
+    Line endings are converted to ``"\\n"``.
 
     Args:
         path (str): path to file
 
-    Raises:
-        UnicodeDecodeError: if unable to read file using any of the encodings
-
     Returns:
         str: file contents
     """
-    encodings = ["utf-8", "latin1", "cp1252", "utf-16", "utf-32", "ascii"]
-    for encoding in encodings:
-        try:
-            with open(path, "r", encoding=encoding) as fdesc:
-                return fdesc.read()
-        except UnicodeDecodeError:
-            pass
-    raise UnicodeDecodeError(
-        f"Unable to read file using the following encodings: {encodings}"
-    )
+    data = Path(path).read_bytes()
+    # UTF-32 byte order marks must be checked before UTF-16 ones (same prefix)
+    for bom, encoding in (
+        (codecs.BOM_UTF32_LE, "utf-32"),
+        (codecs.BOM_UTF32_BE, "utf-32"),
+        (codecs.BOM_UTF8, "utf-8-sig"),
+        (codecs.BOM_UTF16_LE, "utf-16"),
+        (codecs.BOM_UTF16_BE, "utf-16"),
+    ):
+        if data.startswith(bom):
+            text = data.decode(encoding, errors="replace")
+            break
+    else:
+        for encoding in ("utf-8", "cp1252"):
+            try:
+                text = data.decode(encoding)
+                break
+            except UnicodeDecodeError:
+                pass
+        else:
+            text = data.decode("latin1")
+    return text.replace("\r\n", "\n").replace("\r", "\n")
 
 
 def get_title_contents(path: str) -> tuple[str, str]:

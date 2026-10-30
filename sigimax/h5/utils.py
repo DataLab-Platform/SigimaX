@@ -8,11 +8,41 @@ SigimaX Utilities for exogenous HDF5 format support
 
 from __future__ import annotations
 
+import os.path as osp
 from typing import Any
 
 import h5py
 import numpy as np
 from guidata.utils.misc import to_string
+
+
+def split_h5_file_selector(selector: str) -> tuple[str, str | None]:
+    """Split an HDF5 file selector into a file name and a dataset name
+
+    A selector is a file name, optionally followed by a comma and the name of the
+    dataset to import (e.g. ``"data.h5,/entry/counts"``). A selector naming an
+    existing file is a file name, even if it contains commas, and the file name
+    of a dataset selector may contain commas if it names an existing file.
+
+    Args:
+        selector: file name, or file name and dataset name separated by a comma
+
+    Returns:
+        File name and dataset name (None if the selector is a file name)
+
+    Raises:
+        ValueError: if the selector has several commas and its part before the
+         last comma is not an existing file
+    """
+    if "," not in selector or osp.isfile(selector):
+        return selector, None
+    filename, dsetname = selector.rsplit(",", 1)
+    if "," in filename and not osp.isfile(filename):
+        raise ValueError(
+            f"Invalid HDF5 file selector {selector!r}: expected a file name, "
+            "optionally followed by a comma and a dataset name"
+        )
+    return filename, dsetname
 
 
 def fix_ldata(fuzzy):

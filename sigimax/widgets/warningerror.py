@@ -8,6 +8,8 @@ Module providing a warning/error message box
 .. autofunction:: show_warning_error
 """
 
+from __future__ import annotations
+
 import os.path as osp
 import re
 import subprocess
@@ -91,7 +93,8 @@ class WarningErrorMessageBox(QW.QDialog):
     """Warning/Error message box
 
     Args:
-        parent (QW.QWidget): parent widget
+        parent (QW.QWidget | None): parent widget (if None, the dialog is titled
+         with the application name)
         category (str): message category ("error" or "warning")
         context (str | None): context. Defaults to None.
         message (str | None): message. Defaults to None.
@@ -100,7 +103,7 @@ class WarningErrorMessageBox(QW.QDialog):
 
     def __init__(
         self,
-        parent: QW.QWidget,
+        parent: QW.QWidget | None,
         category: str,
         context: str = None,
         message: str = None,
@@ -108,9 +111,11 @@ class WarningErrorMessageBox(QW.QDialog):
     ) -> None:
         super().__init__(parent)
         assert category in ("error", "warning")
-        self.setWindowTitle(parent.window().objectName())
         if parent is None:
+            self.setWindowTitle(get_conf().app_name.get())
             self.setWindowIcon(get_icon(get_conf().app_logo_path.get()))
+        else:
+            self.setWindowTitle(parent.window().objectName())
         self.shell = PythonShellWidget(self, read_only=True)
         self.shell.go_to_error.connect(go_to_error)
         font = get_font(CONF, "console")
@@ -213,7 +218,7 @@ class WarningErrorMessageBox(QW.QDialog):
 
 
 def show_warning_error(
-    parent: QW.QWidget,
+    parent: QW.QWidget | None,
     category: str,
     context: str = None,
     message: str = None,
@@ -222,7 +227,7 @@ def show_warning_error(
     """Show error message
 
     Args:
-        parent (QW.QWidget): parent widget
+        parent (QW.QWidget | None): parent widget
         category (str): message category ("error" or "warning")
         context (str | None): context. Defaults to None.
         message (str | None): message. Defaults to None.
