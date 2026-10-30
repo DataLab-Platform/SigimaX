@@ -29,6 +29,7 @@ import os.path as osp
 import sys
 import time
 import webbrowser
+from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -572,9 +573,26 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         """Adding menus"""
         for name, title in self._get_menubar_layout():
             setattr(self, f"{name}_menu", self.menuBar().addMenu(title))
-        configure_menu_about_to_show(self.file_menu, self._update_file_menu)
-        configure_menu_about_to_show(self.view_menu, self._update_view_menu)
+        configure_menu_about_to_show(
+            self.file_menu,
+            lambda: self.__rebuild_menu(self.file_menu, self._update_file_menu),
+        )
+        configure_menu_about_to_show(
+            self.view_menu,
+            lambda: self.__rebuild_menu(self.view_menu, self._update_view_menu),
+        )
         add_actions(self.help_menu, self._get_help_menu_actions())
+
+    @staticmethod
+    def __rebuild_menu(menu: QW.QMenu, update: Callable[[], None]) -> None:
+        """Clear a dynamic menu, then populate it before it is shown
+
+        Args:
+            menu: menu to rebuild
+            update: method populating the menu (e.g. :meth:`_update_file_menu`)
+        """
+        menu.clear()
+        update()
 
     def _update_console_show_mode(self) -> None:
         """Update console show mode from configuration option
@@ -737,7 +755,8 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         """Update file menu before showing up.
 
         Updates action states (via :meth:`_is_save_enabled`) and populates
-        the menu with actions returned by :meth:`_get_file_menu_actions`.
+        the menu with actions returned by :meth:`_get_file_menu_actions`. The
+        menu is cleared before this method is called.
 
         Override in subclasses to add extra logic (e.g., appending a
         submenu).  Call ``super()._update_file_menu()`` first to populate
@@ -761,9 +780,9 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
     def _update_view_menu(self) -> None:
         """Update view menu before showing up.
 
-        Override in subclasses to add extra logic.  Call
-        ``super()._update_view_menu()`` first to populate the default
-        actions.
+        The menu is cleared before this method is called. Override in subclasses
+        to add extra logic.  Call ``super()._update_view_menu()`` first to
+        populate the default actions.
         """
         add_actions(self.view_menu, self._get_view_menu_actions())
 
