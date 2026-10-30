@@ -7,6 +7,7 @@ Tests for the ConnectionDialog widget (:mod:`sigimax.widgets.connection`)
 Covers:
 - ConnectionThread success/failure signal emission
 - ConnectionDialog construction (icon/banner, default error message)
+- ConnectionDialog cancelled while connecting (attempt continued in the background)
 
 Note: ``ConnectionDialog.exec()`` itself is not exercised here. Its modal
 loop combines a background QThread with guidata's unattended auto-close
@@ -18,10 +19,16 @@ never runs it through the automated test suite either (only a manual,
 
 from __future__ import annotations
 
+import gc
+import threading
+import time
+
 import pytest
 from guidata.qthelpers import qt_app_context, qt_wait
 from qtpy import QtGui as QG
+from qtpy import QtWidgets as QW
 
+from sigimax.widgets import connection
 from sigimax.widgets.connection import ConnectionDialog, ConnectionThread
 
 pytestmark = pytest.mark.gui
@@ -101,9 +108,51 @@ def test_connection_dialog_construction_with_icon_and_banner():
         assert dlg.get_error_message() == ""
 
 
+def _process_events_until(condition, timeout: float = 10.0) -> None:
+    """Process Qt events until a condition is true"""
+    deadline = time.monotonic() + timeout
+    while not condition():
+        assert time.monotonic() < deadline, "Condition not met"
+        qt_wait(0.05)
+
+
+@pytest.mark.parametrize("delete_dialog", [False, True])
+def test_connection_dialog_cancelled_while_connecting(delete_dialog: bool):
+    """Cancelling while connecting closes the dialog at once: the connection
+    attempt continues in the background, and its result is ignored, even if the
+    dialog has been deleted meanwhile."""
+    release = threading.Event()
+
+    def slow_connect() -> None:
+        assert release.wait(10.0)
+
+    with qt_app_context():
+        # pylint: disable=protected-access
+        dlg = ConnectionDialog(slow_connect)
+        dlg._ConnectionDialog__connect_to_server()
+        thread = dlg.thread
+        status = dlg.status_label.text()
+        dlg.reject()
+        assert dlg.result() == QW.QDialog.Rejected
+        assert thread in connection._DETACHED_THREADS
+        if delete_dialog:
+            dlg.deleteLater()
+            del dlg
+            qt_wait(0.1)
+            gc.collect()
+        release.set()
+        _process_events_until(lambda: not connection._DETACHED_THREADS)
+        assert thread.isFinished()
+        if not delete_dialog:
+            # The result of the attempt is not shown
+            assert dlg.status_label.text() == status
+            assert dlg.result() == QW.QDialog.Rejected
+
+
 if __name__ == "__main__":
     test_connection_thread_success()
     test_connection_thread_failure()
     test_connection_thread_other_failures(TimeoutError("timed out"), "timed out")
     test_connection_dialog_construction_defaults()
     test_connection_dialog_construction_with_icon_and_banner()
+    test_connection_dialog_cancelled_while_connecting(True)
