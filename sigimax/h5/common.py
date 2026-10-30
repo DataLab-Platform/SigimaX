@@ -28,21 +28,23 @@ def data_to_xy(data: np.ndarray) -> list[np.ndarray]:
     """Convert 2-D array into a list of 1-D array data (x, y, dx, dy).
     This is useful for importing data and creating a SigimaX signal with it.
 
+    A 1-D array, or a 2-D array with a single row or column, holds Y values (X
+    values are then indices).
+
     Args:
         data (numpy.ndarray): 2-D array of data
 
     Returns:
         list[np.ndarray]: list of 1-D array data (x, y, dx, dy)
     """
-    if len(data.ravel()) == len(data):
-        return np.arange(len(data)), data.ravel(), None, None
+    if data.ndim == 1 or (data.ndim == 2 and 1 in data.shape):
+        y = data.ravel()
+        return np.arange(y.size), y, None, None
     rows, cols = data.shape
     for colnb in (2, 3, 4):
         if cols == colnb and rows > colnb:
             data = data.T
             break
-    if len(data) == 1:
-        data = data.T
     if len(data) not in (2, 3, 4):
         raise ValueError(f"Invalid data: len(data)={len(data)} (expected 2, 3 or 4)")
     x, y = data[:2]

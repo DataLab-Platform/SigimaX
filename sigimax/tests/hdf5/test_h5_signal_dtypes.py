@@ -6,7 +6,8 @@ HDF5 signal data type unit tests
 
 Signals imported from HDF5 datasets and NeXus ``NXdata`` groups keep the imaginary
 part of complex data, and integers that cannot be represented exactly as floats
-emit a warning instead of being rounded silently.
+emit a warning instead of being rounded silently. Datasets with a single row or
+column are imported as signals.
 """
 
 from __future__ import annotations
@@ -39,6 +40,8 @@ def fixture_nodes(tmp_path):
         h5file["complex"] = (np.arange(5) + 1j * np.arange(5)).astype(np.complex64)
         h5file["large"] = np.array([LARGE, 1, 2], dtype=np.int64)
         h5file["counts"] = np.array([1, 2, 3], dtype=np.int32)
+        h5file["row"] = np.arange(50.0).reshape(1, 50)
+        h5file["column"] = np.arange(50.0).reshape(50, 1)
         h5file["table"] = (np.arange(10) + 1j).astype(np.complex64).reshape(2, 5)
         for name, data in (
             ("nx_complex", h5file["complex"][()]),
@@ -86,6 +89,18 @@ def test_complex_table_is_not_supported(nodes: dict) -> None:
     with warnings.catch_warnings():
         warnings.simplefilter("error", ComplexWarning)
         assert nodes["/table"].get_native_object() is None
+
+
+@pytest.mark.parametrize("path", ["/row", "/column"])
+def test_single_row_or_column_signal(nodes: dict, path: str) -> None:
+    """A dataset with a single row or column (e.g. one scan) is imported and
+    previewed as a signal of its values."""
+    node = nodes[path]
+    assert node.is_supported()
+    for obj in (node.get_native_object(), node.create_preview_object(10**6)):
+        assert isinstance(obj, SignalObj)
+        assert np.array_equal(obj.x, np.arange(50))
+        assert np.array_equal(obj.y, np.arange(50.0))
 
 
 if __name__ == "__main__":

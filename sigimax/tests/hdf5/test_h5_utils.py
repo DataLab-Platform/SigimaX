@@ -94,6 +94,18 @@ class TestDataToXy:
         np.testing.assert_array_equal(x, [1, 2, 3, 4, 5])
         np.testing.assert_array_equal(y, [10, 20, 30, 40, 50])
 
+    @pytest.mark.parametrize("size", [2, 3, 4, 5, 100])
+    @pytest.mark.parametrize("single_row", [True, False])
+    def test_single_row_or_column(self, size: int, single_row: bool):
+        """A single row or column holds Y values, whatever its length."""
+        values = np.arange(size) * 10.0
+        data = values.reshape((1, size) if single_row else (size, 1))
+        x, y, dx, dy = data_to_xy(data)
+        np.testing.assert_array_equal(x, np.arange(size))
+        np.testing.assert_array_equal(y, values)
+        assert dx is None
+        assert dy is None
+
     def test_invalid_shape_raises(self):
         """Arrays with unsupported shapes should raise an error."""
         data = np.ones((5, 5, 5))
