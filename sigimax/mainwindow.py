@@ -127,6 +127,8 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
 
         self.consolestatus: status.ConsoleStatus | None = None
         self.console: DockableConsole | None = None
+        #: True if the console is shown when an error occurs
+        self.__console_shown_on_error = False
 
         self.main_toolbar: QW.QToolBar | None = None
         self.tabwidget: QW.QTabWidget | None = None
@@ -613,10 +615,13 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
             cdock = self.docks[self.console]
             if not state and cdock.isVisible():
                 cdock.hide()
-            if state:
+            # The connection is tracked: with PyQt5, connecting twice requires two
+            # disconnections
+            if state and not self.__console_shown_on_error:
                 self.console.exception_occurred.connect(self.console.show_console)
-            else:
+            elif not state and self.__console_shown_on_error:
                 self.console.exception_occurred.disconnect(self.console.show_console)
+            self.__console_shown_on_error = state
 
     def _get_console_namespace(self) -> dict[str, object]:
         """Return the namespace dict exposed in the internal console.
@@ -667,6 +672,8 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         ns = self._get_console_namespace()
         msg = self._get_console_message()
         self.console = DockableConsole(self, namespace=ns, message=msg, debug=DEBUG)
+        # guidata's console is shown when an error occurs, once created
+        self.__console_shown_on_error = True
         self.console.setMaximumBlockCount(get_conf().console_max_line_count.get())
         self.console.go_to_error.connect(go_to_error)
         cdock = self._add_dockwidget(self.console, _("Console"), name="console")
