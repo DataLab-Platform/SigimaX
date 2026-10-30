@@ -72,6 +72,21 @@ msgstr "Avec Qt 5, les tailles des panneaux ancrables enregistrées à la fermet
 msgid "Closing the main window (unless it is only hidden, see `hide_on_close`) now releases it as the instance returned by `get_instance`, which creates a new window afterwards: the closed window, with its widgets and data, is no longer kept in memory until another main window is created."
 msgstr "La fermeture de la fenêtre principale (sauf si elle est seulement masquée, voir `hide_on_close`) la libère désormais en tant qu'instance renvoyée par `get_instance`, qui crée ensuite une nouvelle fenêtre : la fenêtre fermée, avec ses widgets et ses données, n'est plus conservée en mémoire jusqu'à la création d'une autre fenêtre principale."
 
+msgid "The File and View menus are now rebuilt each time they are shown: each opening added separators to them, and actions no longer returned by `_get_file_menu_actions` or `_get_view_menu_actions` stayed in the menu (closes [Issue #39](https://github.com/DataLab-Platform/SigimaX/issues/39))."
+msgstr "Les menus Fichier et Affichage sont désormais reconstruits à chaque affichage : chaque ouverture y ajoutait des séparateurs, et les actions qui n'étaient plus renvoyées par `_get_file_menu_actions` ou `_get_view_menu_actions` restaient dans le menu (corrige [Issue #39](https://github.com/DataLab-Platform/SigimaX/issues/39))."
+
+msgid "The memory status of the status bar is no longer updated once the main window is closed: its timer kept running every 2 seconds. `BaseStatus.stop_updates` stops the updates of status bar widgets (closes [Issue #46](https://github.com/DataLab-Platform/SigimaX/issues/46))."
+msgstr "L'état de la mémoire de la barre d'état n'est plus mis à jour une fois la fenêtre principale fermée : sa minuterie continuait de fonctionner toutes les 2 secondes. `BaseStatus.stop_updates` arrête les mises à jour des widgets de la barre d'état (corrige [Issue #46](https://github.com/DataLab-Platform/SigimaX/issues/46))."
+
+msgid "An invalid saved window state (`window_state` option, e.g. in a configuration file edited by hand) is now ignored, and the window starts with its default layout: the main window could not be created (closes [Issue #49](https://github.com/DataLab-Platform/SigimaX/issues/49))."
+msgstr "Un état de fenêtre enregistré invalide (option `window_state`, par exemple dans un fichier de configuration modifié à la main) est désormais ignoré, et la fenêtre démarre avec sa disposition par défaut : la fenêtre principale ne pouvait pas être créée (corrige [Issue #49](https://github.com/DataLab-Platform/SigimaX/issues/49))."
+
+msgid "Disabling the `show_console_on_error` option now stops showing the console on errors: with PyQt5, when the option was enabled at startup, the console was still shown on errors until the application was restarted (closes [Issue #47](https://github.com/DataLab-Platform/SigimaX/issues/47))."
+msgstr "La désactivation de l'option `show_console_on_error` cesse désormais d'afficher la console en cas d'erreur : avec PyQt5, lorsque l'option était activée au démarrage, la console était toujours affichée en cas d'erreur jusqu'au redémarrage de l'application (corrige [Issue #47](https://github.com/DataLab-Platform/SigimaX/issues/47))."
+
+msgid "Log file options (`traceback_log_path`, `faulthandler_log_path`) which are not a bare file name (e.g. a full path in a configuration file edited by hand) are now ignored when loaded, so that the default log files are used: the application could not start (closes [Issue #48](https://github.com/DataLab-Platform/SigimaX/issues/48))."
+msgstr "Les options de fichiers journaux (`traceback_log_path`, `faulthandler_log_path`) qui ne sont pas un simple nom de fichier (par exemple un chemin complet dans un fichier de configuration modifié à la main) sont désormais ignorées au chargement, de sorte que les fichiers journaux par défaut sont utilisés : l'application ne pouvait pas démarrer (corrige [Issue #48](https://github.com/DataLab-Platform/SigimaX/issues/48))."
+
 msgid "High-DPI displays"
 msgstr "Écrans haute résolution"
 
@@ -101,6 +116,9 @@ msgstr "La boîte de dialogue de connexion (`ConnectionDialog`) signale désorma
 
 msgid "Warning and error message boxes (`WarningErrorMessageBox`, `show_warning_error`) can now be shown without parent widget, titled with the application name: they raised an `AttributeError` instead of showing the message."
 msgstr "Les boîtes de message d'avertissement et d'erreur (`WarningErrorMessageBox`, `show_warning_error`) peuvent désormais être affichées sans widget parent, avec le nom de l'application pour titre : elles levaient une `AttributeError` au lieu d'afficher le message."
+
+msgid "The file and log viewers now read UTF-16 and UTF-32 files with a byte order mark, and Windows (cp1252) files, with their encoding (`read_text_file`): such files were shown with wrong characters, as they were decoded as latin1 (closes [Issue #43](https://github.com/DataLab-Platform/SigimaX/issues/43))."
+msgstr "Les visionneuses de fichiers et de journaux lisent désormais les fichiers UTF-16 et UTF-32 dotés d'une marque d'ordre des octets, ainsi que les fichiers Windows (cp1252), avec leur encodage (`read_text_file`) : ces fichiers étaient affichés avec des caractères erronés, car ils étaient décodés en latin1 (corrige [Issue #43](https://github.com/DataLab-Platform/SigimaX/issues/43))."
 
 msgid "Curve fitting dialogs"
 msgstr "Fenêtres d'ajustement de courbes"
@@ -170,6 +188,9 @@ msgstr "Les jeux de données et les groupes atteints par un lien externe (comme 
 
 msgid "Datasets holding a single row of values (e.g. a single scan stored as a 1 × N array) are now imported and previewed as signals: they were classified as signals, but skipped without message when imported."
 msgstr "Les jeux de données contenant une seule ligne de valeurs (par exemple un scan unique stocké sous forme de tableau 1 × N) sont désormais importés et prévisualisés comme des signaux : ils étaient classés comme signaux, mais ignorés sans message lors de l'import."
+
+msgid "The \"Show array\" button of the HDF5 browser no longer raises an error when the current node is not an array (e.g. once another node has been selected with the keyboard), and it is disabled once the file is closed ([Issue #44](https://github.com/DataLab-Platform/SigimaX/issues/44))."
+msgstr "Le bouton « Afficher le tableau » de l'explorateur HDF5 ne provoque plus d'erreur lorsque le nœud courant n'est pas un tableau (par exemple une fois un autre nœud sélectionné au clavier), et il est désactivé une fois le fichier fermé ([Issue #44](https://github.com/DataLab-Platform/SigimaX/issues/44))."
 
 msgid "HDF5 files whose name contains a comma can now be opened with `open_h5_files`: the comma was taken for the separator between a file name and the name of a dataset to import (`\"file,dataset\"`). A selector naming an existing file is now a file name, and the file name of a dataset selector may contain commas when it names an existing file (`split_h5_file_selector`). Selectors are now checked before `_on_h5_open_requested` is called, so that an invalid request is no longer notified (e.g. recorded in an application history) before failing."
 msgstr "Les fichiers HDF5 dont le nom contient une virgule peuvent désormais être ouverts avec `open_h5_files` : la virgule était prise pour le séparateur entre un nom de fichier et le nom d'un jeu de données à importer (`\"file,dataset\"`). Un sélecteur désignant un fichier existant est désormais un nom de fichier, et le nom de fichier d'un sélecteur de jeu de données peut contenir des virgules lorsqu'il désigne un fichier existant (`split_h5_file_selector`). Les sélecteurs sont désormais vérifiés avant l'appel de `_on_h5_open_requested`, si bien qu'une requête invalide n'est plus notifiée (par exemple enregistrée dans l'historique d'une application) avant d'échouer."
