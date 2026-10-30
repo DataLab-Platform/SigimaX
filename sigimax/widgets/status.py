@@ -53,10 +53,16 @@ class BaseStatus(QW.QWidget):
         self.label = QW.QLabel()
         layout.addWidget(self.icon)
         layout.addWidget(self.label)
+        self.timer: QC.QTimer | None = None
         if delay is not None:
-            self.timer = QC.QTimer()
+            self.timer = QC.QTimer(self)
             self.timer.timeout.connect(self.update_status)
             self.timer.start(delay * 1000)
+
+    def stop_updates(self) -> None:
+        """Stop the periodic updates of the widget (e.g. when its window is closed)"""
+        if self.timer is not None:
+            self.timer.stop()
 
     def set_icon(self, icon: QG.QIcon | str | None) -> None:
         """Set icon.

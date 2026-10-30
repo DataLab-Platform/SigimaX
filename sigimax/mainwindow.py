@@ -1383,6 +1383,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
             elif answer == QW.QMessageBox.Cancel:
                 return False
         self.hide()  # Avoid showing individual widgets closing one after the other
+        self.memorystatus.stop_updates()
         self._close_managed_widgets()
         self._cleanup_before_reset()
         self.reset_all()
