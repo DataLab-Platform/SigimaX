@@ -28,6 +28,14 @@ def test_watermark_resolves_image_name(tmp_path) -> None:
     """An image name is resolved through guidata's registered image paths, and the
     ``@2x`` variant of the image is used on high-DPI displays."""
     image_path = tmp_path / "derived-watermark.png"
+    loaded: list[tuple[str, QG.QPixmap]] = []
+
+    def load_pixmap(name: str, default: str | None) -> QG.QPixmap:
+        """Load the pixmap as on a high-DPI display, and record it."""
+        pixmap = get_pixmap(name, default, 2.0)
+        loaded.append((name, pixmap))
+        return pixmap
+
     with qt_app_context(exec_loop=False):
         _save_image(image_path, 64, 32, "red")
         _save_image(tmp_path / "derived-watermark@2x.png", 128, 64, "blue")
@@ -38,15 +46,16 @@ def test_watermark_resolves_image_name(tmp_path) -> None:
                 "sigimax.widgets.plotdock.get_image_file_path",
                 return_value=str(image_path),
             ) as resolve,
-            patch(
-                "sigimax.widgets.plotdock.get_pixmap",
-                side_effect=lambda name, default: get_pixmap(name, default, 2.0),
-            ),
+            patch("sigimax.widgets.plotdock.get_pixmap", side_effect=load_pixmap),
         ):
             dock = DockablePlotWidget(parent, PlotType.CURVE)
 
         resolve.assert_called_once_with("derived-watermark.png", default=None)
-        pixmap = dock.watermark.pixmap()
+        assert [name for name, _pixmap in loaded] == [str(image_path)]
+        assert not dock.watermark.pixmap().isNull()
+        # The label's pixmap is not checked: with Qt 6, ``QLabel.pixmap`` does not
+        # return the device pixel ratio of the pixmap passed to ``setPixmap``.
+        pixmap = loaded[0][1]
         assert pixmap.devicePixelRatio() == 2.0
         assert pixmap.size() == QC.QSize(128, 64)
         assert pixmap.toImage().pixelColor(0, 0) == QG.QColor("blue")
