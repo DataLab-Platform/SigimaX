@@ -40,6 +40,10 @@
 
 * The splash screen and the watermark of empty plots are no longer blurry with a display scaling greater than 100% (e.g. 125%): when their image has a `@2x` high-resolution variant (e.g. `splash@2x.png` next to `splash.png`), it is used to display them at the resolution of the screen instead of upscaling the image. The fallback splash screen, shown when no image is available, is also drawn at the resolution of the screen.
 
+### Plot widgets ###
+
+* Like the splash screen image, the watermark image of empty plots (`watermark_image_path` option) may now be given by its name: the image is then looked up in the image paths registered with guidata (see `guidata.configtools.add_image_path`), and its `@2x` high-resolution variant is used on high-DPI displays.
+
 ### Qt helpers ###
 
 * `block_signals` now restores the previous signal-blocking state of the widget and of its children instead of unblocking them unconditionally: nested blocking contexts and widgets already blocked by the caller keep their state.

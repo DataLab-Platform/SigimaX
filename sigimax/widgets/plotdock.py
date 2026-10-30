@@ -31,7 +31,7 @@ import warnings
 from typing import TYPE_CHECKING
 
 import numpy as np
-from guidata.configtools import get_pixmap
+from guidata.configtools import get_image_file_path, get_pixmap
 from guidata.qthelpers import is_dark_theme
 from guidata.widgets.dockable import DockableWidget
 from plotpy.constants import PlotType
@@ -331,20 +331,28 @@ class DockablePlotWidget(DockableWidget):
     def _setup_watermark(self) -> None:
         """Create the watermark label from the configured image path.
 
-        If ``Conf.watermark_image_path`` is empty, no watermark is created. On
-        high-DPI displays, the ``@2x`` high-resolution variant of the image is used
+        If ``Conf.watermark_image_path`` is empty, no watermark is created. Like the
+        splash screen image, it may be an image name, looked up in the image paths
+        registered with guidata (see :func:`guidata.configtools.get_image_file_path`).
+        On high-DPI displays, the ``@2x`` high-resolution variant of the image is used
         if available (see :func:`guidata.configtools.get_pixmap`).
         """
         path = get_conf().watermark_image_path.get()
-        if path:
-            self.watermark = QW.QLabel()
-            if osp.isfile(path):
-                pixmap = get_pixmap(osp.abspath(path), default=None)
-            else:
-                pixmap = QG.QPixmap(path)
-            self.watermark.setPixmap(pixmap)
-        else:
+        if not path:
             self.watermark = None
+            return
+        if not osp.isfile(path):
+            try:
+                path = get_image_file_path(path, default=None)
+            except RuntimeError:
+                pass
+        if osp.isfile(path):
+            pixmap = get_pixmap(osp.abspath(path), default=None)
+        else:
+            # Not a file (e.g. a Qt resource path)
+            pixmap = QG.QPixmap(path)
+        self.watermark = QW.QLabel()
+        self.watermark.setPixmap(pixmap)
 
     def __get_toolbar_row_col(self) -> tuple[int, int]:
         """Return toolbar row and column"""
