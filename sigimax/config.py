@@ -528,16 +528,18 @@ class ConfigPathOptionField(OptionField):
     """
 
     def check(self, value: Any) -> None:
-        """Check that the value is a string.
+        """Check that the value is a bare file basename.
 
         Args:
             value: The value to check.
 
         Raises:
-            ValueError: If the value is not a string.
+            ValueError: If the value is not a string, or not a bare basename.
         """
         if not isinstance(value, str):
             raise ValueError(f"Expected str, got {type(value).__name__}")
+        if not value or osp.basename(value) != value:
+            raise ValueError(f"Invalid configuration file name {value!r}")
 
     def get(self, default: Any = NO_DEFAULT) -> str:
         """Return the absolute path inside the configuration directory.
@@ -560,11 +562,16 @@ class ConfigPathOptionField(OptionField):
         return self._value
 
     def from_storage(self, value: str) -> None:
-        """Set the raw stored basename without validation or env sync.
+        """Set the raw stored basename without env sync.
 
         Args:
             value: The raw basename to store.
+
+        Raises:
+            ValueError: If the value is not a bare basename (the current value is
+             kept, so that loaders fall back to the default value).
         """
+        self.check(value)
         self._value = value
         self.mark_initialized()
 

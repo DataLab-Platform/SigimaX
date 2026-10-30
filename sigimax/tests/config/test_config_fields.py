@@ -248,10 +248,15 @@ class TestConfigPathOptionField:
         assert field.to_storage() == ".Other.log"
         assert osp.basename(field.get()) == ".Other.log"
 
-        # A full path (not a bare basename) is rejected on get().
-        field.from_storage(osp.join("sub", "dir", "file.log"))
-        with pytest.raises(ValueError):
-            field.get()
+        # A full path (not a bare basename) is rejected when stored or set, and
+        # the current value is kept, so that loaders fall back to it.
+        for value in (osp.join("sub", "dir", "file.log"), ""):
+            with pytest.raises(ValueError):
+                field.from_storage(value)
+            with pytest.raises(ValueError):
+                field.set(value)
+            assert field.to_storage() == ".Other.log"
+            assert osp.basename(field.get()) == ".Other.log"
 
 
 # ======================== WorkingDirOptionField ===============================
@@ -459,6 +464,15 @@ class TestSigimaXOptions:
         assert opts.ima_def_colormap.get() == "gray"
         opts.reset_to_defaults()
         assert opts.ima_def_colormap.get() == original
+
+    def test_invalid_log_file_name_ignored_on_load(self):
+        """A log file option which is not a bare basename is ignored on load, so
+        that the log files can still be set up"""
+        opts = SigimaXOptions()
+        default = opts.traceback_log_path.to_storage()
+        opts.from_dict({"traceback_log_path": osp.join("C:", "logs", "tb.log")})
+        assert opts.traceback_log_path.to_storage() == default
+        assert osp.basename(opts.traceback_log_path.get()) == default
 
 
 # ======================== Module-level helpers ===============================
