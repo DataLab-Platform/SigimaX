@@ -1420,8 +1420,9 @@ class SigimaXOptions(AppOptionsContainer):
             category="view",
             default="",
             expected_type=str,
-            description="Path to the watermark image displayed on empty plots. "
-            "If empty, no watermark is shown.",
+            description="Path to the watermark image displayed on empty plots, or "
+            "name of an image registered with guidata (like the splash screen "
+            "image). If empty, no watermark is shown.",
         )
 
         self.sig_format = TypedOptionField(
