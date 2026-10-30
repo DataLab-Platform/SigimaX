@@ -138,29 +138,63 @@ def test_explicit_style_roundtrip() -> None:
         assert not CURVESTYLES.has_automatic_style(item2)
 
 
-@pytest.mark.parametrize("linestyle", CurveStyles.LEGACY_LINESTYLES)
-def test_legacy_style_is_automatic(linestyle: str) -> None:
-    """Styles stored by earlier versions from their style cycle are automatic"""
-    with qt_app_context(exec_loop=False):
-        adapter = _make_signal_adapter()
-        adapter.obj.metadata["color"] = CurveStyles.LEGACY_COLORS[1]
-        adapter.obj.metadata["style"] = linestyle
-        item = adapter.make_item()
-        assert CURVESTYLES.has_automatic_style(item)
-        assert _line_style(item)[0] in CurveStyles.COLORS
+def _save_and_reload(adapter: SignalObjPlotPyAdapter, item, cycles: int = 2):
+    """Store the curve style in metadata and make a new item from them, as done
+    when saving and reloading a workspace, several times"""
+    for _cycle in range(cycles):
         adapter.update_metadata_from_plot_item(item)
-        for key in LINE_STYLE_KEYS:
-            assert key not in adapter.obj.metadata
+        item = adapter.make_item()
+    return item
 
 
-def test_partial_legacy_style_is_explicit() -> None:
-    """A stored color without line style (e.g. set by a script) is explicit"""
+@pytest.mark.parametrize("linestyle", CurveStyles.LEGACY_LINESTYLES)
+def test_stored_style_is_kept(linestyle: str) -> None:
+    """A stored style is always restored, even if it belongs to the automatic style
+    cycle of earlier versions (legacy data is converted by applications on load)"""
     with qt_app_context(exec_loop=False):
         adapter = _make_signal_adapter()
-        adapter.obj.metadata["color"] = CurveStyles.LEGACY_COLORS[1]
-        item = adapter.make_item()
-        assert _line_style(item)[0] == CurveStyles.LEGACY_COLORS[1]
+        color = CurveStyles.LEGACY_COLORS[1]
+        adapter.obj.metadata["color"] = color
+        adapter.obj.metadata["style"] = linestyle
+        item = _save_and_reload(adapter, adapter.make_item())
+        assert _line_style(item) == (color, linestyle)
         assert not CURVESTYLES.has_automatic_style(item)
+        assert adapter.obj.metadata["color"] == color
+        assert adapter.obj.metadata["style"] == linestyle
+
+
+def test_user_style_from_legacy_cycle_roundtrip() -> None:
+    """A style chosen by the user is kept, even if it matches a style of the
+    automatic style cycle of earlier versions"""
+    with qt_app_context(exec_loop=False):
+        adapter = _make_signal_adapter()
+        item = adapter.make_item()
+        item.param.line.color = "#1f77b4"
+        item.param.line.style = "SolidLine"
+        item.param.update_item(item)
+        assert CurveStyles.is_legacy_automatic("#1f77b4", "SolidLine")
+        item = _save_and_reload(adapter, item)
+        assert _line_style(item) == ("#1f77b4", "SolidLine")
+        assert adapter.obj.metadata["color"] == "#1f77b4"
+        assert adapter.obj.metadata["style"] == "SolidLine"
+
+
+@pytest.mark.parametrize(
+    "color, linestyle, expected",
+    [
+        ("#1f77b4", "SolidLine", True),
+        ("#17BECF", "DashDotDotLine", True),  # Case insensitive colors
+        ("#1f77b4", "DotLine", False),  # Not a style of the legacy cycle
+        ("#2a77ae", "SolidLine", False),  # Color of the current palette
+        ("#1f77b4", None, False),  # Line style not stored
+        (None, "SolidLine", False),  # Color not stored
+        (1, "SolidLine", False),  # Invalid values
+    ],
+)
+def test_is_legacy_automatic(color, linestyle, expected: bool) -> None:
+    """Styles of the automatic style cycle of earlier versions are recognized"""
+    with qt_app_context(exec_loop=False):
+        assert CurveStyles.is_legacy_automatic(color, linestyle) is expected
 
 
 def test_restore_automatic_style() -> None:

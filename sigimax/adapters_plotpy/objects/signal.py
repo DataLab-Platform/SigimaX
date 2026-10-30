@@ -110,8 +110,14 @@ class CurveStyles:
 
     @staticmethod
     def is_legacy_automatic(color: str | None, linestyle: str | None) -> bool:
-        """Return True if a stored style comes from the automatic style cycle of
+        """Return True if a stored style may come from the automatic style cycle of
         earlier versions, which stored automatic styles in signal metadata
+
+        Signal metadata are not converted when curves are displayed: a stored color
+        and line style are always restored, whatever their values. Applications
+        may use this method to convert, when loading them, data saved by earlier
+        versions (e.g. by removing such styles from the signal metadata, so that
+        curves are given the current automatic styles).
 
         Args:
             color: stored color (None if not stored)
@@ -299,22 +305,16 @@ class SignalObjPlotPyAdapter(BaseObjPlotPyAdapter[SignalObj, CurveItem]):
         have been overriden by object metadata entries or other object data. The goal
         is to update the plot item accordingly.
 
-        A color and a line style stored by earlier versions from their automatic
-        style cycle are ignored, so that the curve keeps its automatic style.
+        A color or a line style stored in the signal metadata is always restored:
+        it has been chosen by the user (automatic styles are not stored).
 
         This is *almost* the inverse operation of `update_metadata_from_plot_item`.
 
         Args:
             item: plot item
         """
-        metadata = self.obj.metadata
-        line_source = metadata
-        if CURVESTYLES.is_legacy_automatic(*(metadata.get(k) for k in LINE_STYLE_KEYS)):
-            line_source = {
-                k: v for k, v in metadata.items() if k not in LINE_STYLE_KEYS
-            }
-        update_dataset(item.param.line, line_source)
-        update_dataset(item.param.symbol, metadata)
+        update_dataset(item.param.line, self.obj.metadata)
+        update_dataset(item.param.symbol, self.obj.metadata)
         super().update_plot_item_parameters(item)
 
     def update_metadata_from_plot_item(self, item: CurveItem) -> None:
