@@ -616,6 +616,47 @@ def test_import_specific_dataset_and_save() -> None:
     execenv.print("Import-specific-dataset and save/load test passed.")
 
 
+@pytest.mark.app
+def test_open_file_name_with_comma(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test opening HDF5 files whose name contains a comma.
+
+    A selector naming an existing file is a file name, even with a comma, and the
+    file name of a dataset selector may contain commas. Invalid selectors are
+    rejected before the open request is notified, and nothing is opened.
+    """
+    with tempfile.TemporaryDirectory() as tmpdir:
+        src_path = osp.join(tmpdir, "scan,run1.h5")
+        _create_h5_with_datasets(src_path)
+
+        with qth.sigimax_app_context(exec_loop=False):
+            win = DerivedAppWindow(console=False)
+            requests = []
+            monkeypatch.setattr(
+                win, "_on_h5_open_requested", lambda *args: requests.append(args)
+            )
+
+            win.open_h5_files(
+                h5files=[f"{src_path},sine"], import_all=False, reset_all=False
+            )
+            assert [obj.title for obj in win.object_store.signals] == ["sine"]
+
+            win.open_h5_files(h5files=[src_path], import_all=True, reset_all=True)
+            assert win.object_store.count == 3
+            assert len(requests) == 2
+
+            with pytest.raises(ValueError):
+                win.open_h5_files(
+                    h5files=[f"{src_path},sine", f"{src_path},sine,extra"],
+                    import_all=False,
+                    reset_all=False,
+                )
+            assert len(requests) == 2
+            assert win.object_store.count == 3
+
+            win.set_modified(False)
+            win.close()
+
+
 def show_derivated_app() -> None:
     """Show the derived application window."""
     with qth.sigimax_app_context(exec_loop=True):
@@ -628,4 +669,5 @@ if __name__ == "__main__":
     test_derived_app_h5_workspace()
     test_derived_app_import_and_save()
     test_import_specific_dataset_and_save()
+    test_open_file_name_with_comma(pytest.MonkeyPatch())
     # show_derivated_app()

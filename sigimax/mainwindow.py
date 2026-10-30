@@ -55,6 +55,7 @@ from sigimax.config import (
 )
 from sigimax.env import execenv
 from sigimax.h5 import H5Importer
+from sigimax.h5.utils import split_h5_file_selector
 from sigimax.utils import qthelpers as qth
 from sigimax.utils.qthelpers import (
     add_corner_menu,
@@ -901,8 +902,8 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         """Notify that an HDF5 open/import is about to be performed.
 
         Called by :meth:`open_h5_files` once all arguments are resolved and
-        before any file is read. Override in derived applications to react to
-        the operation (e.g. record it in an application history).
+        checked, and before any file is read. Override in derived applications to
+        react to the operation (e.g. record it in an application history).
 
         Args:
             h5files: Resolved HDF5 filenames (optionally with dataset name,
@@ -944,9 +945,13 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         """Open/import HDF5 files.
 
         Args:
-            h5files: HDF5 filenames (optionally with dataset name, separated by ",")
+            h5files: HDF5 filenames (optionally with dataset name, separated by ",",
+             see :func:`sigimax.h5.utils.split_h5_file_selector`)
             import_all: Import all datasets from HDF5 files
             reset_all: Reset all application data before importing
+
+        Raises:
+            ValueError: if a selector of ``h5files`` is invalid (nothing is opened)
         """
         if not self.confirm_memory_state():
             return
@@ -985,16 +990,12 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
                 )
         if not h5files:
             return
-        self._on_h5_open_requested(h5files, import_all, reset_all)
         filenames, dsetnames = [], []
-        for fname_with_dset in h5files:
-            if "," in fname_with_dset:
-                filename, dsetname = fname_with_dset.split(",")
-                dsetnames.append(dsetname)
-            else:
-                filename = fname_with_dset
-                dsetnames.append(None)
+        for selector in h5files:
+            filename, dsetname = split_h5_file_selector(selector)
             filenames.append(filename)
+            dsetnames.append(dsetname)
+        self._on_h5_open_requested(h5files, import_all, reset_all)
         if import_all is None and all(dsetname is None for dsetname in dsetnames):
             self.browse_h5_files(filenames, reset_all)
             return

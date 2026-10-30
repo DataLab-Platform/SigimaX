@@ -8,7 +8,8 @@ Covers:
 - h5/common.py: data_to_xy with various shaped arrays
 - h5/generic.py: safe_decode_bytes, format_text_data
 - h5/utils.py: fix_ldata, fix_ndata, is_single_str_array, is_supported_num_dtype,
-  is_supported_str_dtype, process_scalar_value, process_label, process_xy_values
+  is_supported_str_dtype, process_scalar_value, process_label, process_xy_values,
+  split_h5_file_selector
 """
 
 from __future__ import annotations
@@ -28,6 +29,7 @@ from sigimax.h5.utils import (
     process_label,
     process_scalar_value,
     process_xy_values,
+    split_h5_file_selector,
 )
 
 pytestmark = pytest.mark.unit
@@ -111,6 +113,44 @@ class TestDataToXy:
         data = np.ones((5, 5, 5))
         with pytest.raises((ValueError, IndexError)):
             data_to_xy(data)
+
+
+# ======================== split_h5_file_selector =============================
+
+
+class TestSplitH5FileSelector:
+    """Tests for split_h5_file_selector."""
+
+    def test_file_name(self):
+        """A selector without comma is a file name."""
+        assert split_h5_file_selector("data.h5") == ("data.h5", None)
+
+    def test_dataset_selector(self):
+        """A comma separates the file name from the dataset name."""
+        assert split_h5_file_selector("data.h5,/entry/counts") == (
+            "data.h5",
+            "/entry/counts",
+        )
+
+    def test_existing_file_with_comma(self, tmp_path):
+        """The name of an existing file may contain commas."""
+        path = tmp_path / "scan,run1.h5"
+        path.touch()
+        path = str(path)
+        assert split_h5_file_selector(path) == (path, None)
+        assert split_h5_file_selector(f"{path},/entry/counts") == (
+            path,
+            "/entry/counts",
+        )
+
+    def test_extra_comma_raises(self, tmp_path):
+        """Extra commas are rejected unless they belong to an existing file name."""
+        with pytest.raises(ValueError):
+            split_h5_file_selector("data.h5,/entry/counts,extra")
+        path = tmp_path / "data.h5"
+        path.touch()
+        with pytest.raises(ValueError):
+            split_h5_file_selector(f"{path},/entry/counts,extra")
 
 
 # ======================== safe_decode_bytes ==================================
