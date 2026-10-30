@@ -174,7 +174,7 @@ class FrameNode(common.BaseNode):
     """
 
     def __init__(self, parent: NDViewMixin, selection: NDSelection) -> None:
-        super().__init__(parent.h5file, parent.dset.name)
+        super().__init__(parent.h5file, parent.h5path)
         self.parent = parent
         self.selection = selection
         self.metadata = dict(parent.metadata)

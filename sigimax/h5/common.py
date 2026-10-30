@@ -71,12 +71,20 @@ def to_signal_data(data: np.ndarray) -> np.ndarray:
 
 
 class BaseNode(metaclass=abc.ABCMeta):
-    """Object representing a HDF5 node"""
+    """Object representing a HDF5 node
+
+    Args:
+        h5file: HDF5 file
+        dname: path of the node in *h5file*
+    """
 
     IS_ARRAY = False
 
     def __init__(self, h5file, dname):
         self.h5file = h5file
+        #: Path of the node in the opened file: an object reached through an
+        #: external link has another path (``dset.name``) in its own file
+        self.h5path = "/" + to_string(dname).strip("/")
         self.dset = h5file[dname]
         self.metadata = {}
         self.__obj = None
@@ -87,12 +95,12 @@ class BaseNode(metaclass=abc.ABCMeta):
     @property
     def id(self):
         """Return node id"""
-        return self.dset.name
+        return self.h5path
 
     @property
     def name(self):
         """Return node name, constructed from dataset name"""
-        return to_string(self.dset.name).split("/")[-1]
+        return self.h5path.split("/")[-1]
 
     @property
     def data(self):
@@ -342,9 +350,16 @@ class NodeFactory:
                 print(f"Warning: Skipping extra nodes of '{node.id}': {exc}")
         return children
 
-    def get(self, dset):
-        """Return node class that matches h5 dataset"""
-        for name in to_string(dset.name).split("/"):
+    def get(self, dset, path: str | None = None):
+        """Return node class that matches h5 dataset
+
+        Args:
+            dset: HDF5 dataset or group
+            path: path of *dset* in the opened file (default: ``dset.name``, its
+             path in its own file, which differs for an object reached through
+             an external link)
+        """
+        for name in to_string(dset.name if path is None else path).split("/"):
             if name in self.__ignored_datasets:
                 return None
         for cls in self.__thirdparty_classes + self.__generic_classes:
@@ -396,6 +411,10 @@ class GroupNode(BaseNode):
         """
         ancestors = (*ancestors, self.dset)
         for name in self.dset:
+            # Path in the opened file, whatever the links leading to the child
+            # (the path of an object reached through an external link is that
+            # of its own file, where it may even designate another object)
+            path = f"{self.h5path.rstrip('/')}/{name}"
             dset = self.dset.get(name)
             if dset is None:
                 # Broken link: soft link to a missing object, or external link to
@@ -407,7 +426,6 @@ class GroupNode(BaseNode):
                     reason = f"broken soft link to '{link.path}'"
                 else:
                     reason = "object cannot be opened"
-                path = f"{self.dset.name.rstrip('/')}/{name}"
                 print(f"Warning: Skipping '{path}': {reason}")
                 continue
             if isinstance(dset, h5py.Group):
@@ -415,16 +433,15 @@ class GroupNode(BaseNode):
                 # through a hard, soft or external link would be collected forever
                 looped = next((group for group in ancestors if group == dset), None)
                 if looped is not None:
-                    path = f"{self.dset.name.rstrip('/')}/{name}"
                     print(
                         f"Warning: Skipping '{path}': link back to its parent group "
                         f"'{looped.name}'"
                     )
                     continue
             try:
-                child_cls = NODE_FACTORY.get(dset)
+                child_cls = NODE_FACTORY.get(dset, path)
                 if child_cls is not None:
-                    child = child_cls(self.h5file, dset.name)
+                    child = child_cls(self.h5file, path)
                     node_dict[child.id] = child
                     self.children.append(child)
                     if isinstance(child, GroupNode):
@@ -432,7 +449,7 @@ class GroupNode(BaseNode):
                     child.collect_attributes()
             except (UnicodeDecodeError, TypeError, ValueError, KeyError) as exc:
                 # Skip datasets that can't be processed due to various issues
-                print(f"Warning: Skipping dataset '{dset.name}' due to error: {exc}")
+                print(f"Warning: Skipping dataset '{path}' due to error: {exc}")
                 continue
         for child in NODE_FACTORY.get_extra_children(self):
             if child.id in node_dict:

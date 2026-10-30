@@ -627,7 +627,7 @@ class GenericNDArrayNode(BaseGenericNode, NDViewMixin):
             source = make_experimental_source(
                 "hdf5",
                 self.h5file.filename,
-                entry=self.dset.name,
+                entry=self.h5path,
                 selection={"view": selection.as_dict()},
             )
             set_experimental_source(obj, source)
