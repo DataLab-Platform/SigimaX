@@ -599,14 +599,19 @@ def default_nxdata_path(h5file: h5py.File) -> str | None:
         Group path, or None if the file does not designate an ``NXdata`` group
     """
     group: h5py.Group = h5file
+    path = "/"
     for _level in range(8):
         if "default" not in group.attrs:
             return None
-        child = group.get(_text(group.attrs["default"]).strip())
+        name = _text(group.attrs["default"]).strip()
+        child = group.get(name)
         if not isinstance(child, h5py.Group):
             return None
+        # Path in the file, also when the group is reached through an external
+        # link (``child.name`` is then its path in its own file)
+        path = "/" + (name if name.startswith("/") else f"{path}/{name}").strip("/")
         if _is_nxdata(child):
-            return child.name
+            return path
         group = child
     return None
 
@@ -733,7 +738,7 @@ class NXdataNode(common.GroupNode, NDViewMixin):
         return make_experimental_source(
             self.SOURCE_KIND,
             self.h5file.filename,
-            entry=desc.path,
+            entry=self.h5path,
             selection=chosen,
             timestamps=timestamps or None,
             conversions=conversions or None,
@@ -954,7 +959,7 @@ class AuxiliarySignalNode(NXdataNode):
     @property
     def id(self):
         """Return node id, distinct from the HDF5 paths of the file"""
-        return f"{self.dset.name.rstrip('/')}::{self.nxdata.signal}"
+        return f"{self.h5path.rstrip('/')}::{self.nxdata.signal}"
 
     @property
     def name(self):
@@ -970,7 +975,7 @@ def _auxiliary_children(node: common.GroupNode) -> list[AuxiliarySignalNode]:
     if type(node) is not NXdataNode:  # pylint: disable=unidiomatic-typecheck
         return []
     return [
-        AuxiliarySignalNode(node.h5file, node.dset.name, desc)
+        AuxiliarySignalNode(node.h5file, node.h5path, desc)
         for desc in describe_auxiliary_signals(node.dset, node.nxdata)
     ]
 

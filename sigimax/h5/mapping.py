@@ -442,7 +442,7 @@ class MappedDataNode(nexus.NXdataNode):
     @property
     def id(self):
         """Return node id, distinct from the HDF5 paths of the file"""
-        return f"{self.dset.name.rstrip('/')}::{self.mapping.name}/{self.object_name}"
+        return f"{self.h5path.rstrip('/')}::{self.mapping.name}/{self.object_name}"
 
     @property
     def name(self):
@@ -460,7 +460,7 @@ def _mapped_children(node: common.GroupNode) -> list[MappedDataNode]:
     if not _MAPPINGS or not isinstance(node.dset, h5py.Group):
         return []
     return [
-        MappedDataNode(node.h5file, node.dset.name, mapping, name, desc)
+        MappedDataNode(node.h5file, node.h5path, mapping, name, desc)
         for mapping in list(_MAPPINGS.values())
         for name, desc in describe_mapping(mapping, node.dset)
     ]
