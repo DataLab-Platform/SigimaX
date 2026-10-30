@@ -1,9 +1,5 @@
 # Version 1.1.0 #
 
-## Unreleased ##
-
-* Python 3.10 or later is now required. Python 3.9 users must keep an earlier compatible release.
-
 ## SigimaX Version 1.1.0 ##
 
 ### PlotPy adapters ###
@@ -30,6 +26,7 @@
 * Automatic curve styles are no longer stored in signal metadata: only a color or a line style chosen by the user is stored, and then always restored, whatever its value. `CurveStyles.is_legacy_automatic` recognizes the colors and line styles that earlier versions stored from their automatic style cycle, so that applications may convert the data saved by these versions when loading them.
 * Making a plot item from an existing one (`make_item(update_from=...)`) keeps its style instead of using the next style of the cycle, so that dialogs showing a signal no longer shift the styles of the next curves.
 * New `CurveStyles` methods: `style_at` returns the automatic style at a given position, `set_automatic_style`, `get_automatic_style`, `has_automatic_style` and `restore_automatic_style` manage the automatic style of a curve, and `is_legacy_automatic` recognizes the styles stored by earlier versions.
+* Like automatic styles, the configured line width of curves (`sig_linewidth` option) is no longer stored in signal metadata: only a line width chosen by the user is stored (`LINE_WIDTH_KEY` entry). Once stored, the line width of every curve was restored instead of the configured one, so that curves made from saved data ignored changes of this option, and thick lines were no longer drawn with a width of 1.0 for curves with more points than the `sig_linewidth_perfs_threshold` option, which slowed down their display. A line width chosen by the user is also drawn with a width of 1.0 for such curves, and drawn again once the curve has fewer points. `apply_line_width` accepts the line width to apply, `clamp_line_width` returns the line width drawn for a curve, and `chosen_line_width` the line width to store.
 
 ### Main window ###
 
@@ -48,6 +45,11 @@
 
 * `block_signals` now restores the previous signal-blocking state of the widget and of its children instead of unblocking them unconditionally: nested blocking contexts and widgets already blocked by the caller keep their state.
 * `sigimax_app_context` no longer schedules the unattended/screenshot close timer when the Qt event loop is not executed (`exec_loop=False`): the pending timer previously closed unrelated top-level widgets created later, such as the window of a subsequent test.
+
+### Dialogs ###
+
+* The connection dialog (`ConnectionDialog`) now reports every error raised while connecting (timeout, unknown host...): only a refused connection was reported, and other errors left the dialog waiting until cancelled, or aborted the application with PyQt5's default exception hook.
+* Warning and error message boxes (`WarningErrorMessageBox`, `show_warning_error`) can now be shown without parent widget, titled with the application name: they raised an `AttributeError` instead of showing the message.
 
 ### Curve fitting dialogs ###
 
@@ -74,10 +76,15 @@
 * Files containing broken links (soft links to a missing object, or external links to a missing file, as in synchrotron master files whose detector files are not available) can now be opened: the broken links are skipped with a warning in the console, instead of preventing the whole file from being browsed or imported.
 * Files containing a link back to a parent group (a group linked into itself or into one of its subgroups) can now be opened: such links are skipped with a warning in the console, instead of raising a `RecursionError`. Other aliases of a group or dataset are still shown at each of their paths, and the HDF5 file is now closed when its tree cannot be built.
 * Datasets and groups reached through an external link (as the detector data of synchrotron master files, when the detector files are available) are now listed and imported at their path in the opened file. They were looked up at their path in the file holding them: they were then skipped with a warning in the console, or the data of another dataset of the opened file, found at that path, was imported instead. Node ids, the `HDF5Dataset` metadata and the `entry` of the `experimental_source` of imported objects are paths in the opened file, given by the new `BaseNode.h5path` attribute (`dset.name` is the path of the object in its own file).
+* Datasets holding a single row of values (e.g. a single scan stored as a 1 × N array) are now imported and previewed as signals: they were classified as signals, but skipped without message when imported.
+* HDF5 files whose name contains a comma can now be opened with `open_h5_files`: the comma was taken for the separator between a file name and the name of a dataset to import (`"file,dataset"`). A selector naming an existing file is now a file name, and the file name of a dataset selector may contain commas when it names an existing file (`split_h5_file_selector`). Selectors are now checked before `_on_h5_open_requested` is called, so that an invalid request is no longer notified (e.g. recorded in an application history) before failing.
 
 See the [HDF5 guide](../user_guide/hdf5_workspace.rst) for a complete JSON mapping and registration example, NeXus import limits and multidimensional selection examples.
 
 ### Requirements ###
 
+* Python 3.10 or later is now required. Python 3.9 users must keep an earlier compatible release.
+* guidata 3.17.0 or later is required: the splash screen and the watermark of empty plots use its `get_pixmap` function to show high-resolution images on high-DPI displays.
+* PlotPy 2.12.0 or later is required: auto downsampling of signals relies on its min/max downsampling, which keeps narrow peaks and the envelope of noisy signals.
 * Sigima 1.4.0 or later is required: the HDF5 import modules use its experimental-source API, integer conversions use its precision-preserving converter, and the tooltips of rectangular ROIs use its pixel-range conversions.
 * hdf5plugin 4.0 or later is required, for the HDF5 compression filters of detector data.
