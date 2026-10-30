@@ -197,6 +197,16 @@ def test_restored_dock_width() -> None:
             window.close()
 
 
+@pytest.mark.parametrize("state", ["abc", "not base64!"])
+def test_invalid_window_state(state: str) -> None:
+    """Test that an invalid saved window state is ignored and cleared."""
+    with qth.sigimax_app_context(exec_loop=False):
+        with Conf.window_state.context(state):
+            window = SGMXMainWindow(console=False)
+            assert Conf.window_state.get() == ""
+            window.close()
+
+
 def test_failed_save_cancels_close(monkeypatch: pytest.MonkeyPatch) -> None:
     """Test that a failed Save choice preserves the modified workspace."""
     with qth.sigimax_app_context(exec_loop=False):

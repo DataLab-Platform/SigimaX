@@ -319,12 +319,21 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
                 self.move(QC.QPoint(posx, posy))
 
     def _restore_state(self) -> None:
-        """Restore main window state from configuration"""
-        state = get_conf().window_state.get()
+        """Restore main window state from configuration
+
+        An invalid saved state (e.g. in a configuration file edited by hand) is
+        ignored and cleared, so that the window starts with its default layout.
+        """
+        conf = get_conf()
+        state = conf.window_state.get()
         if state:
+            try:
+                state = base64.b64decode(state, validate=True)
+            except ValueError:  # binascii.Error
+                conf.window_state.set("")
+                return
             # Qt 5 refits half-restored docks unless the window was laid out first
             self.layout().activate()
-            state = base64.b64decode(state)
             self.restoreState(QC.QByteArray(state), self.WINDOW_STATE_VERSION)
             for widget in self.children():
                 if isinstance(widget, QW.QDockWidget):
