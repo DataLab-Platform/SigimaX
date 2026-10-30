@@ -97,6 +97,7 @@ import json
 import os
 import os.path as osp
 import sys
+import warnings
 from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
@@ -925,7 +926,9 @@ class AppOptionsContainer(OptionsContainer):
         """Set option values from a JSON-compatible dictionary.
 
         Unknown keys are silently ignored, making this safe for loading
-        options from a newer or older version of the application.
+        options from a newer or older version of the application. Invalid values
+        are ignored with a :class:`UserWarning`, which applications may show or
+        log (e.g. with :func:`logging.captureWarnings`).
 
         Args:
             values: A dictionary with option names as keys and their new values.
@@ -937,9 +940,10 @@ class AppOptionsContainer(OptionsContainer):
                     try:
                         opt.from_storage(value)
                     except (ValueError, TypeError) as exc:
-                        print(
-                            f"[sigimax] Warning: invalid value for "
-                            f"option '{name}': {exc}"
+                        warnings.warn(
+                            f"Invalid value for option '{name}' (ignored): {exc}",
+                            UserWarning,
+                            stacklevel=2,
                         )
 
     # -- JSON file persistence --
@@ -948,7 +952,8 @@ class AppOptionsContainer(OptionsContainer):
         """Return the default path for the JSON configuration file.
 
         Uses the same config directory as the INI-based system for
-        backward compatibility.
+        backward compatibility. If this directory cannot be determined, the
+        home directory is used, with a :class:`UserWarning`.
 
         Returns:
             Path to the default JSON configuration file.
@@ -956,9 +961,13 @@ class AppOptionsContainer(OptionsContainer):
         # Use guidata's config directory resolution
         try:
             config_dir = Path(_conf_module.Configuration.get_path(""))
-        except Exception:  # pylint: disable=broad-except
-            # Fallback to user home directory
+        except Exception as exc:  # pylint: disable=broad-except
             config_dir = Path.home() / f".{self.APP_NAME}"
+            warnings.warn(
+                f"Configuration directory unavailable ({exc}): using {config_dir}",
+                UserWarning,
+                stacklevel=2,
+            )
         config_dir.mkdir(parents=True, exist_ok=True)
         return config_dir / "options.json"
 
@@ -977,7 +986,9 @@ class AppOptionsContainer(OptionsContainer):
         """Load options from a JSON file.
 
         Missing keys are left at their current (default) values.
-        Unknown keys are silently ignored.
+        Unknown keys are silently ignored. A file which cannot be read is
+        ignored with a :class:`UserWarning` (see :meth:`from_dict` for invalid
+        values).
 
         Args:
             path: Path to load from. If None, uses the default config path.
@@ -988,9 +999,15 @@ class AppOptionsContainer(OptionsContainer):
         try:
             with open(filepath, encoding="utf-8") as f:
                 values = json.load(f)
+            if not isinstance(values, dict):
+                raise ValueError(f"expected a JSON object, got {type(values).__name__}")
             self.from_dict(values)
         except Exception as exc:  # pylint: disable=broad-except
-            print(f"[sigimax] Warning: failed to load options from {filepath}: {exc}")
+            warnings.warn(
+                f"Failed to load options from {filepath} (ignored): {exc}",
+                UserWarning,
+                stacklevel=2,
+            )
 
     # -- Introspection --
 

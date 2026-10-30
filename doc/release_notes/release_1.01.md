@@ -15,6 +15,7 @@
   state are preserved across PlotPy editing round trips. Application-specific
   opaque annotation entries continue to coexist with graphical annotations.
 * The tooltip of a rectangular ROI defined in pixel indices now shows the pixels selected by the ROI, i.e. those whose centers lie inside the rectangle: the corners of the rectangle were rounded to the nearest pixel indices, which could show a selection shifted by one pixel once the rectangle had been moved.
+* ROIs edited in a ROI editor now keep their coordinate system and their inverse logic (closes [Issue #51](https://github.com/DataLab-Platform/SigimaX/issues/51)): ROIs defined in pixel indices were converted to physical coordinates, and the inverse logic of image ROIs was lost, even when set in the coordinates dialog of the editor. A plot item made from a ROI (`to_plot_item`) gives back this ROI if it was not moved (`from_plot_item`, `plotitem_to_singleroi`); once moved, coordinates in indices are converted with the object, following the ROI rules (e.g. the pixels whose centers lie inside a rectangle).
 * Auto downsampling of signals now starts as soon as a signal has more points than the maximum number of points set by the `sig_autodownsampling_maxpoints` option, and draws at most this number of points (closes [Issue #30](https://github.com/DataLab-Platform/SigimaX/issues/30)). It only started above 5 times this number (500 000 points with the default value of 100 000), so that signals of a few hundred thousand points were drawn in full and slowed down the display, and it could draw up to 20 % more points than the maximum. A change of this option is now also applied to curves which were already downsampled.
 
 ### Curve styles ###
@@ -37,6 +38,7 @@
 * An invalid saved window state (`window_state` option, e.g. in a configuration file edited by hand) is now ignored, and the window starts with its default layout: the main window could not be created (closes [Issue #49](https://github.com/DataLab-Platform/SigimaX/issues/49)).
 * Disabling the `show_console_on_error` option now stops showing the console on errors: with PyQt5, when the option was enabled at startup, the console was still shown on errors until the application was restarted (closes [Issue #47](https://github.com/DataLab-Platform/SigimaX/issues/47)).
 * Log file options (`traceback_log_path`, `faulthandler_log_path`) which are not a bare file name (e.g. a full path in a configuration file edited by hand) are now ignored when loaded, so that the default log files are used: the application could not start (closes [Issue #48](https://github.com/DataLab-Platform/SigimaX/issues/48)).
+* Invalid option values, option files that cannot be read and the fallback to the home directory when the configuration directory cannot be determined are now reported with a `UserWarning`, which applications may show or log (e.g. with `logging.captureWarnings`): they were only printed to the standard output, or not reported (closes [Issue #50](https://github.com/DataLab-Platform/SigimaX/issues/50)).
 
 ### High-DPI displays ###
 
@@ -54,6 +56,7 @@
 ### Dialogs ###
 
 * The connection dialog (`ConnectionDialog`) now reports every error raised while connecting (timeout, unknown host...): only a refused connection was reported, and other errors left the dialog waiting until cancelled, or aborted the application with PyQt5's default exception hook.
+* Cancelling the connection dialog while connecting no longer aborts the application: the dialog closes at once, and the connection attempt ends in the background, its result being ignored (closes [Issue #40](https://github.com/DataLab-Platform/SigimaX/issues/40)).
 * Warning and error message boxes (`WarningErrorMessageBox`, `show_warning_error`) can now be shown without parent widget, titled with the application name: they raised an `AttributeError` instead of showing the message.
 * The file and log viewers now read UTF-16 and UTF-32 files with a byte order mark, and Windows (cp1252) files, with their encoding (`read_text_file`): such files were shown with wrong characters, as they were decoded as latin1 (closes [Issue #43](https://github.com/DataLab-Platform/SigimaX/issues/43)).
 

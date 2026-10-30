@@ -7,7 +7,8 @@ Tests for config.py option field classes and helpers
 Covers:
 - TupleOptionField: set/get, list→tuple conversion, validation
 - FontOptionField: set/get, validation
-- AppOptionsContainer: to_dict/from_dict roundtrip, reset_to_defaults
+- AppOptionsContainer: to_dict/from_dict roundtrip, reset_to_defaults, warnings
+  for invalid values and configuration files
 - get_old_log_fname, is_frozen, get_mod_source_dir
 - SigimaXOptions.list_options completeness
 """
@@ -21,6 +22,7 @@ import tempfile
 import guidata.dataset as gds
 import pytest
 
+from sigimax import config as config_module
 from sigimax.config import (
     AppOptionsContainer,
     ConfigPathOptionField,
@@ -403,12 +405,40 @@ class TestAppOptionsContainer:
         assert not c.changed_options
         assert not c.is_option_initialized("my_str")
 
-    def test_from_dict_invalid_value_warning(self, capsys):
-        """Providing an invalid value in from_dict should produce a warning."""
+    def test_from_dict_invalid_value_warning(self):
+        """An invalid value in from_dict is ignored with a warning."""
         c = _MiniContainer()
-        c.from_dict({"my_enum": "invalid_choice"})
-        captured = capsys.readouterr()
-        assert "Warning" in captured.out or "invalid" in captured.out.lower()
+        with pytest.warns(UserWarning, match="Invalid value for option 'my_enum'"):
+            c.from_dict({"my_enum": "invalid_choice", "my_str": "valid"})
+        assert c.my_enum.get() == "a"
+        assert c.my_str.get() == "valid"
+
+    @pytest.mark.parametrize("contents", ["{not json", "[1, 2]"])
+    def test_load_invalid_file_warning(self, tmp_path, contents: str):
+        """A configuration file which cannot be read is ignored with a warning."""
+        path = tmp_path / "options.json"
+        path.write_text(contents, encoding="utf-8")
+        c = _MiniContainer()
+        with pytest.warns(UserWarning, match="Failed to load options from"):
+            c.load(path)
+        assert c.my_str.get() == "hello"
+
+    def test_default_config_path_fallback_warning(self, tmp_path, monkeypatch):
+        """The home directory is used, with a warning, when the configuration
+        directory cannot be determined."""
+
+        def failing_get_path(_basename: str) -> str:
+            raise RuntimeError("no configuration directory")
+
+        # pylint: disable=protected-access
+        monkeypatch.setattr(
+            config_module._conf_module.Configuration, "get_path", failing_get_path
+        )
+        monkeypatch.setattr(config_module.Path, "home", lambda: tmp_path)
+        c = _MiniContainer()
+        with pytest.warns(UserWarning, match="no configuration directory"):
+            path = c._get_default_config_path()
+        assert path == tmp_path / ".MiniTest" / "options.json"
 
     def test_list_options(self):
         """list_options should return the names of all defined options."""
@@ -470,7 +500,8 @@ class TestSigimaXOptions:
         that the log files can still be set up"""
         opts = SigimaXOptions()
         default = opts.traceback_log_path.to_storage()
-        opts.from_dict({"traceback_log_path": osp.join("C:", "logs", "tb.log")})
+        with pytest.warns(UserWarning, match="traceback_log_path"):
+            opts.from_dict({"traceback_log_path": osp.join("C:", "logs", "tb.log")})
         assert opts.traceback_log_path.to_storage() == default
         assert osp.basename(opts.traceback_log_path.get()) == default
 

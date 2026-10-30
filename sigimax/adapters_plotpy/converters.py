@@ -42,9 +42,14 @@ def plotitem_to_singleroi(
 ) -> SegmentROI | RectangularROI | CircularROI | PolygonalROI:
     """Create a single ROI from the given PlotPy item to integrate with SigimaX
 
+    An item made from a single ROI gives back its coordinate system (physical
+    coordinates or indices) and its other attributes (e.g. inverse logic), see
+    :meth:`~sigimax.adapters_plotpy.roi.base.BaseSingleROIPlotPyAdapter.from_plot_item`.
+
     Args:
         plot_item: The PlotPy item for which to create a single ROI
-        obj: Optional signal or image object for coordinate rounding
+        obj: Optional signal or image object, for coordinate rounding and for the
+         conversion of moved ROIs to indices
 
     Returns:
         A single ROI instance

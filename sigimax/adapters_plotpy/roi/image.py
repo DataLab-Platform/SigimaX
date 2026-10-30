@@ -37,6 +37,8 @@ class PolygonalROIPlotPyAdapter(
         single_roi: single ROI object
     """
 
+    ROI_CLASS = PolygonalROI
+
     def to_plot_item(self, obj: ImageObj) -> AnnotatedPolygon:
         """Make and return the annnotated polygon associated to ROI
 
@@ -62,24 +64,17 @@ class PolygonalROIPlotPyAdapter(
         item.annotationparam.title = self.single_roi.title
         item.annotationparam.update_item(item)
         item.set_style("plot", "shape/drag")
-        return item
+        return self._remember_item(item)
 
     @classmethod
-    def from_plot_item(
-        cls, item: AnnotatedPolygon, obj: ImageObj | None = None
-    ) -> PolygonalROI:
-        """Create ROI from plot item
+    def _item_coords(cls, item: AnnotatedPolygon) -> list[float]:
+        """Return the physical coordinates of the polygon drawn by a plot item"""
+        return item.get_points().flatten().tolist()
 
-        Args:
-            item: plot item
-            obj: image object for coordinate rounding (optional)
-        """
-        coords = item.get_points().flatten().tolist()
-        # Round coordinates to appropriate precision
-        if obj is not None:
-            coords = round_image_coords(obj, coords)
-        title = str(item.title().text())
-        return PolygonalROI(coords, False, title)
+    @classmethod
+    def _round_coords(cls, obj: ImageObj, coords: list[float]) -> list[float]:
+        """Round polygon coordinates to a precision suited to the image"""
+        return round_image_coords(obj, coords)
 
 
 class RectangularROIPlotPyAdapter(
@@ -90,6 +85,8 @@ class RectangularROIPlotPyAdapter(
     Args:
         single_roi: single ROI object
     """
+
+    ROI_CLASS = RectangularROI
 
     def to_plot_item(self, obj: ImageObj) -> AnnotatedRectangle:
         """Make and return the annnotated rectangle associated to ROI
@@ -122,25 +119,18 @@ class RectangularROIPlotPyAdapter(
         param.anchor = "BL"
         param.xc, param.yc = 5, -5
         param.update_item(item.label)
-        return item
+        return self._remember_item(item)
 
     @classmethod
-    def from_plot_item(
-        cls, item: AnnotatedRectangle, obj: ImageObj | None = None
-    ) -> RectangularROI:
-        """Create ROI from plot item
+    def _item_coords(cls, item: AnnotatedRectangle) -> list[float]:
+        """Return the physical coordinates (x0, y0, Δx, Δy) of the rectangle drawn
+        by a plot item"""
+        return list(RectangularROI.rect_to_coords(*item.get_rect()))
 
-        Args:
-            item: plot item
-            obj: image object for coordinate rounding (optional)
-        """
-        rect = item.get_rect()
-        coords = RectangularROI.rect_to_coords(*rect)
-        # Round coordinates to appropriate precision
-        if obj is not None:
-            coords = round_image_coords(obj, coords)
-        title = str(item.title().text())
-        return RectangularROI(coords, False, title)
+    @classmethod
+    def _round_coords(cls, obj: ImageObj, coords: list[float]) -> list[float]:
+        """Round rectangle coordinates to a precision suited to the image"""
+        return round_image_coords(obj, coords)
 
 
 class CircularROIPlotPyAdapter(
@@ -151,6 +141,8 @@ class CircularROIPlotPyAdapter(
     Args:
         single_roi: single ROI object
     """
+
+    ROI_CLASS = CircularROI
 
     def to_plot_item(self, obj: ImageObj) -> AnnotatedCircle:
         """Make and return the annnotated circle associated to ROI
@@ -179,32 +171,22 @@ class CircularROIPlotPyAdapter(
         item.annotationparam.title = self.single_roi.title
         item.annotationparam.update_item(item)
         item.set_style("plot", "shape/drag")
-        return item
+        return self._remember_item(item)
 
     @classmethod
-    def from_plot_item(
-        cls, item: AnnotatedCircle, obj: ImageObj | None = None
-    ) -> CircularROI:
-        """Create ROI from plot item
+    def _item_coords(cls, item: AnnotatedCircle) -> list[float]:
+        """Return the physical coordinates (xc, yc, r) of the circle drawn by a
+        plot item"""
+        return list(CircularROI.rect_to_coords(*item.get_rect()))
 
-        Args:
-            item: plot item
-            obj: image object for coordinate rounding (optional)
-        """
-        rect = item.get_rect()
-        coords = CircularROI.rect_to_coords(*rect)
-        # Round coordinates to appropriate precision
-        # For circular ROI: [xc, yc, r] - round center (xc, yc) as pair, then radius
-        if obj is not None:
-            xc, yc, r = coords
-            # Round center coordinates
-            xc_rounded, yc_rounded = round_image_coords(obj, [xc, yc])
-            # Round radius using average of X and Y precision
-            # For radius, we use the X precision (could also average X and Y)
-            r_rounded = round_image_coords(obj, [r, 0])[0]
-            coords = [xc_rounded, yc_rounded, r_rounded]
-        title = str(item.title().text())
-        return CircularROI(coords, False, title)
+    @classmethod
+    def _round_coords(cls, obj: ImageObj, coords: list[float]) -> list[float]:
+        """Round circle coordinates to a precision suited to the image: the center
+        as a point, the radius with the X precision"""
+        xc, yc, r = coords
+        xc_rounded, yc_rounded = round_image_coords(obj, [xc, yc])
+        r_rounded = round_image_coords(obj, [r, 0])[0]
+        return [xc_rounded, yc_rounded, r_rounded]
 
 
 class ImageROIPlotPyAdapter(BaseROIPlotPyAdapter[ImageROI]):
