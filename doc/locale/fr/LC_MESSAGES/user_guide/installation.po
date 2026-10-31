@@ -43,7 +43,7 @@ msgid "Conda package"
 msgstr "Paquet Conda"
 
 msgid ":octicon:`info;1em;sd-text-info` :bdg-info-line:`GNU/Linux` :bdg-info-line:`Windows` :bdg-info-line:`macOS`"
-msgstr ":octicon:`info;1em;sd-text-info` :bdg-info-line:`GNU/Linux` :bdg-info-line:`Windows` :bdg-info-line:`macOS`"
+msgstr ""
 
 msgid "To install ``sigimax`` package from the `conda-forge` channel (https://anaconda.org/conda-forge/sigimax), run the following command:"
 msgstr "Pour installer le paquet ``sigimax`` depuis le canal ``conda-forge`` (https://anaconda.org/conda-forge/sigimax), exécutez la commande suivante :"

@@ -19,7 +19,7 @@ msgid "SigimaX Version 1.0.2"
 msgstr "SigimaX Version 1.0.2"
 
 msgid "Changes"
-msgstr ""
+msgstr "Modifications"
 
 msgid "Reworked the release automation: documentation is now built and hosted by Read the Docs (dedicated GitHub Pages workflow removed), and the publication workflow relies on PyPI Trusted Publishing, gated on the PyQt5 and PyQt6 test workflows"
 msgstr "Refonte de l'automatisation des versions : la documentation est désormais construite et hébergée par Read the Docs (le workflow GitHub Pages dédié a été supprimé), et le workflow de publication repose sur PyPI Trusted Publishing, conditionné par les workflows de test PyQt5 et PyQt6."
