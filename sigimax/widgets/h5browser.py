@@ -1000,7 +1000,7 @@ class H5FileSelector(QW.QWidget):
         self.layout().addWidget(self.combo)
         self.btn_add = create_toolbutton(
             self,
-            icon=get_std_icon("DirOpenIcon"),
+            icon=get_icon("guidata:fileopen.svg"),
             text=_("Open") + " ...",
             autoraise=False,
             triggered=lambda _checked=False: self.add_file(),

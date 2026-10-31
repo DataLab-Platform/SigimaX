@@ -48,6 +48,7 @@
 
 * The HDF5 browser icons of signals, images, arrays and scalars, and the icon of the memory status widget, are now provided by SigimaX: they were provided by DataLab only, so that other applications showed "not found" icons instead.
 * Since the icons of guidata and PlotPy are SVG files, some of them share their names with SigimaX icons (`apply.svg`, `image.svg`): SigimaX now designates these icons explicitly (e.g. `"sigimax:apply.svg"`), as supported by guidata 3.17.1, so that its widgets keep their icons (closes [Issue #54](https://github.com/DataLab-Platform/SigimaX/issues/54)).
+* The "Open..." button of the HDF5 browser is no longer blurry with a display scaling greater than 100% (e.g. 150%): it showed the standard Qt folder icon, which only exists at 16 pixels on Windows, and now shows guidata's SVG folder icon (closes [Issue #56](https://github.com/DataLab-Platform/SigimaX/issues/56)).
 
 ### Plot widgets ###
 

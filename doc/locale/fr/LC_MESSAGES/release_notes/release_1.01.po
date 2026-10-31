@@ -108,6 +108,9 @@ msgstr "Les icônes des signaux, images, tableaux et scalaires du navigateur HDF
 msgid "Since the icons of guidata and PlotPy are SVG files, some of them share their names with SigimaX icons (`apply.svg`, `image.svg`): SigimaX now designates these icons explicitly (e.g. `\"sigimax:apply.svg\"`), as supported by guidata 3.17.1, so that its widgets keep their icons (closes [Issue #54](https://github.com/DataLab-Platform/SigimaX/issues/54))."
 msgstr "Les icônes de guidata et de PlotPy étant des fichiers SVG, certaines portent le même nom que des icônes de SigimaX (`apply.svg`, `image.svg`) : SigimaX désigne désormais ces icônes explicitement (par exemple `\"sigimax:apply.svg\"`), comme le permet guidata 3.17.1, afin que ses widgets conservent leurs icônes (corrige [Issue #54](https://github.com/DataLab-Platform/SigimaX/issues/54))."
 
+msgid "The \"Open...\" button of the HDF5 browser is no longer blurry with a display scaling greater than 100% (e.g. 150%): it showed the standard Qt folder icon, which only exists at 16 pixels on Windows, and now shows guidata's SVG folder icon (closes [Issue #56](https://github.com/DataLab-Platform/SigimaX/issues/56))."
+msgstr "Le bouton « Ouvrir... » du navigateur HDF5 n'est plus flou avec une mise à l'échelle de l'affichage supérieure à 100 % (par exemple 150 %) : il affichait l'icône de dossier standard de Qt, qui n'existe qu'en 16 pixels sous Windows, et affiche désormais l'icône de dossier SVG de guidata (corrige [Issue #56](https://github.com/DataLab-Platform/SigimaX/issues/56))."
+
 msgid "Plot widgets"
 msgstr "Widgets de tracé"
 
