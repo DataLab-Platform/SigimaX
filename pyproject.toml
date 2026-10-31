@@ -105,6 +105,8 @@ filterwarnings = [
     "ignore::DeprecationWarning:pandas.*",
     "ignore::DeprecationWarning:scipy.*",
     "ignore::DeprecationWarning:skimage.*",
+    # Ambiguous image names must be designated explicitly ("module:filename")
+    "error::guidata.configtools.ImageNameConflictWarning",
 ]
 markers = [
     "validation: mark a test as a validation test (ground truth or analytical)",

@@ -67,7 +67,7 @@ class SignalDeltaXDialog(PlotDialog):
     def __setup_dialog(self) -> None:
         """Setup dialog box"""
         apply_button = QW.QPushButton(_("Apply"))
-        apply_button.setIcon(get_icon("apply.svg"))
+        apply_button.setIcon(get_icon("sigimax:apply.svg"))
         apply_button.setToolTip(_("Apply cursor position"))
         xlabel = QW.QLabel("∆X=")
         ylabel = QW.QLabel("Y=")
