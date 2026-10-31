@@ -99,6 +99,15 @@ msgstr "Écrans haute résolution"
 msgid "The splash screen and the watermark of empty plots are no longer blurry with a display scaling greater than 100% (e.g. 125%): when their image has a `@2x` high-resolution variant (e.g. `splash@2x.png` next to `splash.png`), it is used to display them at the resolution of the screen instead of upscaling the image. The fallback splash screen, shown when no image is available, is also drawn at the resolution of the screen."
 msgstr "L'écran de démarrage et le filigrane des graphiques vides ne sont plus flous avec une mise à l'échelle de l'affichage supérieure à 100 % (par exemple 125 %) : lorsque leur image dispose d'une variante haute résolution `@2x` (par exemple `splash@2x.png` à côté de `splash.png`), celle-ci est utilisée pour les afficher à la résolution de l'écran au lieu d'agrandir l'image. L'écran de démarrage de repli, affiché lorsqu'aucune image n'est disponible, est lui aussi dessiné à la résolution de l'écran."
 
+msgid "Icons"
+msgstr "Icônes"
+
+msgid "The HDF5 browser icons of signals, images, arrays and scalars, and the icon of the memory status widget, are now provided by SigimaX: they were provided by DataLab only, so that other applications showed \"not found\" icons instead."
+msgstr "Les icônes des signaux, images, tableaux et scalaires du navigateur HDF5, ainsi que l'icône du widget d'état de la mémoire, sont désormais fournies par SigimaX : elles n'étaient fournies que par DataLab, si bien que les autres applications affichaient à la place des icônes « introuvable »."
+
+msgid "Since the icons of guidata and PlotPy are SVG files, some of them share their names with SigimaX icons (`apply.svg`, `image.svg`): SigimaX now designates these icons explicitly (e.g. `\"sigimax:apply.svg\"`), as supported by guidata 3.17.1, so that its widgets keep their icons (closes [Issue #54](https://github.com/DataLab-Platform/SigimaX/issues/54))."
+msgstr "Les icônes de guidata et de PlotPy étant des fichiers SVG, certaines portent le même nom que des icônes de SigimaX (`apply.svg`, `image.svg`) : SigimaX désigne désormais ces icônes explicitement (par exemple `\"sigimax:apply.svg\"`), comme le permet guidata 3.17.1, afin que ses widgets conservent leurs icônes (corrige [Issue #54](https://github.com/DataLab-Platform/SigimaX/issues/54))."
+
 msgid "Plot widgets"
 msgstr "Widgets de tracé"
 

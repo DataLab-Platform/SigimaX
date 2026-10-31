@@ -471,7 +471,7 @@ class GenericArrayNode(BaseGenericNode):
     def icon_name(self):
         """Icon name associated to node"""
         if self.is_supported():
-            return "signal.svg" if self.__is_signal else "image.svg"
+            return "sigimax:signal.svg" if self.__is_signal else "sigimax:image.svg"
         return "h5array.svg"
 
     @property
@@ -579,7 +579,11 @@ class GenericNDArrayNode(BaseGenericNode, NDViewMixin):
     def icon_name(self):
         """Icon name associated to node"""
         if self.import_view:
-            return "image.svg" if len(self.view.displayed) == 2 else "signal.svg"
+            return (
+                "sigimax:image.svg"
+                if len(self.view.displayed) == 2
+                else "sigimax:signal.svg"
+            )
         return "h5array.svg"
 
     @property

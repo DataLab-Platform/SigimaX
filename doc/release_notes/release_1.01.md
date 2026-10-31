@@ -44,6 +44,11 @@
 
 * The splash screen and the watermark of empty plots are no longer blurry with a display scaling greater than 100% (e.g. 125%): when their image has a `@2x` high-resolution variant (e.g. `splash@2x.png` next to `splash.png`), it is used to display them at the resolution of the screen instead of upscaling the image. The fallback splash screen, shown when no image is available, is also drawn at the resolution of the screen.
 
+### Icons ###
+
+* The HDF5 browser icons of signals, images, arrays and scalars, and the icon of the memory status widget, are now provided by SigimaX: they were provided by DataLab only, so that other applications showed "not found" icons instead.
+* Since the icons of guidata and PlotPy are SVG files, some of them share their names with SigimaX icons (`apply.svg`, `image.svg`): SigimaX now designates these icons explicitly (e.g. `"sigimax:apply.svg"`), as supported by guidata 3.17.1, so that its widgets keep their icons (closes [Issue #54](https://github.com/DataLab-Platform/SigimaX/issues/54)).
+
 ### Plot widgets ###
 
 * Like the splash screen image, the watermark image of empty plots (`watermark_image_path` option) may now be given by its name: the image is then looked up in the image paths registered with guidata (see `guidata.configtools.add_image_path`), and its `@2x` high-resolution variant is used on high-DPI displays.

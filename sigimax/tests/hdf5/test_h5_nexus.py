@@ -132,8 +132,8 @@ def test_nxdata_classification(nodes: dict) -> None:
     stack = nodes["/entry/stack"]
     assert not stack.is_supported()
     assert stack.shape_str == "5 x 3 x 4"
-    assert nodes["/entry/spectrum"].icon_name == "signal.svg"
-    assert nodes["/entry/map"].icon_name == "image.svg"
+    assert nodes["/entry/spectrum"].icon_name == "sigimax:signal.svg"
+    assert nodes["/entry/map"].icon_name == "sigimax:image.svg"
     # Datasets of NXdata groups remain available as raw nodes
     assert nodes["/entry/spectrum/counts"].is_supported()
 

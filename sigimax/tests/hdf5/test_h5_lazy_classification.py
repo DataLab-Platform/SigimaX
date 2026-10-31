@@ -102,7 +102,7 @@ def test_browsing_reads_no_large_dataset(h5fname: str, full_reads: list) -> None
         assert nodes["/signal"].text.endswith(" ...")
         assert nodes["/records"].shape_str == "5000 x 2"
         assert nodes["/records"].dtype_str == "float64"
-        assert nodes["/image"].icon_name == "image.svg"
+        assert nodes["/image"].icon_name == "sigimax:image.svg"
         assert nodes["/mixed"].text.endswith("...]")
         assert nodes["/signal"].metadata["unit"] == "s"
         assert "big" not in nodes["/signal"].metadata
@@ -120,7 +120,7 @@ def test_uint32_image_is_exact(h5fname: str) -> None:
     importer = H5Importer(h5fname)
     try:
         node = importer.get("/counts")
-        assert node.icon_name == "image.svg"
+        assert node.icon_name == "sigimax:image.svg"
         image = node.get_native_object()
         assert image.data.dtype == np.float64
         assert image.data[0, 1] == 2**32 - 1

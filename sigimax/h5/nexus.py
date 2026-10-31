@@ -674,9 +674,17 @@ class NXdataNode(common.GroupNode, NDViewMixin):
     def icon_name(self):
         """Icon name associated to node"""
         if len(self.nxdata.shape) >= 3 and self.import_view:
-            return "image.svg" if len(self.view.displayed) == 2 else "signal.svg"
+            return (
+                "sigimax:image.svg"
+                if len(self.view.displayed) == 2
+                else "sigimax:signal.svg"
+            )
         if self.is_supported():
-            return "signal.svg" if len(self.nxdata.shape) == 1 else "image.svg"
+            return (
+                "sigimax:signal.svg"
+                if len(self.nxdata.shape) == 1
+                else "sigimax:image.svg"
+            )
         return "h5group.svg"
 
     @property
