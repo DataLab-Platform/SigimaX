@@ -1308,6 +1308,8 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         """
         mode = get_conf().color_mode.get()
         if startup and mode == "auto":
+            # Title bars following the color theme, also when the application was not
+            # created by guidata (e.g. SigimaX-based window embedded in another one)
             guidata_qth.win32_fix_title_bar_background(self)
             return
 

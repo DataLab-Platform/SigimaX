@@ -65,6 +65,7 @@
 * Cancelling the connection dialog while connecting no longer aborts the application: the dialog closes at once, and the connection attempt ends in the background, its result being ignored (closes [Issue #40](https://github.com/DataLab-Platform/SigimaX/issues/40)).
 * Warning and error message boxes (`WarningErrorMessageBox`, `show_warning_error`) can now be shown without parent widget, titled with the application name: they raised an `AttributeError` instead of showing the message.
 * The file and log viewers now read UTF-16 and UTF-32 files with a byte order mark, and Windows (cp1252) files, with their encoding (`read_text_file`): such files were shown with wrong characters, as they were decoded as latin1 (closes [Issue #43](https://github.com/DataLab-Platform/SigimaX/issues/43)).
+* With the dark theme on Windows, all the SigimaX windows now have a dark title bar: the warning and error message boxes, the log viewer, the wizards, the object selection dialog and the floating dock widgets (e.g. the console) kept a white title bar, next to their dark content (requires guidata ≥ 3.17.2, closes [Issue #58](https://github.com/DataLab-Platform/SigimaX/issues/58)).
 
 ### Curve fitting dialogs ###
 
