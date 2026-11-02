@@ -101,7 +101,7 @@ See the [HDF5 guide](../user_guide/hdf5_workspace.rst) for a complete JSON mappi
 ### Requirements ###
 
 * Python 3.10 or later is now required. Python 3.9 users must keep an earlier compatible release.
-* guidata 3.17.0 or later is required: the splash screen and the watermark of empty plots use its `get_pixmap` function to show high-resolution images on high-DPI displays.
+* guidata 3.17.2 or later is required: the splash screen and the watermark of empty plots use its `get_pixmap` function to show high-resolution images on high-DPI displays, and it gives every window a title bar following the color theme on Windows (closes [Issue #60](https://github.com/DataLab-Platform/SigimaX/issues/60)).
 * PlotPy 2.12.0 or later is required: auto downsampling of signals relies on its min/max downsampling, which keeps narrow peaks and the envelope of noisy signals.
 * Sigima 1.4.0 or later is required: the HDF5 import modules use its experimental-source API, integer conversions use its precision-preserving converter, and the tooltips of rectangular ROIs use its pixel-range conversions.
 * hdf5plugin 4.0 or later is required, for the HDF5 compression filters of detector data.
