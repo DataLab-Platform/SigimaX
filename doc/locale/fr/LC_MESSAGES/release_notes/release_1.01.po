@@ -141,6 +141,9 @@ msgstr "Les boîtes de message d'avertissement et d'erreur (`WarningErrorMessage
 msgid "The file and log viewers now read UTF-16 and UTF-32 files with a byte order mark, and Windows (cp1252) files, with their encoding (`read_text_file`): such files were shown with wrong characters, as they were decoded as latin1 (closes [Issue #43](https://github.com/DataLab-Platform/SigimaX/issues/43))."
 msgstr "Les visionneuses de fichiers et de journaux lisent désormais les fichiers UTF-16 et UTF-32 dotés d'une marque d'ordre des octets, ainsi que les fichiers Windows (cp1252), avec leur encodage (`read_text_file`) : ces fichiers étaient affichés avec des caractères erronés, car ils étaient décodés en latin1 (corrige [Issue #43](https://github.com/DataLab-Platform/SigimaX/issues/43))."
 
+msgid "With the dark theme on Windows, all the SigimaX windows now have a dark title bar: the warning and error message boxes, the log viewer, the wizards, the object selection dialog and the floating dock widgets (e.g. the console) kept a white title bar, next to their dark content (requires guidata ≥ 3.17.2, closes [Issue #58](https://github.com/DataLab-Platform/SigimaX/issues/58))."
+msgstr "Avec le thème sombre sous Windows, toutes les fenêtres de SigimaX ont désormais une barre de titre sombre : les boîtes de message d'avertissement et d'erreur, la visionneuse de journaux, les assistants, la boîte de dialogue de sélection d'objet et les widgets ancrables flottants (par exemple la console) conservaient une barre de titre blanche, à côté de leur contenu sombre (nécessite guidata ≥ 3.17.2, corrige [Issue #58](https://github.com/DataLab-Platform/SigimaX/issues/58))."
+
 msgid "Curve fitting dialogs"
 msgstr "Fenêtres d'ajustement de courbes"
 
