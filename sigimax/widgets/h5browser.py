@@ -28,7 +28,6 @@ from guidata.qthelpers import (
     exec_dialog,
     get_icon,
     get_std_icon,
-    win32_fix_title_bar_background,
 )
 from guidata.utils.misc import to_string
 from guidata.widgets.arrayeditor import ArrayEditor
@@ -1313,7 +1312,6 @@ class H5BrowserDialog(QW.QDialog):
         self.setObjectName("h5browser")
         self.setWindowTitle(_("HDF5 Browser"))
         self.setWindowIcon(get_icon("h5browser.svg"))
-        win32_fix_title_bar_background(self)
         vlayout = QW.QVBoxLayout()
         self.setLayout(vlayout)
         self.button_layout: QW.QHBoxLayout | None = None

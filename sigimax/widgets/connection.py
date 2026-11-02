@@ -17,7 +17,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from guidata.qthelpers import get_std_icon, win32_fix_title_bar_background
+from guidata.qthelpers import get_std_icon
 from qtpy import QtCore as QC
 from qtpy import QtGui as QG
 from qtpy import QtWidgets as QW
@@ -90,7 +90,6 @@ class ConnectionDialog(QW.QDialog):
         banner: QG.QPixmap | None = None,
     ) -> None:
         super().__init__(parent)
-        win32_fix_title_bar_background(self)
         self.setWindowTitle(_("Connection"))
         if icon is not None:
             self.setWindowIcon(icon)

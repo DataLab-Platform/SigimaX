@@ -6,7 +6,7 @@ Window title bars on Windows
 
 With the dark theme on Windows, Windows draws the title bar of windows with its own
 color scheme: since guidata 3.17.2, every window is given a title bar following the
-color theme, including the SigimaX windows which do not fix it themselves.
+color theme, so that the SigimaX windows do not fix it themselves.
 
 Covers (native Windows platform only, i.e. with ``--show-windows``):
 - WarningErrorMessageBox, LogViewerWindow, Wizard, ConnectionDialog,
