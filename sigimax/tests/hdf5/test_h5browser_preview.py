@@ -5,10 +5,12 @@ HDF5 browser preview test
 -------------------------
 
 Previews are read in a worker thread: the last selected node is shown, the
-previews of nodes selected before are discarded without being read, selecting a
-node that cannot be previewed clears the plot, and closing a file or the browser
-dialog waits for the preview being read. "Show array" only shows the current
-node if it is an array.
+previews of nodes selected before are discarded without being read, the preview
+being read stops at the next block of data when another node is selected,
+selecting a node that cannot be previewed clears the plot, and closing a file or
+the browser dialog waits for the preview being read. "Show array" only shows the
+current node if it is an array. A node found invalid when its preview is read is
+shown as not importable.
 """
 
 from __future__ import annotations
@@ -26,6 +28,7 @@ from qtpy import QtCore as QC
 from qtpy import QtWidgets as QW
 from sigima.objects import create_signal
 
+from sigimax.h5 import utils as h5utils
 from sigimax.widgets.h5browser import H5Browser, H5BrowserDialog, PlotPreview
 
 pytestmark = pytest.mark.gui
@@ -242,6 +245,92 @@ def test_show_array_follows_current_node(tmp_path, monkeypatch) -> None:
         assert len(shown) == 1
         browser.cleanup()
         browser.close()
+
+
+def test_discarded_preview_stops_reading(tmp_path, monkeypatch) -> None:
+    """Selecting another node stops the preview being read at the next block, so
+    that the main thread does not wait for it to read the file; the stopped read
+    is not cached."""
+    monkeypatch.setattr(h5utils, "READ_BLOCK_ITEMS", 1000)
+    fname = str(tmp_path / f"{uuid.uuid4()}.h5")
+    with h5py.File(fname, "w") as h5file:
+        h5file.create_dataset("large", data=np.arange(20_000.0), chunks=(500,))
+        h5file["small"] = np.arange(3.0)
+    with qt_app_context():
+        browser = H5Browser()
+        browser.open_file(fname)
+        importer = browser.tree.h5importers[0]
+        large, small = importer.get("/large"), importer.get("/small")
+        reads, started, release = [], threading.Event(), threading.Event()
+        getitem = h5py.Dataset.__getitem__
+
+        def spy(dset, args, *rest, **kwargs):
+            if dset.name == "/large":
+                reads.append(args)
+                if len(reads) == 2:
+                    started.set()
+                    assert release.wait(10.0)
+            return getitem(dset, args, *rest, **kwargs)
+
+        monkeypatch.setattr(h5py.Dataset, "__getitem__", spy)
+        preview = browser.plotpreview
+        preview.update_plot_preview(large)
+        assert started.wait(10.0)
+        preview.update_plot_preview(small)
+        release.set()
+        curve = _wait_for_item(preview.curvewidget.get_plot(), CurveItem)
+        assert curve.get_data()[0].size == 3
+        assert len(reads) == 2, "The discarded preview must stop at the next block"
+        assert large.get_native_object().y.size == 20_000
+        assert len(reads) == 3, "The stopped read must not be cached"
+        browser.cleanup()
+        browser.close()
+
+
+def test_failed_preview_updates_item(tmp_path, monkeypatch) -> None:
+    """A NeXus image whose axis is found not strictly monotonic when previewed is
+    shown as not importable: its item is no longer checkable (the "OK" button is
+    disabled if no other item is checked), and the problem is described."""
+    fname = str(tmp_path / f"{uuid.uuid4()}.nxs")
+    with h5py.File(fname, "w") as h5file:
+        group = h5file.create_group("image")
+        group.attrs["NX_class"] = "NXdata"
+        group.attrs["signal"] = "data"
+        group.attrs["axes"] = [".", "x"]
+        group["data"] = np.ones((3, 4))
+        group["x"] = [0.0, 1.0, 1.0, 2.0]
+    errors = []
+    monkeypatch.setattr(
+        "sigimax.widgets.h5browser.qt_handle_error_message",
+        lambda _widget, exc: errors.append(exc),
+    )
+    with qt_app_context():
+        dialog = H5BrowserDialog(None)
+        dialog.open_file(fname)
+        tree = dialog.browser.tree
+        ok_button = dialog.bbox.button(QW.QDialogButtonBox.Ok)
+        item = _tree_item(dialog.browser, "/image")
+        assert item.flags() & QC.Qt.ItemIsUserCheckable
+        item.setCheckState(0, QC.Qt.Checked)
+        assert ok_button.isEnabled()
+        tree.setCurrentItem(item)
+        tree.clicked(item)
+        _wait_until(lambda: errors)
+        assert "not strictly monotonic" in str(errors[0])
+        assert not item.flags() & QC.Qt.ItemIsUserCheckable
+        assert item.data(0, QC.Qt.CheckStateRole) is None
+        assert not ok_button.isEnabled()
+        assert "axis 'x' is not strictly monotonic" in item.toolTip(0)
+        assert item.text(3).startswith("NXdata: data (., x) - axis 'x'")
+        table = dialog.browser.groupandattrs.group.table
+        assert "not strictly monotonic" in table.item(2, 0).text()
+        assert tree.get_nodes() == []
+        # Selecting it again clears the preview, without reading it again
+        tree.clicked(item)
+        QW.QApplication.processEvents()
+        assert len(errors) == 1
+        dialog.cleanup()
+        dialog.close()
 
 
 if __name__ == "__main__":

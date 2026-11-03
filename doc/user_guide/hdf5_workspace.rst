@@ -109,13 +109,19 @@ designated by the ``default`` attributes of the file and of its entry
 Compressed detector data (bitshuffle/LZ4, Blosc, Zstandard...) is read with the
 HDF5 filters of hdf5plugin, a dependency of SigimaX. A dataset compressed with a
 filter that is still unavailable is reported in the browser, with the filter name
-and number, instead of failing when read.
+and number, instead of failing when read. A dataset that cannot be read
+(truncated or corrupted file, missing external data file...) is reported with its
+path when it is previewed or imported, and its value is shown as
+``<unreadable data>`` if its first elements cannot be read either; the other
+datasets of the file are still browsed and imported.
 
 Axis datasets must be 1D, hold real numbers and contain either one coordinate
 per point or one extra value for bin edges. Edges are converted to centers.
 Image coordinates may be non-uniform; a decreasing image axis is reversed,
 with the image, and this conversion is recorded, while an image axis that is
-not strictly monotonic prevents import. An image gets uniform coordinates
+not strictly monotonic prevents import. Axis values are only read when the image
+is previewed or imported: such an image is then shown as not importable in the
+browser, with the problem in its description. An image gets uniform coordinates
 (origin and pixel size) only if the values of both axes deviate from even
 spacing by at most 2.5 units in the last place of their stored data type
 (``sigimax.h5.nexus.UNIFORM_AXIS_TOLERANCE``), so that evenly spaced
@@ -232,8 +238,10 @@ Large Files and Multidimensional Views
 Dataset classification uses shape and type metadata; mixed compound datasets
 are checked on their first records. Text previews are bounded to 100 elements,
 and attributes above 10 000 elements are skipped. Graphical previews are read
-in a worker thread; previews of items selected meanwhile are not read, and
-stale results are not displayed. Selecting an item that cannot be previewed,
+in a worker thread, in blocks of data (``sigimax.h5.utils.READ_BLOCK_ITEMS``
+elements) between which the browser may read the file; previews of items
+selected meanwhile are not read, the preview being read stops at the next block
+when another item is selected, and stale results are not displayed. Selecting an item that cannot be previewed,
 such as a group, clears the preview. Closing a file or the browser dialog waits
 for the preview read to finish. Broken soft or external links (e.g. to missing
 detector files) are skipped, with a console warning, when a file is opened, as

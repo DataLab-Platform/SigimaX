@@ -45,6 +45,7 @@ from sigimax.env import execenv
 from sigimax.h5 import H5Importer
 from sigimax.h5.nexus import default_nxdata_path
 from sigimax.h5.selection import NDView
+from sigimax.h5.utils import ReadCancelled, cancellable_reads
 from sigimax.h5.views import NDViewMixin, count_frames, expand_views
 from sigimax.utils.qthelpers import block_signals, qt_handle_error_message
 
@@ -244,12 +245,23 @@ class H5TreeWidget(AbstractTreeWidget):
             Item of the default NeXus ``NXdata`` group of the file (``@default``
             attributes), expanded, or None
         """
-        self.fnames.append(osp.abspath(fname))
         importer = H5Importer(fname)
+        index = self.topLevelItemCount()
+        self.fnames.append(osp.abspath(fname))
         self.h5importers.append(importer)
-        self.add_root_to_tree(importer)
+        try:
+            self.add_root_to_tree(importer)
+        except BaseException:
+            # Remove the partial tree: top-level items, file names and importers
+            # must stay aligned, and the file is closed
+            if self.topLevelItemCount() > index:
+                self.takeTopLevelItem(index)
+            self.fnames.pop()
+            self.h5importers.pop()
+            importer.close()
+            raise
         # Temporarily expand all items to calculate proper column widths
-        rootitem = self.topLevelItem(self.topLevelItemCount() - 1)
+        rootitem = self.topLevelItem(index)
         self.expand_all_children(rootitem)
         for col in range(4):
             self.resizeColumnToContents(col)
@@ -436,6 +448,21 @@ class H5TreeWidget(AbstractTreeWidget):
                 item.setCheckState(0, QC.Qt.Checked if state else QC.Qt.Unchecked)
 
     @staticmethod
+    def __item_texts(node: BaseNode) -> list[str]:
+        """Return the texts of the columns of the item of a node
+
+        Args:
+            node: HDF5 node
+
+        Returns:
+            Name, size, type and value (truncated) of the node
+        """
+        text = to_string(node.text)
+        if len(text) > 30:
+            text = text[:30] + "..."
+        return [node.name, node.shape_str, node.dtype_str, text]
+
+    @staticmethod
     def __create_node(node: BaseNode) -> QW.QTreeWidgetItem:
         """Create tree node from HDF5 node
 
@@ -445,15 +472,38 @@ class H5TreeWidget(AbstractTreeWidget):
         Returns:
             Tree widget node
         """
-        text = to_string(node.text)
-        if len(text) > 30:
-            text = text[:30] + "..."
-        treeitem = QW.QTreeWidgetItem([node.name, node.shape_str, node.dtype_str, text])
+        treeitem = QW.QTreeWidgetItem(H5TreeWidget.__item_texts(node))
         treeitem.setData(0, QC.Qt.UserRole, node.id)
         if node.description:
             for col in range(treeitem.columnCount()):
                 treeitem.setToolTip(col, node.description)
         return treeitem
+
+    def update_item(self, item: QW.QTreeWidgetItem) -> None:
+        """Update the item of a node from its current state: texts, tooltip, icon
+        and check box (e.g. once problems were found when reading its data, which
+        make it no longer supported)
+
+        Args:
+            item: tree item
+        """
+        node = self.get_node(item)
+        with block_signals(self):
+            for col, text in enumerate(self.__item_texts(node)):
+                item.setText(col, text)
+                item.setToolTip(col, node.description)
+            if not node.is_supported():
+                item.setData(0, QC.Qt.CheckStateRole, None)
+                item.setFlags(QC.Qt.ItemIsEnabled)
+            elif not item.flags() & QC.Qt.ItemIsUserCheckable:
+                item.setFlags(
+                    QC.Qt.ItemIsEnabled
+                    | QC.Qt.ItemIsSelectable
+                    | QC.Qt.ItemIsUserCheckable
+                )
+                item.setCheckState(0, QC.Qt.Unchecked)
+            item.setIcon(0, get_icon(node.icon_name))
+        self.itemChanged.emit(item, 0)
 
     @staticmethod
     def __recursive_popfunc(parent_item: QW.QTreeWidgetItem, node: BaseNode) -> None:
@@ -548,17 +598,24 @@ class PlotPreview(QW.QStackedWidget):
     for datasets larger than :attr:`MAX_ITEMS` (see
     :meth:`sigimax.h5.common.BaseNode.create_preview_object`). The preview of a
     node replaces any pending one: previews of nodes selected meanwhile are not
-    read.
+    read, and the preview being read stops at the next block of data (see
+    :func:`sigimax.h5.utils.cancellable_reads`), so that the main thread does not
+    wait for it to read the newly selected node.
     """
 
     #: Maximum number of data elements read for a preview
     MAX_ITEMS = 2**24
 
     SIG_LOADED = QC.Signal(int, object, object)
+    #: Emitted with the node whose preview could not be read, before the error is
+    #: shown: problems may have been found when reading its data (e.g. NeXus image
+    #: axes that are not strictly monotonic), which changes its description
+    SIG_PREVIEW_FAILED = QC.Signal(object)
 
     def __init__(self, parent: QW.QWidget) -> None:
         super().__init__(parent)
         self.__generation = 0
+        self.__node: BaseNode | None = None
         self.__executor: ThreadPoolExecutor | None = None
         self.__pending: Future | None = None
         self.SIG_LOADED.connect(self.__show_loaded_object)
@@ -594,8 +651,10 @@ class PlotPreview(QW.QStackedWidget):
 
     def discard(self) -> None:
         """Discard the pending previews, without waiting: the preview being read,
-        if any, is not shown and the previews not started yet are not read"""
+        if any, stops at the next block of data and is not shown, and the previews
+        not started yet are not read"""
         self.__generation += 1
+        self.__node = None
         if self.__pending is not None:
             self.__pending.cancel()
             self.__pending = None
@@ -623,7 +682,10 @@ class PlotPreview(QW.QStackedWidget):
             return  # Another node was selected meanwhile: do not read this one
         obj, error = None, None
         try:
-            obj = node.create_preview_object(self.MAX_ITEMS)
+            with cancellable_reads(lambda: generation != self.__generation):
+                obj = node.create_preview_object(self.MAX_ITEMS)
+        except ReadCancelled:
+            return  # Another node was selected while this one was read
         except Exception as exc:  # pylint: disable=broad-except
             error = exc
         try:
@@ -642,6 +704,7 @@ class PlotPreview(QW.QStackedWidget):
     def update_plot_preview(self, node: BaseNode) -> None:
         """Update plot preview widget"""
         self.__generation += 1
+        self.__node = node
         if self.__pending is not None:
             self.__pending.cancel()
         self.__show_message(_("Loading..."))
@@ -659,6 +722,7 @@ class PlotPreview(QW.QStackedWidget):
             return
         if error is not None:
             self.__show_message(_("Unsupported data"))
+            self.SIG_PREVIEW_FAILED.emit(self.__node)
             qt_handle_error_message(self, error)
             return
         if obj is None:
@@ -1126,6 +1190,7 @@ class H5Browser(QW.QSplitter):
         preview.setOrientation(QC.Qt.Vertical)
         self.addWidget(preview)
         self.plotpreview = PlotPreview(self)
+        self.plotpreview.SIG_PREVIEW_FAILED.connect(self.__preview_failed)
         self.viewselector = ViewSelector(self)
         self.viewselector.SIG_VIEW_CHANGED.connect(self.__view_changed)
         self.viewselector.SIG_IMPORT_CHANGED.connect(self.__view_import_changed)
@@ -1230,16 +1295,14 @@ class H5Browser(QW.QSplitter):
         # View the selected item
         node = self.get_node(item)
         self.__current_item = item
-        # Discard the previous preview first: its pending read is not started,
-        # so that reading the node description below does not wait for it
+        # Discard the previous preview first: its pending read is not started, and
+        # the read in progress stops at the next block of data, so that reading
+        # the node description below does not wait for it
         self.plotpreview.discard()
         self.groupandattrs.update_from_node(node)
         self.viewselector.set_node(node)
-        if node.can_preview():
-            self.plotpreview.update_plot_preview(node)
-        else:
-            self.plotpreview.clear_preview()
-        # Update the file selector combo box
+        # Update the file selector combo box (before starting the preview: reading
+        # the file name would wait for the first block of data to be read)
         with block_signals(self.selector.combo):
             # Avoid triggering current file changed signal, which would result in
             # loosing the current selection on the tree (side effect: "Show array"
@@ -1247,6 +1310,10 @@ class H5Browser(QW.QSplitter):
             # that now the current node is not an array, thus causing an error if
             # the user clicks on the button).
             self.selector.set_current_fname(node.h5file.filename)
+        if node.can_preview():
+            self.plotpreview.update_plot_preview(node)
+        else:
+            self.plotpreview.clear_preview()
 
     def __selector_current_file_changed(self, fname: str) -> None:
         """Selector current file changed
@@ -1260,6 +1327,16 @@ class H5Browser(QW.QSplitter):
     def __view_changed(self) -> None:
         """View of the current multidimensional node changed: preview it"""
         self.plotpreview.update_plot_preview(self.viewselector.node)
+
+    def __preview_failed(self, node: BaseNode) -> None:
+        """Preview of a node could not be read: show the problems found meanwhile
+        (e.g. NeXus image axes that are not strictly monotonic) in its item and in
+        its description, the node being no longer importable"""
+        item = self.__current_item
+        if item is None or self.get_node(item) is not node:
+            return
+        self.tree.update_item(item)
+        self.groupandattrs.update_from_node(node)
 
     def __view_import_changed(self, state: bool) -> None:
         """Import of the frames of the current multidimensional node enabled or
@@ -1284,14 +1361,22 @@ class H5Browser(QW.QSplitter):
 
         The "Show array" button is enabled when an array is selected with the
         mouse: the current node may have changed since (e.g. with the keyboard).
+        Read errors are reported.
         """
         item = self.tree.currentItem()
         node = None if item is None else self.get_node(item)
         if node is None or not node.IS_ARRAY:
             return
+        try:
+            data = node.data
+            if data is None:
+                raise OSError(f"Unable to read dataset '{node.id}'")
+        except OSError as exc:
+            qt_handle_error_message(self, exc)
+            return
         arrayeditor = ArrayEditor(self)
         arrayeditor.setup_and_check(
-            node.data, title=node.name, readonly=True, add_title_suffix=False
+            data, title=node.name, readonly=True, add_title_suffix=False
         )
         exec_dialog(arrayeditor)
 

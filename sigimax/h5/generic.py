@@ -434,13 +434,16 @@ class GenericArrayNode(BaseGenericNode):
 
     @property
     def data(self):
-        """Data associated to node, if available."""
-        raw_data = safe_read_dataset(self.dset, fallback_data=None)
+        """Data associated to node
+
+        Raises:
+            OSError: if the dataset cannot be read
+        """
+        raw_data = utils.read_dataset(self.dset)
 
         # If this is compound data, try to extract numeric array
         if (
-            raw_data is not None
-            and isinstance(raw_data, np.ndarray)
+            isinstance(raw_data, np.ndarray)
             and hasattr(raw_data.dtype, "names")
             and raw_data.dtype.names is not None
         ):
@@ -458,8 +461,13 @@ class GenericArrayNode(BaseGenericNode):
         return self.__layout
 
     def is_supported(self) -> bool:
-        """Return True if node is associated to supported data"""
-        return int(np.prod(self.layout[0])) > 1 and not self.missing_filters
+        """Return True if node is associated to supported data (signals stored in
+        a 2D table, giving X values, must hold real numbers)"""
+        shape, dtype = self.layout
+        if int(np.prod(shape)) <= 1 or self.missing_filters:
+            return False
+        is_table = self.__is_signal and len(shape) == 2 and 1 not in shape
+        return not (is_table and np.issubdtype(dtype, np.complexfloating))
 
     @property
     def __is_signal(self):
@@ -489,25 +497,28 @@ class GenericArrayNode(BaseGenericNode):
         """Return node textual representation"""
         if self.missing_filters:
             return _unavailable_filters_text(self.missing_filters)
-        data, truncated = utils.read_bounded(self.dset, TEXT_PREVIEW_MAX_ITEMS)
+        try:
+            data, truncated = utils.read_bounded(self.dset, TEXT_PREVIEW_MAX_ITEMS)
+        except OSError:
+            return "<unreadable data>"
         if self.dset.dtype.names is not None:
             data = self.extract_numeric_from_compound(data)
         return str(data) + (" ..." if truncated else "")
 
     def create_native_object(self):
-        """Create native object, if supported"""
+        """Create native object, if supported
+
+        Raises:
+            OSError: if the dataset cannot be read
+            ValueError: if a 2D table has complex X values (see
+             :meth:`is_supported`)
+        """
         if self.__is_signal:
             obj = create_signal(self.object_title)
-            try:
-                self.set_signal_data(obj)
-            except ValueError:
-                obj = None
+            self.set_signal_data(obj)
         else:
             obj = create_image(self.object_title)
-            try:
-                self.set_image_data(obj)
-            except ValueError:
-                obj = None
+            self.set_image_data(obj)
         return obj
 
     def create_preview_object(self, max_items: int):
@@ -596,7 +607,10 @@ class GenericNDArrayNode(BaseGenericNode, NDViewMixin):
         """Return node textual representation"""
         if self.missing_filters:
             return _unavailable_filters_text(self.missing_filters)
-        data, truncated = utils.read_bounded(self.dset, TEXT_PREVIEW_MAX_ITEMS)
+        try:
+            data, truncated = utils.read_bounded(self.dset, TEXT_PREVIEW_MAX_ITEMS)
+        except OSError:
+            return "<unreadable data>"
         return str(data) + (" ..." if truncated else "")
 
     def create_preview_object(self, max_items: int):

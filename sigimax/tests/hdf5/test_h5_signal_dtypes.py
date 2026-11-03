@@ -85,10 +85,16 @@ def test_integer_signal_dtype(nodes: dict) -> None:
 
 
 def test_complex_table_is_not_supported(nodes: dict) -> None:
-    """Tables with complex X values are not imported, instead of being truncated."""
+    """Tables with complex X values are listed as not supported (from the dataset
+    shape and type), and raise an error if imported anyway, instead of being
+    truncated or skipped silently."""
+    node = nodes["/table"]
+    assert not node.is_supported()
+    assert node.icon_name == "h5array.svg"
     with warnings.catch_warnings():
         warnings.simplefilter("error", ComplexWarning)
-        assert nodes["/table"].get_native_object() is None
+        with pytest.raises(ValueError, match="Complex X values"):
+            node.get_native_object()
 
 
 @pytest.mark.parametrize("path", ["/row", "/column"])

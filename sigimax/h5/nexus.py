@@ -39,6 +39,9 @@ Supported conventions (NeXus data model, ``NXdata`` base class):
   the origin of the imported objects
 
 Signals compressed with a filter that HDF5 cannot apply are reported as problems.
+Image axes are read only when the object is created or previewed: an axis which is
+not strictly monotonic is then recorded as a problem of the node, which is no
+longer supported.
 """
 
 from __future__ import annotations
@@ -70,6 +73,7 @@ __all__ = [
     "NXAxis",
     "NXdataDescription",
     "NXdataNode",
+    "NonMonotonicAxisError",
     "default_nxdata_path",
     "describe_auxiliary_signals",
     "describe_nxdata",
@@ -429,17 +433,17 @@ def _read_axis(
     """
     dset = group[axis.name]
     if step == 1:
-        values = np.asarray(dset[()], dtype=float)
+        values = np.asarray(utils.read_dataset(dset), dtype=float)
         if axis.edges:
             values = (values[:-1] + values[1:]) / 2
     elif axis.edges:
         # Only the edges bounding the returned bins are read
         nbins = dset.shape[0] - 1
-        lower = np.asarray(dset[0:nbins:step], dtype=float)
-        upper = np.asarray(dset[1 : nbins + 1 : step], dtype=float)
+        lower = np.asarray(utils.read_dataset(dset, slice(0, nbins, step)), float)
+        upper = np.asarray(utils.read_dataset(dset, slice(1, nbins + 1, step)), float)
         values = (lower + upper) / 2
     else:
-        values = np.asarray(dset[::step], dtype=float)
+        values = np.asarray(utils.read_dataset(dset, slice(None, None, step)), float)
     return values, dset.dtype
 
 
@@ -461,19 +465,31 @@ def _uniform_deviation(values: np.ndarray, dtype: np.dtype) -> tuple[float, floa
     return deviation, deviation / float(np.spacing(_precision_type(dtype)(bound)))
 
 
+class NonMonotonicAxisError(ValueError):
+    """Raised when the values of an image axis are not strictly monotonic
+
+    Args:
+        axis: axis dataset path, relative to the ``NXdata`` group
+    """
+
+    def __init__(self, axis: str) -> None:
+        super().__init__(f"Axis '{axis}' is not strictly monotonic")
+        self.axis = axis
+
+
 def _is_decreasing(values: np.ndarray, name: str) -> bool:
     """Return True if axis values are strictly decreasing, False if they are
     strictly increasing
 
     Raises:
-        ValueError: if values are not strictly monotonic
+        NonMonotonicAxisError: if values are not strictly monotonic
     """
     steps = np.diff(values)
     if np.all(steps > 0):
         return False
     if np.all(steps < 0):
         return True
-    raise ValueError(f"Axis '{name}' is not strictly monotonic")
+    raise NonMonotonicAxisError(name)
 
 
 def _image_axis(
@@ -489,7 +505,7 @@ def _image_axis(
         step: step between the returned values (to read a decimated preview)
 
     Raises:
-        ValueError: if axis values are not strictly monotonic
+        NonMonotonicAxisError: if axis values are not strictly monotonic
     """
     if axis is None:
         return np.arange(0, size, step, dtype=float), np.dtype(float), False
@@ -754,10 +770,15 @@ class NXdataNode(common.GroupNode, NDViewMixin):
         )
 
     def create_native_object(self):
-        """Create signal or image object from the ``NXdata`` group"""
+        """Create signal or image object from the ``NXdata`` group
+
+        Raises:
+            NonMonotonicAxisError: if an image axis is not strictly monotonic (the
+             node is then no longer supported, see :meth:`_build_checked`)
+        """
         if not self.is_supported() or len(self.nxdata.shape) >= 3:
             return None
-        obj, conversions = self._build_object(1)
+        obj, conversions = self._build_checked(1)
         set_experimental_source(obj, self.make_source(conversions))
         return obj
 
@@ -776,8 +797,28 @@ class NXdataNode(common.GroupNode, NDViewMixin):
         shape = self.nxdata.shape
         if math.prod(shape) <= max_items:
             return self.get_native_object()
-        obj, _conversions = self._build_object(preview_step(shape, max_items))
+        obj, _conversions = self._build_checked(preview_step(shape, max_items))
         return obj
+
+    def _build_checked(self, step: int) -> tuple[SignalObj | ImageObj, list[str]]:
+        """Create the signal or image object (see :meth:`_build_object`), recording
+        the problems found when reading the axes
+
+        Image axes are not read while browsing: an axis which is not strictly
+        monotonic is recorded as a problem of the description once read, so that
+        the node is no longer supported (and shown as such by the HDF5 browser).
+
+        Raises:
+            NonMonotonicAxisError: if an image axis is not strictly monotonic
+        """
+        try:
+            return self._build_object(step)
+        except NonMonotonicAxisError as exc:
+            problem = f"axis '{exc.axis}' is not strictly monotonic"
+            if problem not in self.nxdata.problems:
+                problems = (*self.nxdata.problems, problem)
+                self.nxdata = dataclasses.replace(self.nxdata, problems=problems)
+            raise
 
     def axis_name(self, dim: int) -> str:
         """Return the name of the axis of a dimension (empty if it has none)"""
@@ -842,7 +883,7 @@ class NXdataNode(common.GroupNode, NDViewMixin):
         """
         desc = self.nxdata
         dset = self.dset[desc.signal]
-        data = dset[(slice(None, None, step),) * dset.ndim]
+        data = utils.read_dataset(dset, (slice(None, None, step),) * dset.ndim)
         conversions = [
             f"axis '{axis.name}': bin edges -> bin centers"
             for axis in desc.axes
@@ -851,7 +892,10 @@ class NXdataNode(common.GroupNode, NDViewMixin):
         if len(desc.shape) == 1:
             dy = None
             if desc.errors is not None:
-                dy = np.asarray(self.dset[desc.errors][::step], dtype=float)
+                errors = self.dset[desc.errors]
+                dy = np.asarray(
+                    utils.read_dataset(errors, slice(None, None, step)), dtype=float
+                )
             obj = self._build_signal(data, step, desc.axes[0], desc.shape[0], dy)
             return obj, conversions
         obj = self._build_image(data, step, conversions, desc.axes, desc.shape)

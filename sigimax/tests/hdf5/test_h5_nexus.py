@@ -22,7 +22,7 @@ from sigima.objects import ImageObj, SignalObj, get_experimental_source
 
 from sigimax.adapters_plotpy import create_adapter_from_object
 from sigimax.h5 import H5Importer
-from sigimax.h5.nexus import NXdataNode
+from sigimax.h5.nexus import NonMonotonicAxisError, NXdataNode
 from sigimax.h5.selection import preview_step
 
 pytestmark = pytest.mark.unit
@@ -312,6 +312,41 @@ def test_nxdata_image_axes(tmp_path) -> None:
         for name in ("constant", "unordered"):
             with pytest.raises(ValueError, match="not strictly monotonic"):
                 nodes[f"/{name}"].get_native_object()
+
+
+def test_nxdata_non_monotonic_axis_problem(tmp_path) -> None:
+    """Image axes are only read when the object is created or previewed: an axis
+    which is not strictly monotonic is then recorded as a problem, so that the node
+    is no longer supported (signal axes may be unordered)."""
+
+    def build(h5file: h5py.File) -> None:
+        _image_group(h5file, "repeated", [0.0, 1.0, 1.0, 2.0])
+        _image_group(h5file, "nan", [0.0, np.nan, 2.0, 3.0])
+        _image_group(h5file, "large", np.r_[0.0, np.arange(59.0)], np.arange(50.0))
+        group = _nxdata(h5file, "signal", "counts", "x")
+        group["counts"] = np.arange(4.0)
+        group["x"] = [0.0, 2.0, 1.0, 3.0]
+
+    with _nodes_of(tmp_path, build) as nodes:
+        for name, read in (
+            ("repeated", lambda node: node.get_native_object()),
+            ("nan", lambda node: node.create_preview_object(1000)),
+            ("large", lambda node: node.create_preview_object(100)),
+        ):
+            node: NXdataNode = nodes[f"/{name}"]
+            assert node.is_supported(), name
+            assert node.icon_name == "sigimax:image.svg"
+            with pytest.raises(NonMonotonicAxisError, match="Axis 'x'"):
+                read(node)
+            assert not node.is_supported(), name
+            assert node.nxdata.problems == ("axis 'x' is not strictly monotonic",)
+            assert node.text.endswith(" - axis 'x' is not strictly monotonic")
+            assert node.icon_name == "h5group.svg"
+            assert node.get_native_object() is None
+            assert node.create_preview_object(1000) is None
+        signal = nodes["/signal"]
+        assert isinstance(signal.get_native_object(), SignalObj)
+        assert signal.is_supported()
 
 
 def test_nxdata_image_axis_precision(tmp_path) -> None:

@@ -62,7 +62,6 @@ from sigimax.utils.qthelpers import (
     add_corner_menu,
     bring_to_front,
     configure_menu_about_to_show,
-    qt_handle_error_message,
 )
 from sigimax.widgets import logviewer, status
 from sigimax.widgets.h5browser import H5BrowserDialog
@@ -1145,7 +1144,9 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         import, converts the checked nodes into native objects
         (:class:`SignalObj <sigima.objects.SignalObj>` /
         :class:`ImageObj <sigima.objects.ImageObj>`), and hands them over to
-        :meth:`_handle_imported_objects`.
+        :meth:`_handle_imported_objects`. Datasets that cannot be imported are
+        reported at once, after the other ones are imported
+        (:meth:`_report_import_errors`).
 
         Args:
             filenames: HDF5 filenames
@@ -1155,25 +1156,63 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
             self._check_h5file(filename, "load")
 
         dialog = H5BrowserDialog(self)
-        dialog.open_files(filenames)
-
-        if exec_dialog(dialog) == QW.QDialog.Accepted:
-            nodes = dialog.get_nodes()
-            if not nodes:
-                dialog.cleanup()
+        try:
+            dialog.open_files(filenames)
+            if exec_dialog(dialog) != QW.QDialog.Accepted:
                 return
-            objects = []
-            for node in nodes:
-                try:
-                    obj = node.get_native_object()
-                    if obj is not None:
-                        objects.append(obj)
-                except (OSError, ValueError) as exc:
-                    qt_handle_error_message(self, exc)
+            objects, errors = self._create_objects_from_nodes(dialog.get_nodes())
+        finally:
             dialog.cleanup()
-            self._handle_imported_objects(objects, bool(reset_all))
-        else:
-            dialog.cleanup()
+        self._handle_imported_objects(objects, bool(reset_all))
+        self._report_import_errors(errors)
+
+    @staticmethod
+    def _create_objects_from_nodes(nodes: list) -> tuple[list, list[str]]:
+        """Create the native objects of HDF5 nodes
+
+        Data of third-party files may be invalid or unreadable: the objects of the
+        other nodes are created, and the errors are collected.
+
+        Args:
+            nodes: HDF5 nodes to import
+
+        Returns:
+            Created objects, and the description of each error ("node: reason")
+        """
+        objects, errors = [], []
+        for node in nodes:
+            try:
+                obj = node.get_native_object()
+            except Exception as exc:  # pylint: disable=broad-except
+                errors.append(f"{node.id}: {exc}")
+                continue
+            if obj is not None:
+                objects.append(obj)
+        return objects, errors
+
+    def _report_import_errors(self, errors: list[str]) -> None:
+        """Report the datasets that could not be imported
+
+        Args:
+            errors: description of each error ("dataset: reason")
+
+        Raises:
+            ValueError: in unattended mode, or when errors are reported by the
+             caller (see :func:`sigimax.utils.qthelpers.errors_propagated_to_caller`),
+             if any dataset could not be imported
+        """
+        if not errors:
+            return
+        if execenv.unattended or qth.must_propagate_errors():
+            raise ValueError("\n".join(errors))
+        shown = errors[:10]
+        if len(errors) > len(shown):
+            shown.append(_("... and %d more") % (len(errors) - len(shown)))
+        QW.QMessageBox.warning(
+            self,
+            get_conf().app_name.get(),
+            _("Some datasets could not be imported:") + "\n\n" + "\n".join(shown),
+        )
 
     def save_h5_workspace(self, filename: str) -> None:
         """Save current workspace to an HDF5 file.
@@ -1204,7 +1243,9 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         converts every supported node into a native object
         (:class:`SignalObj <sigima.objects.SignalObj>` /
         :class:`ImageObj <sigima.objects.ImageObj>`), and hands them over to
-        :meth:`_handle_imported_objects`.
+        :meth:`_handle_imported_objects`. Datasets that cannot be imported are
+        reported at once, after the other ones are imported
+        (:meth:`_report_import_errors`).
 
         Override in subclasses that import through their own browser or
         progress dialog.
@@ -1216,18 +1257,13 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         with qth.qt_try_loadsave_file(self, filename, "load"):
             filename = self._check_h5file(filename, "load")
             importer = H5Importer(filename)
-            objects = []
-            for node in importer.nodes:
-                if not node.is_supported():
-                    continue
-                try:
-                    obj = node.get_native_object()
-                    if obj is not None:
-                        objects.append(obj)
-                except Exception as exc:  # pylint: disable=broad-except
-                    qt_handle_error_message(self, exc)
-            importer.close()
+            try:
+                nodes = [node for node in importer.nodes if node.is_supported()]
+                objects, errors = self._create_objects_from_nodes(nodes)
+            finally:
+                importer.close()
             self._handle_imported_objects(objects, bool(reset_all))
+            self._report_import_errors(errors)
 
     def reset_all(self) -> None:
         """Reset all application data.
