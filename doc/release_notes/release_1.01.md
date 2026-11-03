@@ -58,6 +58,7 @@
 
 * `block_signals` now restores the previous signal-blocking state of the widget and of its children instead of unblocking them unconditionally: nested blocking contexts and widgets already blocked by the caller keep their state.
 * `sigimax_app_context` no longer schedules the unattended/screenshot close timer when the Qt event loop is not executed (`exec_loop=False`): the pending timer previously closed unrelated top-level widgets created later, such as the window of a subsequent test.
+* Applications may now run operations whose errors are reported by the caller instead of being shown in a message box, e.g. requests of a remote control server (closes [Issue #62](https://github.com/DataLab-Platform/SigimaX/issues/62)): inside the new `errors_propagated_to_caller` context, `qt_try_loadsave_file` re-raises load and save errors, as it already did when running tests. The new `must_propagate_errors` function tells whether errors must be re-raised, so that applications may apply the same rule to their own error handling. Showing the error in a message box was useless for such a caller, which was not informed of the error, and crashed the application when it ran without display on Windows (`QT_QPA_PLATFORM=offscreen`), e.g. DataLab when a file loaded remotely could not be read.
 
 ### Dialogs ###
 
