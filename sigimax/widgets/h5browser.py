@@ -45,6 +45,7 @@ from sigimax.env import execenv
 from sigimax.h5 import H5Importer
 from sigimax.h5.nexus import default_nxdata_path
 from sigimax.h5.selection import NDView
+from sigimax.h5.utils import ReadCancelled, cancellable_reads
 from sigimax.h5.views import NDViewMixin, count_frames, expand_views
 from sigimax.utils.qthelpers import block_signals, qt_handle_error_message
 
@@ -559,7 +560,9 @@ class PlotPreview(QW.QStackedWidget):
     for datasets larger than :attr:`MAX_ITEMS` (see
     :meth:`sigimax.h5.common.BaseNode.create_preview_object`). The preview of a
     node replaces any pending one: previews of nodes selected meanwhile are not
-    read.
+    read, and the preview being read stops at the next block of data (see
+    :func:`sigimax.h5.utils.cancellable_reads`), so that the main thread does not
+    wait for it to read the newly selected node.
     """
 
     #: Maximum number of data elements read for a preview
@@ -605,7 +608,8 @@ class PlotPreview(QW.QStackedWidget):
 
     def discard(self) -> None:
         """Discard the pending previews, without waiting: the preview being read,
-        if any, is not shown and the previews not started yet are not read"""
+        if any, stops at the next block of data and is not shown, and the previews
+        not started yet are not read"""
         self.__generation += 1
         if self.__pending is not None:
             self.__pending.cancel()
@@ -634,7 +638,10 @@ class PlotPreview(QW.QStackedWidget):
             return  # Another node was selected meanwhile: do not read this one
         obj, error = None, None
         try:
-            obj = node.create_preview_object(self.MAX_ITEMS)
+            with cancellable_reads(lambda: generation != self.__generation):
+                obj = node.create_preview_object(self.MAX_ITEMS)
+        except ReadCancelled:
+            return  # Another node was selected while this one was read
         except Exception as exc:  # pylint: disable=broad-except
             error = exc
         try:
@@ -1241,16 +1248,14 @@ class H5Browser(QW.QSplitter):
         # View the selected item
         node = self.get_node(item)
         self.__current_item = item
-        # Discard the previous preview first: its pending read is not started,
-        # so that reading the node description below does not wait for it
+        # Discard the previous preview first: its pending read is not started, and
+        # the read in progress stops at the next block of data, so that reading
+        # the node description below does not wait for it
         self.plotpreview.discard()
         self.groupandattrs.update_from_node(node)
         self.viewselector.set_node(node)
-        if node.can_preview():
-            self.plotpreview.update_plot_preview(node)
-        else:
-            self.plotpreview.clear_preview()
-        # Update the file selector combo box
+        # Update the file selector combo box (before starting the preview: reading
+        # the file name would wait for the first block of data to be read)
         with block_signals(self.selector.combo):
             # Avoid triggering current file changed signal, which would result in
             # loosing the current selection on the tree (side effect: "Show array"
@@ -1258,6 +1263,10 @@ class H5Browser(QW.QSplitter):
             # that now the current node is not an array, thus causing an error if
             # the user clicks on the button).
             self.selector.set_current_fname(node.h5file.filename)
+        if node.can_preview():
+            self.plotpreview.update_plot_preview(node)
+        else:
+            self.plotpreview.clear_preview()
 
     def __selector_current_file_changed(self, fname: str) -> None:
         """Selector current file changed

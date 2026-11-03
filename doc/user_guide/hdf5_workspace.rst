@@ -236,8 +236,10 @@ Large Files and Multidimensional Views
 Dataset classification uses shape and type metadata; mixed compound datasets
 are checked on their first records. Text previews are bounded to 100 elements,
 and attributes above 10 000 elements are skipped. Graphical previews are read
-in a worker thread; previews of items selected meanwhile are not read, and
-stale results are not displayed. Selecting an item that cannot be previewed,
+in a worker thread, in blocks of data (``sigimax.h5.utils.READ_BLOCK_ITEMS``
+elements) between which the browser may read the file; previews of items
+selected meanwhile are not read, the preview being read stops at the next block
+when another item is selected, and stale results are not displayed. Selecting an item that cannot be previewed,
 such as a group, clears the preview. Closing a file or the browser dialog waits
 for the preview read to finish. Broken soft or external links (e.g. to missing
 detector files) are skipped, with a console warning, when a file is opened, as
