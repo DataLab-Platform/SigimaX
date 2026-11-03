@@ -429,17 +429,17 @@ def _read_axis(
     """
     dset = group[axis.name]
     if step == 1:
-        values = np.asarray(dset[()], dtype=float)
+        values = np.asarray(utils.read_dataset(dset), dtype=float)
         if axis.edges:
             values = (values[:-1] + values[1:]) / 2
     elif axis.edges:
         # Only the edges bounding the returned bins are read
         nbins = dset.shape[0] - 1
-        lower = np.asarray(dset[0:nbins:step], dtype=float)
-        upper = np.asarray(dset[1 : nbins + 1 : step], dtype=float)
+        lower = np.asarray(utils.read_dataset(dset, slice(0, nbins, step)), float)
+        upper = np.asarray(utils.read_dataset(dset, slice(1, nbins + 1, step)), float)
         values = (lower + upper) / 2
     else:
-        values = np.asarray(dset[::step], dtype=float)
+        values = np.asarray(utils.read_dataset(dset, slice(None, None, step)), float)
     return values, dset.dtype
 
 
@@ -842,7 +842,7 @@ class NXdataNode(common.GroupNode, NDViewMixin):
         """
         desc = self.nxdata
         dset = self.dset[desc.signal]
-        data = dset[(slice(None, None, step),) * dset.ndim]
+        data = utils.read_dataset(dset, (slice(None, None, step),) * dset.ndim)
         conversions = [
             f"axis '{axis.name}': bin edges -> bin centers"
             for axis in desc.axes
@@ -851,7 +851,10 @@ class NXdataNode(common.GroupNode, NDViewMixin):
         if len(desc.shape) == 1:
             dy = None
             if desc.errors is not None:
-                dy = np.asarray(self.dset[desc.errors][::step], dtype=float)
+                errors = self.dset[desc.errors]
+                dy = np.asarray(
+                    utils.read_dataset(errors, slice(None, None, step)), dtype=float
+                )
             obj = self._build_signal(data, step, desc.axes[0], desc.shape[0], dy)
             return obj, conversions
         obj = self._build_image(data, step, conversions, desc.axes, desc.shape)

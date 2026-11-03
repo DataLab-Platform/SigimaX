@@ -244,12 +244,23 @@ class H5TreeWidget(AbstractTreeWidget):
             Item of the default NeXus ``NXdata`` group of the file (``@default``
             attributes), expanded, or None
         """
-        self.fnames.append(osp.abspath(fname))
         importer = H5Importer(fname)
+        index = self.topLevelItemCount()
+        self.fnames.append(osp.abspath(fname))
         self.h5importers.append(importer)
-        self.add_root_to_tree(importer)
+        try:
+            self.add_root_to_tree(importer)
+        except BaseException:
+            # Remove the partial tree: top-level items, file names and importers
+            # must stay aligned, and the file is closed
+            if self.topLevelItemCount() > index:
+                self.takeTopLevelItem(index)
+            self.fnames.pop()
+            self.h5importers.pop()
+            importer.close()
+            raise
         # Temporarily expand all items to calculate proper column widths
-        rootitem = self.topLevelItem(self.topLevelItemCount() - 1)
+        rootitem = self.topLevelItem(index)
         self.expand_all_children(rootitem)
         for col in range(4):
             self.resizeColumnToContents(col)
@@ -1284,14 +1295,22 @@ class H5Browser(QW.QSplitter):
 
         The "Show array" button is enabled when an array is selected with the
         mouse: the current node may have changed since (e.g. with the keyboard).
+        Read errors are reported.
         """
         item = self.tree.currentItem()
         node = None if item is None else self.get_node(item)
         if node is None or not node.IS_ARRAY:
             return
+        try:
+            data = node.data
+            if data is None:
+                raise OSError(f"Unable to read dataset '{node.id}'")
+        except OSError as exc:
+            qt_handle_error_message(self, exc)
+            return
         arrayeditor = ArrayEditor(self)
         arrayeditor.setup_and_check(
-            node.data, title=node.name, readonly=True, add_title_suffix=False
+            data, title=node.name, readonly=True, add_title_suffix=False
         )
         exec_dialog(arrayeditor)
 

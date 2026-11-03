@@ -162,6 +162,27 @@ def unavailable_filters(dset: h5py.Dataset) -> list[str]:
     return names
 
 
+def read_dataset(dset: h5py.Dataset, region: Any = ()) -> Any:
+    """Read a region of a dataset, reporting read errors with the dataset path
+
+    Args:
+        dset: HDF5 dataset
+        region: selection passed to ``dset[...]`` (default: whole dataset)
+
+    Returns:
+        Data that was read
+
+    Raises:
+        OSError: if HDF5 cannot read the data (truncated or corrupted file,
+         missing external file, read error on a network drive...)
+    """
+    try:
+        return dset[region]
+    except OSError as exc:
+        fname = osp.basename(dset.file.filename)
+        raise OSError(f"Unable to read dataset '{dset.name}' ({fname}): {exc}") from exc
+
+
 def read_bounded(dset: h5py.Dataset, max_items: int) -> tuple[Any, bool]:
     """Read the first elements of a dataset, along each axis
 

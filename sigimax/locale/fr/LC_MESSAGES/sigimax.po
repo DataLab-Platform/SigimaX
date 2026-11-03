@@ -196,6 +196,13 @@ msgstr "Non"
 msgid "%d object(s) imported successfully"
 msgstr "%d objet(s) importé(s) avec succès"
 
+#, python-format
+msgid "... and %d more"
+msgstr "... et %d autres"
+
+msgid "Some datasets could not be imported:"
+msgstr "Certains jeux de données n'ont pas pu être importés :"
+
 msgid "Home page"
 msgstr "Page d'accueil du projet"
 

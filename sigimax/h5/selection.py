@@ -16,6 +16,8 @@ import math
 import h5py
 import numpy as np
 
+from sigimax.h5.utils import read_dataset
+
 __all__ = ["NDSelection", "NDView", "default_view", "preview_step", "read_selection"]
 
 
@@ -227,6 +229,9 @@ def read_selection(
 
     Returns:
         Array with one dimension per displayed axis, in display order
+
+    Raises:
+        OSError: if the dataset cannot be read
     """
     selection.validate(dset.shape)
     if step < 1:
@@ -236,6 +241,6 @@ def read_selection(
         slice(None, None, step) if axis in selection.displayed else next(hidden)
         for axis in range(dset.ndim)
     )
-    data = np.asarray(dset[region])
+    data = np.asarray(read_dataset(dset, region))
     order = sorted(selection.displayed)
     return data.transpose([order.index(axis) for axis in selection.displayed])

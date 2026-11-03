@@ -109,7 +109,11 @@ designated by the ``default`` attributes of the file and of its entry
 Compressed detector data (bitshuffle/LZ4, Blosc, Zstandard...) is read with the
 HDF5 filters of hdf5plugin, a dependency of SigimaX. A dataset compressed with a
 filter that is still unavailable is reported in the browser, with the filter name
-and number, instead of failing when read.
+and number, instead of failing when read. A dataset that cannot be read
+(truncated or corrupted file, missing external data file...) is reported with its
+path when it is previewed or imported, and its value is shown as
+``<unreadable data>`` if its first elements cannot be read either; the other
+datasets of the file are still browsed and imported.
 
 Axis datasets must be 1D, hold real numbers and contain either one coordinate
 per point or one extra value for bin edges. Edges are converted to centers.
