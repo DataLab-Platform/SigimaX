@@ -9,7 +9,8 @@ previews of nodes selected before are discarded without being read, the preview
 being read stops at the next block of data when another node is selected,
 selecting a node that cannot be previewed clears the plot, and closing a file or
 the browser dialog waits for the preview being read. "Show array" only shows the
-current node if it is an array.
+current node if it is an array. A node found invalid when its preview is read is
+shown as not importable.
 """
 
 from __future__ import annotations
@@ -284,6 +285,52 @@ def test_discarded_preview_stops_reading(tmp_path, monkeypatch) -> None:
         assert len(reads) == 3, "The stopped read must not be cached"
         browser.cleanup()
         browser.close()
+
+
+def test_failed_preview_updates_item(tmp_path, monkeypatch) -> None:
+    """A NeXus image whose axis is found not strictly monotonic when previewed is
+    shown as not importable: its item is no longer checkable (the "OK" button is
+    disabled if no other item is checked), and the problem is described."""
+    fname = str(tmp_path / f"{uuid.uuid4()}.nxs")
+    with h5py.File(fname, "w") as h5file:
+        group = h5file.create_group("image")
+        group.attrs["NX_class"] = "NXdata"
+        group.attrs["signal"] = "data"
+        group.attrs["axes"] = [".", "x"]
+        group["data"] = np.ones((3, 4))
+        group["x"] = [0.0, 1.0, 1.0, 2.0]
+    errors = []
+    monkeypatch.setattr(
+        "sigimax.widgets.h5browser.qt_handle_error_message",
+        lambda _widget, exc: errors.append(exc),
+    )
+    with qt_app_context():
+        dialog = H5BrowserDialog(None)
+        dialog.open_file(fname)
+        tree = dialog.browser.tree
+        ok_button = dialog.bbox.button(QW.QDialogButtonBox.Ok)
+        item = _tree_item(dialog.browser, "/image")
+        assert item.flags() & QC.Qt.ItemIsUserCheckable
+        item.setCheckState(0, QC.Qt.Checked)
+        assert ok_button.isEnabled()
+        tree.setCurrentItem(item)
+        tree.clicked(item)
+        _wait_until(lambda: errors)
+        assert "not strictly monotonic" in str(errors[0])
+        assert not item.flags() & QC.Qt.ItemIsUserCheckable
+        assert item.data(0, QC.Qt.CheckStateRole) is None
+        assert not ok_button.isEnabled()
+        assert "axis 'x' is not strictly monotonic" in item.toolTip(0)
+        assert item.text(3).startswith("NXdata: data (., x) - axis 'x'")
+        table = dialog.browser.groupandattrs.group.table
+        assert "not strictly monotonic" in table.item(2, 0).text()
+        assert tree.get_nodes() == []
+        # Selecting it again clears the preview, without reading it again
+        tree.clicked(item)
+        QW.QApplication.processEvents()
+        assert len(errors) == 1
+        dialog.cleanup()
+        dialog.close()
 
 
 if __name__ == "__main__":

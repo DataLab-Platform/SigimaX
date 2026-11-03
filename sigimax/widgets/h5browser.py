@@ -448,6 +448,21 @@ class H5TreeWidget(AbstractTreeWidget):
                 item.setCheckState(0, QC.Qt.Checked if state else QC.Qt.Unchecked)
 
     @staticmethod
+    def __item_texts(node: BaseNode) -> list[str]:
+        """Return the texts of the columns of the item of a node
+
+        Args:
+            node: HDF5 node
+
+        Returns:
+            Name, size, type and value (truncated) of the node
+        """
+        text = to_string(node.text)
+        if len(text) > 30:
+            text = text[:30] + "..."
+        return [node.name, node.shape_str, node.dtype_str, text]
+
+    @staticmethod
     def __create_node(node: BaseNode) -> QW.QTreeWidgetItem:
         """Create tree node from HDF5 node
 
@@ -457,15 +472,38 @@ class H5TreeWidget(AbstractTreeWidget):
         Returns:
             Tree widget node
         """
-        text = to_string(node.text)
-        if len(text) > 30:
-            text = text[:30] + "..."
-        treeitem = QW.QTreeWidgetItem([node.name, node.shape_str, node.dtype_str, text])
+        treeitem = QW.QTreeWidgetItem(H5TreeWidget.__item_texts(node))
         treeitem.setData(0, QC.Qt.UserRole, node.id)
         if node.description:
             for col in range(treeitem.columnCount()):
                 treeitem.setToolTip(col, node.description)
         return treeitem
+
+    def update_item(self, item: QW.QTreeWidgetItem) -> None:
+        """Update the item of a node from its current state: texts, tooltip, icon
+        and check box (e.g. once problems were found when reading its data, which
+        make it no longer supported)
+
+        Args:
+            item: tree item
+        """
+        node = self.get_node(item)
+        with block_signals(self):
+            for col, text in enumerate(self.__item_texts(node)):
+                item.setText(col, text)
+                item.setToolTip(col, node.description)
+            if not node.is_supported():
+                item.setData(0, QC.Qt.CheckStateRole, None)
+                item.setFlags(QC.Qt.ItemIsEnabled)
+            elif not item.flags() & QC.Qt.ItemIsUserCheckable:
+                item.setFlags(
+                    QC.Qt.ItemIsEnabled
+                    | QC.Qt.ItemIsSelectable
+                    | QC.Qt.ItemIsUserCheckable
+                )
+                item.setCheckState(0, QC.Qt.Unchecked)
+            item.setIcon(0, get_icon(node.icon_name))
+        self.itemChanged.emit(item, 0)
 
     @staticmethod
     def __recursive_popfunc(parent_item: QW.QTreeWidgetItem, node: BaseNode) -> None:
@@ -569,10 +607,15 @@ class PlotPreview(QW.QStackedWidget):
     MAX_ITEMS = 2**24
 
     SIG_LOADED = QC.Signal(int, object, object)
+    #: Emitted with the node whose preview could not be read, before the error is
+    #: shown: problems may have been found when reading its data (e.g. NeXus image
+    #: axes that are not strictly monotonic), which changes its description
+    SIG_PREVIEW_FAILED = QC.Signal(object)
 
     def __init__(self, parent: QW.QWidget) -> None:
         super().__init__(parent)
         self.__generation = 0
+        self.__node: BaseNode | None = None
         self.__executor: ThreadPoolExecutor | None = None
         self.__pending: Future | None = None
         self.SIG_LOADED.connect(self.__show_loaded_object)
@@ -611,6 +654,7 @@ class PlotPreview(QW.QStackedWidget):
         if any, stops at the next block of data and is not shown, and the previews
         not started yet are not read"""
         self.__generation += 1
+        self.__node = None
         if self.__pending is not None:
             self.__pending.cancel()
             self.__pending = None
@@ -660,6 +704,7 @@ class PlotPreview(QW.QStackedWidget):
     def update_plot_preview(self, node: BaseNode) -> None:
         """Update plot preview widget"""
         self.__generation += 1
+        self.__node = node
         if self.__pending is not None:
             self.__pending.cancel()
         self.__show_message(_("Loading..."))
@@ -677,6 +722,7 @@ class PlotPreview(QW.QStackedWidget):
             return
         if error is not None:
             self.__show_message(_("Unsupported data"))
+            self.SIG_PREVIEW_FAILED.emit(self.__node)
             qt_handle_error_message(self, error)
             return
         if obj is None:
@@ -1144,6 +1190,7 @@ class H5Browser(QW.QSplitter):
         preview.setOrientation(QC.Qt.Vertical)
         self.addWidget(preview)
         self.plotpreview = PlotPreview(self)
+        self.plotpreview.SIG_PREVIEW_FAILED.connect(self.__preview_failed)
         self.viewselector = ViewSelector(self)
         self.viewselector.SIG_VIEW_CHANGED.connect(self.__view_changed)
         self.viewselector.SIG_IMPORT_CHANGED.connect(self.__view_import_changed)
@@ -1280,6 +1327,16 @@ class H5Browser(QW.QSplitter):
     def __view_changed(self) -> None:
         """View of the current multidimensional node changed: preview it"""
         self.plotpreview.update_plot_preview(self.viewselector.node)
+
+    def __preview_failed(self, node: BaseNode) -> None:
+        """Preview of a node could not be read: show the problems found meanwhile
+        (e.g. NeXus image axes that are not strictly monotonic) in its item and in
+        its description, the node being no longer importable"""
+        item = self.__current_item
+        if item is None or self.get_node(item) is not node:
+            return
+        self.tree.update_item(item)
+        self.groupandattrs.update_from_node(node)
 
     def __view_import_changed(self, state: bool) -> None:
         """Import of the frames of the current multidimensional node enabled or

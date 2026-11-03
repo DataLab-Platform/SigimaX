@@ -119,7 +119,9 @@ Axis datasets must be 1D, hold real numbers and contain either one coordinate
 per point or one extra value for bin edges. Edges are converted to centers.
 Image coordinates may be non-uniform; a decreasing image axis is reversed,
 with the image, and this conversion is recorded, while an image axis that is
-not strictly monotonic prevents import. An image gets uniform coordinates
+not strictly monotonic prevents import. Axis values are only read when the image
+is previewed or imported: such an image is then shown as not importable in the
+browser, with the problem in its description. An image gets uniform coordinates
 (origin and pixel size) only if the values of both axes deviate from even
 spacing by at most 2.5 units in the last place of their stored data type
 (``sigimax.h5.nexus.UNIFORM_AXIS_TOLERANCE``), so that evenly spaced
