@@ -19,7 +19,7 @@ End-user apps (DataLab, custom scientific apps)
 ### Technology Stack
 
 - **Python**: 3.10+ (`from __future__ import annotations`)
-- **Core**: guidata (≥3.13.4), PlotPy (≥2.8.2), Sigima (≥1.1.0), psutil (≥5.7)
+- **Core**: guidata (≥3.17.2), PlotPy (≥2.12.1), Sigima (≥1.4.0), hdf5plugin (≥4.0), psutil (≥5.7)
 - **GUI**: Qt via QtPy (PyQt5/PyQt6/PySide6)
 - **Testing**: pytest
 - **Linting**: Ruff (preferred), Pylint
@@ -387,6 +387,38 @@ action_text = _("Open HDF5 files")
 - **🚀 Pytest**: Run tests (`--ff` flag)
 - **📚 Compile translations**: Build .mo files
 - **🔎 Scan translations**: Update .po files
+
+## Release Notes Guidelines
+
+**Location**: `doc/release_notes/release_MAJOR.MINOR.md` where MINOR is zero-padded to 2 digits (e.g., `release_1.00.md` for v1.0.x, `release_1.01.md` for v1.1.x).
+
+### Dependency Version Tracking (`Requirements` section)
+
+Every new release entry in the release notes must include a dedicated **`### Requirements ###`** section tracking minimum version updates from `pyproject.toml` (`requires-python`, `[project.dependencies]`, and relevant `[project.optional-dependencies]`).
+
+Distinguish three categories of dependencies:
+
+1. **DataLab-Platform** (`datalab-platform` ecosystem packages): `Sigima` (≥ 1.4.0)
+2. **PlotPyStack**: `guidata` (≥ 3.17.2), `PlotPy` (≥ 2.12.1), `PythonQwt`
+3. **Third-party** (and Python runtime): `Python` (`requires-python`), `hdf5plugin` (≥ 4.0), `psutil` (≥ 5.7), `PyQt5` (≥ 5.15.6), etc.
+
+**Rules**:
+- Whenever a minimum required version is bumped or a dependency is added/updated in `pyproject.toml`, document it in the release's `### Requirements ###` section, grouped/distinguished according to these three categories, and briefly state the user-visible reason for the update.
+- Keep `requirements.txt` and `doc/requirements.rst` synchronized with `pyproject.toml` (via `python -m guidata.utils.genreqs all`), along with the French documentation `.po` catalogs.
+
+**Example**:
+```markdown
+### Requirements ###
+
+* **DataLab-Platform**:
+  * Sigima ≥ 1.4.0 is required: the HDF5 import modules use its experimental-source API, integer conversions use its precision-preserving converter, and the tooltips of rectangular ROIs use its pixel-range conversions.
+* **PlotPyStack**:
+  * guidata ≥ 3.17.2 is required: the splash screen and the watermark of empty plots use its `get_pixmap` function on high-DPI displays, and windows follow the color theme on Windows.
+  * PlotPy ≥ 2.12.1 is required: auto downsampling of signals relies on its min/max downsampling.
+* **Third-party**:
+  * Python ≥ 3.10 is now required. Python 3.9 users must keep an earlier compatible release.
+  * hdf5plugin ≥ 4.0 is required, for the HDF5 compression filters of detector data.
+```
 
 ## Related Projects
 
