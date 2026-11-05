@@ -25,55 +25,55 @@ msgid "Summary"
 msgstr "Résumé"
 
 msgid "Python"
-msgstr "Python"
+msgstr ""
 
 msgid ">=3.10, <4"
-msgstr ">=3.10, <4"
+msgstr ""
 
 msgid "Python programming language"
 msgstr "Langage de programmation Python"
 
 msgid "guidata"
-msgstr "guidata"
+msgstr ""
 
-msgid ">= 3.17.0"
-msgstr ">= 3.17.0"
+msgid ">= 3.17.2"
+msgstr ""
 
 msgid "Automatic GUI generation for easy dataset editing and display"
 msgstr "Génération automatique d'interface graphique pour une édition et un affichage facile des jeux de données"
 
-msgid "hdf5plugin"
-msgstr "hdf5plugin"
-
-msgid ">= 4.0"
-msgstr ">= 4.0"
-
-msgid "HDF5 Plugins for Windows, MacOS, and Linux"
-msgstr "Plugins HDF5 pour Windows, MacOS et Linux"
-
 msgid "PlotPy"
-msgstr "PlotPy"
+msgstr ""
 
-msgid ">= 2.12.0"
-msgstr ">= 2.12.0"
+msgid ">= 2.12.1"
+msgstr ""
 
 msgid "Curve and image plotting tools for Python/Qt applications"
 msgstr "Outils de traçage de courbes et d'images pour les applications Python/Qt"
 
+msgid "hdf5plugin"
+msgstr ""
+
+msgid ">= 4.0"
+msgstr ""
+
+msgid "HDF5 Plugins for Windows, MacOS, and Linux"
+msgstr "Plugins HDF5 pour Windows, MacOS et Linux"
+
 msgid "psutil"
-msgstr "psutil"
+msgstr ""
 
 msgid ">= 5.7"
-msgstr ">= 5.7"
+msgstr ""
 
 msgid "Cross-platform lib for process and system monitoring."
 msgstr "Bibliothèque multiplateforme pour la surveillance des processus et du système."
 
 msgid "Sigima"
-msgstr "Sigima"
+msgstr ""
 
 msgid ">= 1.4.0"
-msgstr ">= 1.4.0"
+msgstr ""
 
 msgid "Scientific computing engine for 1D signals and 2D images, part of the DataLab open-source platform."
 msgstr "Moteur de calcul scientifique pour les signaux 1D et les images 2D, faisant partie de la plateforme open-source DataLab."
@@ -82,10 +82,10 @@ msgid "Optional modules for GUI support (Qt):"
 msgstr "Modules facultatifs pour la prise en charge de l'interface graphique (Qt) :"
 
 msgid "PyQt5"
-msgstr "PyQt5"
+msgstr ""
 
 msgid ">= 5.15.6"
-msgstr ">= 5.15.6"
+msgstr ""
 
 msgid "Python bindings for the Qt cross platform application toolkit"
 msgstr "Liaisons Python pour l'outil de développement d'applications multiplateforme Qt"
@@ -94,19 +94,19 @@ msgid "Optional modules for development:"
 msgstr "Modules facultatifs pour le développement :"
 
 msgid "ruff"
-msgstr "ruff"
+msgstr ""
 
 msgid "An extremely fast Python linter and code formatter, written in Rust."
 msgstr "Un linter Python extrêmement rapide et un formateur de code, écrit en Rust."
 
 msgid "pylint"
-msgstr "pylint"
+msgstr ""
 
 msgid "python code static checker"
 msgstr "Analyseur statique de code Python"
 
 msgid "Coverage"
-msgstr "Coverage"
+msgstr ""
 
 msgid "Code coverage measurement for Python"
 msgstr "Mesure de la couverture du code pour Python"
@@ -115,55 +115,55 @@ msgid "Optional modules for building the documentation:"
 msgstr "Modules facultatifs pour la construction de la documentation :"
 
 msgid "sphinx"
-msgstr "sphinx"
+msgstr ""
 
 msgid "Python documentation generator"
 msgstr "Générateur de documentation Python"
 
 msgid "sphinx_intl"
-msgstr "sphinx_intl"
+msgstr ""
 
 msgid "Sphinx utility that make it easy to translate and to apply translation."
 msgstr "Utilitaire Sphinx qui facilite la traduction et l'application de la traduction."
 
 msgid "sphinx-sitemap"
-msgstr "sphinx-sitemap"
+msgstr ""
 
 msgid "Sitemap generator for Sphinx"
 msgstr "Générateur de plan de site pour Sphinx"
 
 msgid "myst_parser"
-msgstr "myst_parser"
+msgstr ""
 
 msgid "An extended [CommonMark](https://spec.commonmark.org/) compliant parser,"
 msgstr "Un analyseur conforme à [CommonMark](https://spec.commonmark.org/) étendu,"
 
 msgid "myst-nb"
-msgstr "myst-nb"
+msgstr ""
 
 msgid "A Jupyter Notebook Sphinx reader built on top of the MyST markdown parser."
 msgstr "Un lecteur Sphinx de notebooks Jupyter construit au-dessus de l'analyseur Markdown MyST."
 
 msgid "sphinx_design"
-msgstr "sphinx_design"
+msgstr ""
 
 msgid "A sphinx extension for designing beautiful, view size responsive web components."
 msgstr "Une extension Sphinx pour concevoir de beaux composants web réactifs à la taille de la vue."
 
 msgid "sphinx_gallery"
-msgstr "sphinx_gallery"
+msgstr ""
 
 msgid "A Sphinx extension that builds an HTML gallery of examples from any set of Python scripts."
 msgstr "Une extension Sphinx qui crée une galerie HTML d'exemples à partir de n'importe quel ensemble de scripts Python."
 
 msgid "sphinx-copybutton"
-msgstr "sphinx-copybutton"
+msgstr ""
 
 msgid "Add a copy button to each of your code cells."
 msgstr "Ajoute un bouton de copie à chacune de vos cellules de code."
 
 msgid "pydata-sphinx-theme"
-msgstr "pydata-sphinx-theme"
+msgstr ""
 
 msgid "Bootstrap-based Sphinx theme from the PyData community"
 msgstr "Thème Sphinx basé sur Bootstrap de la communauté PyData"
@@ -172,13 +172,13 @@ msgid "Optional modules for running test suite:"
 msgstr "Modules facultatifs pour exécuter la suite de tests :"
 
 msgid "pytest"
-msgstr "pytest"
+msgstr ""
 
 msgid "pytest: simple powerful testing with Python"
 msgstr "pytest : tests simples et puissants avec Python"
 
 msgid "pytest-xvfb"
-msgstr "pytest-xvfb"
+msgstr ""
 
 msgid "A pytest plugin to run Xvfb (or Xephyr/Xvnc) for tests."
 msgstr "Un plugin pytest pour exécuter Xvfb (ou Xephyr/Xvnc) pour les tests."
