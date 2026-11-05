@@ -18,6 +18,33 @@ msgstr "Version 1.1.0"
 msgid "SigimaX Version 1.1.0"
 msgstr "SigimaX Version 1.1.0"
 
+msgid "Requirements"
+msgstr "Exigences"
+
+msgid "**DataLab-Platform**:"
+msgstr "**DataLab-Platform** :"
+
+msgid "Sigima 1.4.0 or later is required: the HDF5 import modules use its experimental-source API, integer conversions use its precision-preserving converter, and the tooltips of rectangular ROIs use its pixel-range conversions."
+msgstr "Sigima 1.4.0 ou ultérieur est requis : les modules d'import HDF5 utilisent son API d'origine expérimentale, les conversions d'entiers son convertisseur préservant la précision, et les info-bulles des ROI rectangulaires ses conversions en plages de pixels."
+
+msgid "**PlotPyStack**:"
+msgstr "**PlotPyStack** :"
+
+msgid "guidata 3.17.2 or later is required: the splash screen and the watermark of empty plots use its `get_pixmap` function to show high-resolution images on high-DPI displays, and it gives every window a title bar following the color theme on Windows (closes [Issue #60](https://github.com/DataLab-Platform/SigimaX/issues/60))."
+msgstr "guidata 3.17.2 ou ultérieur est requis : l'écran de démarrage et le filigrane des graphiques vides utilisent sa fonction `get_pixmap` pour afficher des images en haute résolution sur les écrans haute résolution, et il donne à chaque fenêtre une barre de titre suivant le thème de couleurs sous Windows (corrige [Issue #60](https://github.com/DataLab-Platform/SigimaX/issues/60))."
+
+msgid "PlotPy 2.12.1 or later is required: auto downsampling of signals relies on its min/max downsampling, which keeps narrow peaks and the envelope of noisy signals."
+msgstr "PlotPy 2.12.1 ou ultérieur est requis : le sous-échantillonnage automatique des signaux repose sur son sous-échantillonnage min/max, qui conserve les pics étroits et l'enveloppe des signaux bruités."
+
+msgid "**Third-party**:"
+msgstr "**Bibliothèques tierces** :"
+
+msgid "Python 3.10 or later is now required. Python 3.9 users must keep an earlier compatible release."
+msgstr "Python 3.10 ou ultérieur est désormais requis. Les utilisateurs de Python 3.9 doivent conserver une version antérieure compatible."
+
+msgid "hdf5plugin 4.0 or later is required, for the HDF5 compression filters of detector data."
+msgstr "hdf5plugin 4.0 ou ultérieur est requis, pour les filtres de compression HDF5 des données de détecteurs."
+
 msgid "PlotPy adapters"
 msgstr "Adaptateurs PlotPy"
 
@@ -236,21 +263,3 @@ msgstr "Les signaux stockés dans un tableau 2D de nombres complexes, dont les v
 
 msgid "See the [HDF5 guide](../user_guide/hdf5_workspace.rst) for a complete JSON mapping and registration example, NeXus import limits and multidimensional selection examples."
 msgstr "Le [guide HDF5](../user_guide/hdf5_workspace.rst) fournit un exemple complet de profil JSON et d'enregistrement, les limites de l'import NeXus et des exemples de sélections multidimensionnelles."
-
-msgid "Requirements"
-msgstr "Exigences"
-
-msgid "Python 3.10 or later is now required. Python 3.9 users must keep an earlier compatible release."
-msgstr "Python 3.10 ou ultérieur est désormais requis. Les utilisateurs de Python 3.9 doivent conserver une version antérieure compatible."
-
-msgid "guidata 3.17.2 or later is required: the splash screen and the watermark of empty plots use its `get_pixmap` function to show high-resolution images on high-DPI displays, and it gives every window a title bar following the color theme on Windows (closes [Issue #60](https://github.com/DataLab-Platform/SigimaX/issues/60))."
-msgstr "guidata 3.17.2 ou ultérieur est requis : l'écran de démarrage et le filigrane des graphiques vides utilisent sa fonction `get_pixmap` pour afficher des images en haute résolution sur les écrans haute résolution, et il donne à chaque fenêtre une barre de titre suivant le thème de couleurs sous Windows (corrige [Issue #60](https://github.com/DataLab-Platform/SigimaX/issues/60))."
-
-msgid "PlotPy 2.12.1 or later is required: auto downsampling of signals relies on its min/max downsampling, which keeps narrow peaks and the envelope of noisy signals."
-msgstr "PlotPy 2.12.1 ou ultérieur est requis : le sous-échantillonnage automatique des signaux repose sur son sous-échantillonnage min/max, qui conserve les pics étroits et l'enveloppe des signaux bruités."
-
-msgid "Sigima 1.4.0 or later is required: the HDF5 import modules use its experimental-source API, integer conversions use its precision-preserving converter, and the tooltips of rectangular ROIs use its pixel-range conversions."
-msgstr "Sigima 1.4.0 ou ultérieur est requis : les modules d'import HDF5 utilisent son API d'origine expérimentale, les conversions d'entiers son convertisseur préservant la précision, et les info-bulles des ROI rectangulaires ses conversions en plages de pixels."
-
-msgid "hdf5plugin 4.0 or later is required, for the HDF5 compression filters of detector data."
-msgstr "hdf5plugin 4.0 ou ultérieur est requis, pour les filtres de compression HDF5 des données de détecteurs."
