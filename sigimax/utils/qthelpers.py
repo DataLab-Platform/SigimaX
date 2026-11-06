@@ -145,9 +145,13 @@ def sigimax_app_context(
         except Exception:  # pylint: disable=broad-except
             exception_occured = True
         finally:
+            # Without an event loop, a pending close timer would fire later and
+            # close unrelated top-level widgets (e.g. the next test's window).
             if (
-                execenv.unattended or execenv.screenshot
-            ) and not execenv.do_not_quit:  # pragma: no cover
+                exec_loop
+                and (execenv.unattended or execenv.screenshot)
+                and not execenv.do_not_quit
+            ):  # pragma: no cover
                 if execenv.delay > 0:
                     mode = "Screenshot" if execenv.screenshot else "Unattended"
                     message = f"{mode} mode (delay: {execenv.delay}ms)"
@@ -176,6 +180,38 @@ def sigimax_app_context(
 def is_running_tests() -> bool:
     """Check if code is running during test execution"""
     return "pytest" in sys.modules
+
+
+# Number of nested `errors_propagated_to_caller` contexts (GUI thread only)
+_PROPAGATING_CONTEXTS = 0
+
+
+@contextmanager
+def errors_propagated_to_caller() -> Generator[None, None, None]:
+    """Propagate errors caught by error boundaries to the caller.
+
+    Inside this context, error boundaries such as :func:`qt_try_loadsave_file`
+    re-raise the exception instead of showing it in a message box. Use it when the
+    caller reports errors itself and no user waits for a message box, e.g. when
+    running a request of a remote control server. Contexts may be nested.
+
+    This context must be used in the GUI thread, like the error boundaries.
+    """
+    global _PROPAGATING_CONTEXTS  # pylint: disable=global-statement
+    _PROPAGATING_CONTEXTS += 1
+    try:
+        yield
+    finally:
+        _PROPAGATING_CONTEXTS -= 1
+
+
+def must_propagate_errors() -> bool:
+    """Return True if error boundaries must re-raise errors instead of showing them.
+
+    This is the case when running tests, or inside an
+    :func:`errors_propagated_to_caller` context.
+    """
+    return is_running_tests() or _PROPAGATING_CONTEXTS > 0
 
 
 # NOT used in SigimaX — kept for derived apps (e.g. plugin error handling)
@@ -360,14 +396,18 @@ def qt_handle_error_message(widget: QW.QWidget, message: str, context: str = Non
 def qt_try_loadsave_file(
     parent: QW.QWidget, filename: str, operation: str
 ) -> Generator[str, None, None]:
-    """Try and open file (operation: "load" or "save")"""
+    """Try and open file (operation: "load" or "save")
+
+    Errors are shown in a message box, or re-raised when running tests or inside an
+    :func:`errors_propagated_to_caller` context.
+    """
     if operation not in ("load", "save"):
         raise ValueError("operation argument must be 'load' or 'save'")
     try:
         yield filename
     except Exception as msg:  # pylint: disable=broad-except
-        if is_running_tests():
-            # If we are running tests, we want to raise the exception
+        if must_propagate_errors():
+            # The caller reports the error (e.g. test or remote request)
             raise
         traceback.print_exc()
         url = osp.dirname(filename).replace("\\", "/")
@@ -452,19 +492,23 @@ def block_signals(
     Returns:
         Context manager
     """
+    # Restoring previous states (instead of unblocking) keeps nested contexts and
+    # widgets blocked by the caller consistent.
+    widget_was_blocked = widget.signalsBlocked()
+    child_states: list[tuple[QW.QWidget, bool]] = []
     if enable:
         widget.blockSignals(True)
         if children:
             for child in widget.findChildren(QW.QWidget):
+                child_states.append((child, child.signalsBlocked()))
                 child.blockSignals(True)
     try:
         yield
     finally:
         if enable:
-            widget.blockSignals(False)
-            if children:
-                for child in widget.findChildren(QW.QWidget):
-                    child.blockSignals(False)
+            widget.blockSignals(widget_was_blocked)
+            for child, was_blocked in child_states:
+                child.blockSignals(was_blocked)
 
 
 # Used in SigimaX: mainwindow.py (window management)

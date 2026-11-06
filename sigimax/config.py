@@ -97,6 +97,7 @@ import json
 import os
 import os.path as osp
 import sys
+import warnings
 from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
@@ -104,6 +105,7 @@ from typing import TYPE_CHECKING, Any
 
 import guidata.dataset as gds
 from guidata import configtools
+from guidata.qthelpers import is_dark_theme
 from plotpy import config as plotpy_config
 from plotpy.config import CONF as PLOTPY_CONF
 from sigima.config import OptionsContainer
@@ -527,16 +529,18 @@ class ConfigPathOptionField(OptionField):
     """
 
     def check(self, value: Any) -> None:
-        """Check that the value is a string.
+        """Check that the value is a bare file basename.
 
         Args:
             value: The value to check.
 
         Raises:
-            ValueError: If the value is not a string.
+            ValueError: If the value is not a string, or not a bare basename.
         """
         if not isinstance(value, str):
             raise ValueError(f"Expected str, got {type(value).__name__}")
+        if not value or osp.basename(value) != value:
+            raise ValueError(f"Invalid configuration file name {value!r}")
 
     def get(self, default: Any = NO_DEFAULT) -> str:
         """Return the absolute path inside the configuration directory.
@@ -559,11 +563,16 @@ class ConfigPathOptionField(OptionField):
         return self._value
 
     def from_storage(self, value: str) -> None:
-        """Set the raw stored basename without validation or env sync.
+        """Set the raw stored basename without env sync.
 
         Args:
             value: The raw basename to store.
+
+        Raises:
+            ValueError: If the value is not a bare basename (the current value is
+             kept, so that loaders fall back to the default value).
         """
+        self.check(value)
         self._value = value
         self.mark_initialized()
 
@@ -917,7 +926,9 @@ class AppOptionsContainer(OptionsContainer):
         """Set option values from a JSON-compatible dictionary.
 
         Unknown keys are silently ignored, making this safe for loading
-        options from a newer or older version of the application.
+        options from a newer or older version of the application. Invalid values
+        are ignored with a :class:`UserWarning`, which applications may show or
+        log (e.g. with :func:`logging.captureWarnings`).
 
         Args:
             values: A dictionary with option names as keys and their new values.
@@ -929,9 +940,10 @@ class AppOptionsContainer(OptionsContainer):
                     try:
                         opt.from_storage(value)
                     except (ValueError, TypeError) as exc:
-                        print(
-                            f"[sigimax] Warning: invalid value for "
-                            f"option '{name}': {exc}"
+                        warnings.warn(
+                            f"Invalid value for option '{name}' (ignored): {exc}",
+                            UserWarning,
+                            stacklevel=2,
                         )
 
     # -- JSON file persistence --
@@ -940,7 +952,8 @@ class AppOptionsContainer(OptionsContainer):
         """Return the default path for the JSON configuration file.
 
         Uses the same config directory as the INI-based system for
-        backward compatibility.
+        backward compatibility. If this directory cannot be determined, the
+        home directory is used, with a :class:`UserWarning`.
 
         Returns:
             Path to the default JSON configuration file.
@@ -948,9 +961,13 @@ class AppOptionsContainer(OptionsContainer):
         # Use guidata's config directory resolution
         try:
             config_dir = Path(_conf_module.Configuration.get_path(""))
-        except Exception:  # pylint: disable=broad-except
-            # Fallback to user home directory
+        except Exception as exc:  # pylint: disable=broad-except
             config_dir = Path.home() / f".{self.APP_NAME}"
+            warnings.warn(
+                f"Configuration directory unavailable ({exc}): using {config_dir}",
+                UserWarning,
+                stacklevel=2,
+            )
         config_dir.mkdir(parents=True, exist_ok=True)
         return config_dir / "options.json"
 
@@ -969,7 +986,9 @@ class AppOptionsContainer(OptionsContainer):
         """Load options from a JSON file.
 
         Missing keys are left at their current (default) values.
-        Unknown keys are silently ignored.
+        Unknown keys are silently ignored. A file which cannot be read is
+        ignored with a :class:`UserWarning` (see :meth:`from_dict` for invalid
+        values).
 
         Args:
             path: Path to load from. If None, uses the default config path.
@@ -980,9 +999,15 @@ class AppOptionsContainer(OptionsContainer):
         try:
             with open(filepath, encoding="utf-8") as f:
                 values = json.load(f)
+            if not isinstance(values, dict):
+                raise ValueError(f"expected a JSON object, got {type(values).__name__}")
             self.from_dict(values)
         except Exception as exc:  # pylint: disable=broad-except
-            print(f"[sigimax] Warning: failed to load options from {filepath}: {exc}")
+            warnings.warn(
+                f"Failed to load options from {filepath} (ignored): {exc}",
+                UserWarning,
+                stacklevel=2,
+            )
 
     # -- Introspection --
 
@@ -1016,6 +1041,11 @@ ROI_SEL_LINE_COLOR = "#9393ff"
 MARKER_LINE_COLOR = "#A11818"
 #: Marker text color
 MARKER_TEXT_COLOR = "#440909"
+#: Plot grid line colors (major, minor) on light backgrounds: discreet solid lines,
+#: so that curves stand out
+GRID_COLORS_LIGHT = ("#dddddd", "#eeeeee")
+#: Plot grid line colors (major, minor) on dark backgrounds
+GRID_COLORS_DARK = ("#3c3c3c", "#2d2d2d")
 
 
 class SigimaXOptions(AppOptionsContainer):
@@ -1414,8 +1444,9 @@ class SigimaXOptions(AppOptionsContainer):
             category="view",
             default="",
             expected_type=str,
-            description="Path to the watermark image displayed on empty plots. "
-            "If empty, no watermark is shown.",
+            description="Path to the watermark image displayed on empty plots, or "
+            "name of an image registered with guidata (like the splash screen "
+            "image). If empty, no watermark is shown.",
         )
 
         self.sig_format = TypedOptionField(
@@ -1457,7 +1488,7 @@ class SigimaXOptions(AppOptionsContainer):
             default=1000,
             expected_type=int,
             description=(
-                "Number of curves above which line width is forced to 1 "
+                "Number of points above which line width is forced to 1 "
                 "for performance reasons."
             ),
         )
@@ -1478,7 +1509,10 @@ class SigimaXOptions(AppOptionsContainer):
             category="view",
             default=100000,
             expected_type=int,
-            description="Maximum number of points before auto-downsampling kicks in.",
+            description=(
+                "Maximum number of points displayed for a signal: signals with more "
+                "points are downsampled for display (data are not modified)."
+            ),
         )
         self.sig_autoscale_margin_percent = TypedOptionField(
             self,
@@ -1801,11 +1835,18 @@ class SigimaXOptions(AppOptionsContainer):
         # module globals when the color theme changes.
         main_fg = plotpy_config.MAIN_FG_COLOR
         main_bg = plotpy_config.MAIN_BG_COLOR
+        grid_major, grid_minor = (
+            GRID_COLORS_DARK if is_dark_theme() else GRID_COLORS_LIGHT
+        )
         return {
             "plot": {
                 # Overriding default plot settings from PlotPy
                 "title/font/size": 11,
                 "title/font/bold": False,
+                "grid/maj_line/color": grid_major,
+                "grid/maj_line/style": "SolidLine",
+                "grid/min_line/color": grid_minor,
+                "grid/min_line/style": "SolidLine",
                 "selected_curve_symbol/marker": "Ellipse",
                 "selected_curve_symbol/edgecolor": "#a0a0a4",
                 "selected_curve_symbol/facecolor": main_fg,
@@ -2153,11 +2194,15 @@ class SigimaXOptions(AppOptionsContainer):
     def set_plotpy_application(
         self, config_app_name: str = "", load: bool = False
     ) -> None:
-        """Set the application name used for PlotPy's INI file.
+        """Set the application name used for PlotPy's configuration directory.
+
+        This directory contains PlotPy's INI file and, with PlotPy 2.12 or later,
+        the custom colormaps created by the user.
 
         Args:
-            config_app_name: Application name for the PlotPy INI file
-             (e.g., ``"MyApp_v1"``). If empty, PlotPy uses its own default.
+            config_app_name: Application name whose configuration directory stores
+             PlotPy's files, in a ``plotpy`` subdirectory (e.g., ``"MyApp_v1"``).
+             If empty, PlotPy's own ``.plotpy`` directory is used.
             load: If True, load existing user settings from the INI file.
         """
         PLOTPY_CONF.set_application(
@@ -2173,8 +2218,10 @@ class SigimaXOptions(AppOptionsContainer):
         :meth:`set_plotpy_application`.
 
         Args:
-            config_app_name: Application name for the PlotPy INI file
-             (e.g., ``"MyApp_v1"``). If empty, PlotPy uses its own default.
+            config_app_name: Application name whose configuration directory stores
+             PlotPy's files (INI file, custom colormaps), in a ``plotpy``
+             subdirectory (e.g., ``"MyApp_v1"``). If empty, PlotPy's own
+             ``.plotpy`` directory is used.
             load: If True, load existing user settings from the INI file.
         """
         self.apply_plotpy_defaults()

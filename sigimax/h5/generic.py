@@ -6,12 +6,39 @@ SigimaX Generic HDF5 format support
 
 # pylint: disable=invalid-name  # Allows short reference names like x, y, ...
 
+from __future__ import annotations
+
+import functools
+import math
+
 import h5py
 import numpy as np
 from guidata.utils.misc import to_string
-from sigima.objects import create_image, create_signal
+from sigima.io.common.converters import convert_array_to_valid_dtype
+from sigima.objects import (
+    ImageObj,
+    SignalObj,
+    create_image,
+    create_signal,
+    make_experimental_source,
+    set_experimental_source,
+)
 
 from sigimax.h5 import common, utils
+from sigimax.h5.selection import NDSelection, preview_step, read_selection
+from sigimax.h5.views import NDViewMixin
+
+#: Maximum number of elements read to show the textual preview of an array
+TEXT_PREVIEW_MAX_ITEMS = 100
+
+#: Number of compound records read to decide if their string fields matter
+COMPOUND_SAMPLE_SIZE = 1000
+
+
+def _unavailable_filters_text(missing: list[str]) -> str:
+    """Return the text of a dataset that cannot be read for want of filters"""
+    return "<compressed with unavailable filter: " + ", ".join(missing) + ">"
+
 
 # =============================================================================
 # Encoding and Data Reading Utilities
@@ -163,7 +190,13 @@ class BaseGenericNode(common.BaseNode):
     @classmethod
     def match(cls, dset):
         """Return True if h5 dataset matches this node pattern."""
-        return not isinstance(dset, h5py.Group)
+        return isinstance(dset, h5py.Dataset)
+
+    @functools.cached_property
+    def missing_filters(self) -> list[str]:
+        """Compression filters of the dataset that HDF5 cannot apply (see
+        :func:`sigimax.h5.utils.unavailable_filters`)"""
+        return utils.unavailable_filters(self.dset)
 
     @property
     def icon_name(self):
@@ -205,13 +238,10 @@ class GenericScalarNode(BaseGenericNode):
     @classmethod
     def match(cls, dset):
         """Match scalar numeric data."""
-        if not super().match(dset):
-            return False
-        data = safe_read_dataset(dset)
         return (
-            data is not None
-            and isinstance(data, np.generic)
-            and utils.is_supported_num_dtype(data)
+            super().match(dset)
+            and dset.shape == ()
+            and utils.is_supported_num_dtype(dset)
         )
 
 
@@ -220,18 +250,12 @@ class GenericTextNode(BaseGenericNode):
 
     @classmethod
     def match(cls, dset):
-        """Match text or string data."""
-        if not super().match(dset):
-            return False
-        data = safe_read_dataset(dset)
-        if data is None:
-            # Try to match based on dtype for unreadable data
-            try:
-                dtype = dset.dtype
-                return dtype.kind in ["S", "a", "U"] or "str" in str(dtype)
-            except Exception:  # pylint: disable=broad-except
-                return False
-        return isinstance(data, bytes) or utils.is_supported_str_dtype(data)
+        """Match scalar text or string data."""
+        return (
+            super().match(dset)
+            and dset.shape == ()
+            and utils.is_string_dtype(dset.dtype)
+        )
 
     @property
     def dtype_str(self):
@@ -273,47 +297,73 @@ class GenericArrayNode(BaseGenericNode):
 
     IS_ARRAY = True
 
+    def __init__(self, h5file, dname):
+        super().__init__(h5file, dname)
+        self.__layout: tuple[tuple[int, ...], np.dtype] | None = None
+
     @classmethod
     def match(cls, dset):
         """Match numeric array data, including convertible compound data."""
-        if not super().match(dset):
-            return False
-        data = safe_read_dataset(dset)
-
-        if data is None:
-            return False
-
-        # First check direct numeric arrays
-        if (
-            utils.is_supported_num_dtype(data)
-            and isinstance(data, np.ndarray)
-            and len(data.shape) in (1, 2)
-        ):
-            return True
-
-        # Then check compound data that can be converted to numeric arrays
-        if (
-            isinstance(data, np.ndarray)
-            and hasattr(data.dtype, "names")
-            and data.dtype.names is not None
-        ):
-            return cls._can_convert_compound_to_numeric(data)
-
-        return False
+        return super().match(dset) and cls.numeric_layout(dset) is not None
 
     @classmethod
-    def _can_convert_compound_to_numeric(cls, data):
-        """Check if compound data can be converted to a supported numeric array."""
-        try:
-            numeric_array = cls.extract_numeric_from_compound(data)
-            return (
-                numeric_array is not None
-                and utils.is_supported_num_dtype(numeric_array)
-                and isinstance(numeric_array, np.ndarray)
-                and len(numeric_array.shape) in (1, 2)
-            )
-        except Exception:  # pylint: disable=broad-except
-            return False
+    def numeric_layout(cls, dset) -> tuple[tuple[int, ...], np.dtype] | None:
+        """Return shape and dtype of the numeric array read from a dataset.
+
+        Only the dataset metadata is used, except for compound datasets mixing
+        numeric and string fields: their first records are read to check whether
+        the string fields carry information that a numeric array would lose.
+
+        Args:
+            dset: HDF5 dataset
+
+        Returns:
+            Shape and dtype of the 1D or 2D numeric array, or None if the dataset
+            does not provide one
+        """
+        dtype, shape = dset.dtype, dset.shape
+        if not shape:
+            return None
+        if dtype.names is not None:
+            return cls._compound_layout(dset)
+        if utils.is_supported_num_dtype(dset) and len(shape) in (1, 2):
+            return shape, dtype
+        return None
+
+    @classmethod
+    def _compound_layout(cls, dset) -> tuple[tuple[int, ...], np.dtype] | None:
+        """Return shape and dtype of the numeric array read from a compound
+        dataset (see :meth:`numeric_layout`).
+
+        Args:
+            dset: HDF5 compound dataset
+
+        Returns:
+            Shape and dtype of the 1D or 2D numeric array, or None if the dataset
+            does not provide one
+        """
+        dtype, shape = dset.dtype, dset.shape
+        fields = {name: dtype.fields[name][0] for name in dtype.names}
+        numeric = [
+            name for name, fdt in fields.items() if np.issubdtype(fdt, np.number)
+        ]
+        if not numeric:
+            return None
+        if len(numeric) != len(fields):
+            sample, _truncated = utils.read_bounded(dset, COMPOUND_SAMPLE_SIZE)
+            for name in fields:
+                if name not in numeric and cls._has_meaningful_string_data(
+                    sample[name]
+                ):
+                    return None
+        if len(numeric) == 1:
+            new_dtype = fields[numeric[0]]
+        else:
+            new_dtype = np.result_type(*(fields[name] for name in numeric))
+            shape = shape + (len(numeric),)
+        if not new_dtype.name.startswith(("int", "uint", "float", "complex")):
+            return None
+        return (shape, new_dtype) if len(shape) in (1, 2) else None
 
     @classmethod
     def extract_numeric_from_compound(cls, data):
@@ -384,13 +434,16 @@ class GenericArrayNode(BaseGenericNode):
 
     @property
     def data(self):
-        """Data associated to node, if available."""
-        raw_data = safe_read_dataset(self.dset, fallback_data=None)
+        """Data associated to node
+
+        Raises:
+            OSError: if the dataset cannot be read
+        """
+        raw_data = utils.read_dataset(self.dset)
 
         # If this is compound data, try to extract numeric array
         if (
-            raw_data is not None
-            and isinstance(raw_data, np.ndarray)
+            isinstance(raw_data, np.ndarray)
             and hasattr(raw_data.dtype, "names")
             and raw_data.dtype.names is not None
         ):
@@ -400,52 +453,202 @@ class GenericArrayNode(BaseGenericNode):
 
         return raw_data
 
+    @property
+    def layout(self) -> tuple[tuple[int, ...], np.dtype]:
+        """Shape and dtype of the numeric array associated to node"""
+        if self.__layout is None:
+            self.__layout = self.numeric_layout(self.dset)
+        return self.__layout
+
     def is_supported(self) -> bool:
-        """Return True if node is associated to supported data"""
-        return self.data.size > 1
+        """Return True if node is associated to supported data (signals stored in
+        a 2D table, giving X values, must hold real numbers)"""
+        shape, dtype = self.layout
+        if int(np.prod(shape)) <= 1 or self.missing_filters:
+            return False
+        is_table = self.__is_signal and len(shape) == 2 and 1 not in shape
+        return not (is_table and np.issubdtype(dtype, np.complexfloating))
 
     @property
     def __is_signal(self):
         """Return True if array represents a signal"""
-        shape = self.data.shape
+        shape = self.layout[0]
         return len(shape) == 1 or shape[0] in (1, 2) or shape[1] in (1, 2)
 
     @property
     def icon_name(self):
         """Icon name associated to node"""
         if self.is_supported():
-            return "signal.svg" if self.__is_signal else "image.svg"
+            return "sigimax:signal.svg" if self.__is_signal else "sigimax:image.svg"
         return "h5array.svg"
 
     @property
     def shape_str(self):
         """Return string representation of node shape, if any"""
-        return " x ".join([str(size) for size in self.data.shape])
+        return " x ".join([str(size) for size in self.layout[0]])
 
     @property
     def dtype_str(self):
         """Return string representation of node data type, if any"""
-        return str(self.data.dtype)
+        return str(self.layout[1])
 
     @property
     def text(self):
         """Return node textual representation"""
-        return str(self.data)
+        if self.missing_filters:
+            return _unavailable_filters_text(self.missing_filters)
+        try:
+            data, truncated = utils.read_bounded(self.dset, TEXT_PREVIEW_MAX_ITEMS)
+        except OSError:
+            return "<unreadable data>"
+        if self.dset.dtype.names is not None:
+            data = self.extract_numeric_from_compound(data)
+        return str(data) + (" ..." if truncated else "")
 
     def create_native_object(self):
-        """Create native object, if supported"""
+        """Create native object, if supported
+
+        Raises:
+            OSError: if the dataset cannot be read
+            ValueError: if a 2D table has complex X values (see
+             :meth:`is_supported`)
+        """
         if self.__is_signal:
             obj = create_signal(self.object_title)
-            try:
-                self.set_signal_data(obj)
-            except ValueError:
-                obj = None
+            self.set_signal_data(obj)
         else:
             obj = create_image(self.object_title)
-            try:
-                self.set_image_data(obj)
-            except ValueError:
-                obj = None
+            self.set_image_data(obj)
+        return obj
+
+    def create_preview_object(self, max_items: int):
+        """Return the native object, or a decimated one if the dataset is larger
+        than ``max_items`` (1D signals and images only)"""
+        shape = self.layout[0]
+        if (
+            math.prod(shape) <= max_items
+            or self.dset.dtype.names is not None
+            or (self.__is_signal and len(shape) == 2)
+        ):
+            return self.get_native_object()
+        step = preview_step(shape, max_items)
+        data = read_selection(self.dset, NDSelection(tuple(range(len(shape)))), step)
+        if len(shape) == 1:
+            x = np.arange(0, shape[0], step, dtype=float)
+            y = convert_array_to_valid_dtype(data, SignalObj.VALID_DTYPES)
+            return create_signal(self.object_title, x, y)
+        obj = create_image(
+            self.object_title,
+            convert_array_to_valid_dtype(data, ImageObj.VALID_DTYPES),
+        )
+        obj.set_uniform_coords(float(step), float(step))
+        return obj
+
+
+class GenericNDArrayNode(BaseGenericNode, NDViewMixin):
+    """Node for numeric HDF5 datasets with three dimensions or more.
+
+    Such datasets (image stacks, spectral cubes...) are listed and described, and
+    imported through a view (:class:`~sigimax.h5.views.NDViewMixin`): one signal
+    or image per frame, read with :func:`sigimax.h5.selection.read_selection`.
+    """
+
+    def __init__(self, h5file, dname):
+        super().__init__(h5file, dname)
+        self.init_view()
+
+    @classmethod
+    def match(cls, dset):
+        """Match numeric datasets with three dimensions or more."""
+        return (
+            super().match(dset)
+            and dset.dtype.names is None
+            and dset.shape is not None
+            and len(dset.shape) >= 3
+            and utils.is_supported_num_dtype(dset)
+        )
+
+    @property
+    def nd_shape(self) -> tuple[int, ...] | None:
+        """Return the shape of the dataset (None if it cannot be read)"""
+        return None if self.missing_filters else self.dset.shape
+
+    @property
+    def interpretation(self) -> str:
+        """Return the NeXus interpretation of the dataset (empty if not given)"""
+        return to_string(self.dset.attrs.get("interpretation", "")).strip()
+
+    def is_supported(self) -> bool:
+        """Return True if the frames of the view are to be imported"""
+        return self.import_view
+
+    def can_preview(self) -> bool:
+        """Return True if the dataset can be viewed"""
+        return self.view is not None
+
+    @property
+    def icon_name(self):
+        """Icon name associated to node"""
+        if self.import_view:
+            return (
+                "sigimax:image.svg"
+                if len(self.view.displayed) == 2
+                else "sigimax:signal.svg"
+            )
+        return "h5array.svg"
+
+    @property
+    def shape_str(self):
+        """Return string representation of node shape, if any"""
+        return " x ".join([str(size) for size in self.dset.shape])
+
+    @property
+    def text(self):
+        """Return node textual representation"""
+        if self.missing_filters:
+            return _unavailable_filters_text(self.missing_filters)
+        try:
+            data, truncated = utils.read_bounded(self.dset, TEXT_PREVIEW_MAX_ITEMS)
+        except OSError:
+            return "<unreadable data>"
+        return str(data) + (" ..." if truncated else "")
+
+    def create_preview_object(self, max_items: int):
+        """Return the first frame of the view, read with a step if it has more
+        than ``max_items`` elements"""
+        return self.preview_view_object(max_items)
+
+    def create_view_object(
+        self, selection: NDSelection, title: str, max_items: int | None = None
+    ):
+        """Create the signal or image of a frame, with pixel indices as
+        coordinates
+
+        Args:
+            selection: frame selection
+            title: object title
+            max_items: maximum number of elements to read (None: read the whole
+             frame and record the origin of the object)
+        """
+        sizes = tuple(self.dset.shape[axis] for axis in selection.displayed)
+        step = self.view_step(sizes, max_items)
+        data = read_selection(self.dset, selection, step)
+        if len(sizes) == 1:
+            x = np.arange(0, sizes[0], step, dtype=float)
+            obj = create_signal(title, x, common.to_signal_data(data))
+        else:
+            obj = create_image(
+                title, convert_array_to_valid_dtype(data, ImageObj.VALID_DTYPES)
+            )
+            obj.set_uniform_coords(float(step), float(step))
+        if max_items is None:
+            source = make_experimental_source(
+                "hdf5",
+                self.h5file.filename,
+                entry=self.h5path,
+                selection={"view": selection.as_dict()},
+            )
+            set_experimental_source(obj, source)
         return obj
 
 
@@ -457,55 +660,12 @@ class GenericCompoundNode(BaseGenericNode):
     @classmethod
     def match(cls, dset):
         """Match compound/structured data that cannot be converted to numeric arrays."""
-        if not super().match(dset):
-            return False
-
-        data = safe_read_dataset(dset)
-        if data is None:
-            # Try to match based on dtype if we can't read the data
-            try:
-                return dset.dtype.names is not None
-            except Exception:  # pylint: disable=broad-except
-                return False
-
-        # Check if it's compound data (structured array)
-        if not (
-            isinstance(data, np.ndarray)
-            and hasattr(data.dtype, "names")
-            and data.dtype.names is not None
-        ):
-            return False
-
-        # IMPORTANT: Only match if GenericArrayNode cannot handle this data
-        # Try to convert to a numeric array first
-        if cls._can_convert_to_numeric_array(data):
-            return False  # Let GenericArrayNode handle it
-
-        return True  # We handle compound data that can't be converted
-
-    @classmethod
-    def _can_convert_to_numeric_array(cls, data):
-        """Check if compound data can be converted to a numeric array."""
-        try:
-            # Try to extract numeric fields and create a pure numeric array
-            numeric_array = cls.extract_numeric_array(data)
-            if numeric_array is None:
-                return False
-
-            # Check if the resulting array would be supported by GenericArrayNode
-            return (
-                utils.is_supported_num_dtype(numeric_array)
-                and isinstance(numeric_array, np.ndarray)
-                and len(numeric_array.shape) in (1, 2)
-            )
-        except Exception:  # pylint: disable=broad-except
-            return False
-
-    @classmethod
-    def extract_numeric_array(cls, data):
-        """Try to extract a pure numeric array from compound data."""
-        # Use the same logic as GenericArrayNode
-        return GenericArrayNode.extract_numeric_from_compound(data)
+        return (
+            super().match(dset)
+            and dset.dtype.names is not None
+            and bool(dset.shape)
+            and GenericArrayNode.numeric_layout(dset) is None
+        )
 
     @property
     def dtype_str(self):
@@ -525,47 +685,42 @@ class GenericCompoundNode(BaseGenericNode):
     @property
     def text(self):
         """Return formatted compound data."""
-        if self.data is None:
+        try:
+            data, truncated = utils.read_first_items(self.dset, 3)
+        except (UnicodeDecodeError, TypeError, ValueError, OSError):
             return "<unreadable compound data>"
         try:
-            return self._format_compound_data()
+            if data.size == 1 and not truncated:
+                return self._format_single_record(data)
+            return self._format_multiple_records(data, truncated)
         except Exception:  # pylint: disable=broad-except
-            return f"<compound data: {self.data.shape} records>"
+            return f"<compound data: {self.dset.shape} records>"
 
-    def _format_compound_data(self):
-        """Format compound data for display."""
-        if not (hasattr(self.data.dtype, "names") and self.data.dtype.names):
-            return super().text
-        if self.data.size == 1:
-            return self._format_single_record()
-        return self._format_multiple_records()
-
-    def _format_single_record(self):
+    @staticmethod
+    def _format_single_record(data):
         """Format a single compound record."""
         parts = []
-        for field_name in self.data.dtype.names:
-            field_value = self.data[field_name].item()
+        for field_name in data.dtype.names:
+            field_value = data[field_name].item()
             if isinstance(field_value, bytes):
                 field_value = safe_decode_bytes(field_value)
             parts.append(f"{field_name}: {field_value}")
         return f"({', '.join(parts)})"
 
-    def _format_multiple_records(self):
-        """Format multiple compound records."""
+    @staticmethod
+    def _format_multiple_records(data, truncated):
+        """Format the first compound records."""
         records = []
-        for i, record in enumerate(self.data.flat):
-            if i >= 3:  # Show max 3 records
-                records.append("...")
-                break
-
+        for record in data.flat:
             parts = []
-            for field_name in self.data.dtype.names:
+            for field_name in data.dtype.names:
                 field_value = record[field_name]
                 if isinstance(field_value, bytes):
                     field_value = safe_decode_bytes(field_value)
                 parts.append(f"{field_name}: {field_value}")
             records.append(f"({', '.join(parts)})")
-
+        if truncated:
+            records.append("...")
         return f"[{', '.join(records)}]"
 
 
@@ -577,4 +732,5 @@ class GenericCompoundNode(BaseGenericNode):
 common.NODE_FACTORY.register(GenericScalarNode, is_generic=True)
 common.NODE_FACTORY.register(GenericTextNode, is_generic=True)
 common.NODE_FACTORY.register(GenericArrayNode, is_generic=True)
+common.NODE_FACTORY.register(GenericNDArrayNode, is_generic=True)
 common.NODE_FACTORY.register(GenericCompoundNode, is_generic=True)

@@ -42,9 +42,10 @@ Factory from global configuration::
 from __future__ import annotations
 
 import dataclasses
+import os.path as osp
 from typing import TYPE_CHECKING
 
-from guidata.configtools import get_image_file_path
+from guidata.configtools import get_image_file_path, get_pixmap
 from qtpy import QtCore as QC
 from qtpy import QtGui as QG
 from qtpy import QtWidgets as QW
@@ -67,8 +68,11 @@ class SplashScreenConfig:
 
     Args:
         image_path: Absolute or relative path to the splash image (PNG, SVG,
-         or any format supported by :class:`QPixmap`). If empty or ``None``,
-         the splash screen is disabled.
+         or any format supported by :class:`QPixmap`), or name of an image
+         registered in guidata's image paths. A ``@2x`` high-resolution variant
+         of the image (e.g. ``splash@2x.png`` next to ``splash.png``) is used on
+         high-DPI displays, if available. If empty or ``None``, the splash screen
+         is disabled.
         app_name: Application name overlaid on the splash image.
         app_version: Application version overlaid on the splash image.
         tagline: Optional subtitle displayed below the version.
@@ -177,18 +181,24 @@ class SigimaXSplashScreen(QW.QSplashScreen):
     def _load_pixmap(self) -> QG.QPixmap:
         """Load the splash image as a :class:`QPixmap`.
 
+        The image is loaded at the resolution of the display: on high-DPI displays,
+        its ``@2x`` high-resolution variant (e.g. ``splash@2x.png`` next to
+        ``splash.png``) is used if available (see
+        :func:`guidata.configtools.get_pixmap`).
+
         Returns:
             The loaded pixmap. If the image cannot be loaded, a minimal
             fallback pixmap is generated.
         """
         path = self._config.image_path or ""
-        pixmap = QG.QPixmap(path)
-        if pixmap.isNull() and path:
+        if path and not osp.isfile(path):
             try:
-                resolved_path = get_image_file_path(path, default=None)
+                path = get_image_file_path(path, default=None)
             except RuntimeError:
-                resolved_path = ""
-            pixmap = QG.QPixmap(resolved_path)
+                path = ""
+        pixmap = QG.QPixmap()
+        if path:
+            pixmap = get_pixmap(osp.abspath(path), default=None)
         if pixmap.isNull():
             pixmap = self._create_fallback_pixmap()
         return pixmap
@@ -197,11 +207,13 @@ class SigimaXSplashScreen(QW.QSplashScreen):
         """Create a minimal fallback pixmap when no image is available.
 
         Returns:
-            A 480x280 pixmap with the application name drawn on a dark
-            background.
+            A 480x280 pixmap (logical size, drawn at the resolution of the
+            display) with the application name drawn on a dark background.
         """
         width, height = 480, 280
-        pixmap = QG.QPixmap(width, height)
+        ratio = QG.QGuiApplication.instance().devicePixelRatio()
+        pixmap = QG.QPixmap(round(width * ratio), round(height * ratio))
+        pixmap.setDevicePixelRatio(ratio)
         pixmap.fill(QG.QColor(40, 40, 40))
 
         painter = QG.QPainter(pixmap)

@@ -231,5 +231,24 @@ def test_menu_hooks():
     print("Menu hooks test passed.")
 
 
+def test_menus_rebuilt_on_each_show():
+    """File and View menus are rebuilt, not appended to, each time they are shown"""
+    with qth.sigimax_app_context(exec_loop=False):
+        win = CustomMenuWindow()
+        for menu, expected in (
+            (win.file_menu, _("Open HDF5 files...")),
+            (win.view_menu, _("Preferences...")),
+        ):
+            menu.aboutToShow.emit()
+            first = _get_action_texts(menu)
+            assert expected in first
+            for _index in range(3):
+                menu.aboutToShow.emit()
+                assert _get_action_texts(menu) == first
+        win.set_modified(False)
+        win.close()
+
+
 if __name__ == "__main__":
     test_menu_hooks()
+    test_menus_rebuilt_on_each_show()

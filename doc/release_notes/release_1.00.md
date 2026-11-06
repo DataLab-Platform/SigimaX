@@ -1,4 +1,27 @@
-# Version 1.0.0 #
+# Version 1.0 #
+
+## SigimaX Version 1.0.2 ##
+
+### Changes ###
+
+* Reworked the release automation: documentation is now built and hosted by
+  Read the Docs (dedicated GitHub Pages workflow removed), and the publication
+  workflow relies on PyPI Trusted Publishing, gated on the PyQt5 and PyQt6 test
+  workflows
+* Added `scripts/ci_release_helpers.py` to check release tags and extract
+  release notes
+
+## SigimaX Version 1.0.1 ##
+
+### Changes ###
+
+* Added `_on_h5_save_requested()` and `_on_h5_open_requested()` hooks to
+  `SGMXMainWindow`, called before writing or reading an HDF5 workspace, so that
+  derived applications can react to those operations (e.g. to maintain a recent
+  files history)
+* Fixed the main window layout persistence: running tests in unattended mode no
+  longer overwrites the user's saved window position, size and state
+
 
 ## SigimaX Version 1.0.0 ##
 

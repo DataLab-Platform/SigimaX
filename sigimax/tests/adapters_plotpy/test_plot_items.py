@@ -138,6 +138,10 @@ def test_signal_metadata_options():
         sig = create_paracetamol_signal()
         adapter: SignalObjPlotPyAdapter = create_adapter_from_object(sig)
         item = adapter.make_item()
+        # A user-defined style (automatic styles are not stored in metadata):
+        item.param.line.color = "#123456"
+        item.param.line.style = "DashDotLine"
+        item.param.update_item(item)
 
         # Snapshot metadata that was written into the item
         adapter.update_plot_item_parameters(item)

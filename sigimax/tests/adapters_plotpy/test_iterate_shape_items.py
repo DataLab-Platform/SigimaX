@@ -13,11 +13,32 @@ because PlotPy items are QGraphicsObject subclasses).
 
 from __future__ import annotations
 
+import math
+
 import numpy as np
 import pytest
+from guidata.io import JSONWriter
 from guidata.qthelpers import qt_app_context
+from plotpy.builder import make
+from plotpy.io import save_items
 from plotpy.items import AnnotatedRectangle, AnnotatedXRange
-from sigima.objects import create_image_roi, create_signal_roi
+from sigima.objects import (
+    Axis,
+    CircleAnnotation,
+    CursorAnnotation,
+    CursorOrientation,
+    EllipseAnnotation,
+    PointAnnotation,
+    PolygonAnnotation,
+    PolylineAnnotation,
+    RangeAnnotation,
+    RectangleAnnotation,
+    SegmentAnnotation,
+    TextAnnotation,
+    annotation_to_dict,
+    create_image_roi,
+    create_signal_roi,
+)
 from sigima.tests.data import create_multigaussian_image, create_paracetamol_signal
 
 from sigimax.adapters_plotpy.converters import create_adapter_from_object
@@ -50,6 +71,9 @@ def test_annotations_roundtrip():
         # Store via adapter
         adapter.add_annotations_from_items([rect])
         assert sig.has_annotations()
+        [stored] = sig.get_annotations()
+        assert stored["format"] == "sigima.annotation"
+        assert "plotpy_json" not in stored
 
         # Retrieve via annotation adapter
         recovered = adapter.annotation_adapter.get_items()
@@ -60,6 +84,188 @@ def test_annotations_roundtrip():
         # Verify coordinates roundtrip
         r_x0, r_y0, r_x1, r_y1 = rec_rect.get_rect()
         np.testing.assert_allclose([r_x0, r_y0, r_x1, r_y1], [x0, y0, x1, y1])
+
+
+@pytest.mark.parametrize(
+    "annotation",
+    [
+        PointAnnotation(x=1.0, y=2.0),
+        SegmentAnnotation(x0=0.0, y0=0.0, x1=1.0, y1=1.0),
+        RectangleAnnotation(
+            x=1.0,
+            y=2.0,
+            width=3.0,
+            height=4.0,
+            angle=math.pi / 4,
+        ),
+        CircleAnnotation(cx=1.0, cy=2.0, radius=3.0),
+        EllipseAnnotation(
+            cx=1.0,
+            cy=2.0,
+            radius_x=3.0,
+            radius_y=4.0,
+            angle=math.pi / 6,
+        ),
+        PolylineAnnotation(points=((0.0, 0.0), (1.0, 1.0))),
+        PolygonAnnotation(points=((0.0, 0.0), (1.0, 0.0), (0.0, 1.0))),
+        TextAnnotation(text="Data", x=1.0, y=2.0),
+        TextAnnotation(text="Axes", x=0.1, y=0.9, coordinate_space="axes"),
+        CursorAnnotation(
+            orientation=CursorOrientation.CROSSHAIR,
+            position=(1.0, 2.0),
+        ),
+        RangeAnnotation(axis=Axis.X, start=1.0, end=2.0),
+    ],
+    ids=[
+        "point",
+        "segment",
+        "rectangle",
+        "circle",
+        "ellipse",
+        "polyline",
+        "polygon",
+        "text-data",
+        "text-axes",
+        "cursor",
+        "range",
+    ],
+)
+def test_all_canonical_primitives_roundtrip_without_rewrite(annotation):
+    """Every canonical primitive survives a PlotPy no-op byte-for-byte."""
+    with qt_app_context(exec_loop=False):
+        sig = create_paracetamol_signal()
+        original = annotation_to_dict(annotation)
+        sig.set_annotations([original])
+        adapter = create_adapter_from_object(sig).annotation_adapter
+
+        items = adapter.get_items()
+        adapter.set_items(items)
+
+        assert sig.get_annotations() == [original]
+
+
+def test_canonical_annotation_edit_preserves_identity_and_opaque_data():
+    """Canonical no-ops stay exact and edits retain non-PlotPy fields."""
+    with qt_app_context(exec_loop=False):
+        sig = create_paracetamol_signal()
+        opaque = {"consumer": "custom", "payload": {"keep": True}}
+        annotation = RectangleAnnotation(
+            x=3.0,
+            y=5.0,
+            width=4.0,
+            height=6.0,
+            locked=True,
+            title="Reference",
+            metadata={"owner": "test"},
+            extensions={"vendor": {"keep": True}},
+        )
+        original = annotation_to_dict(annotation)
+        sig.set_annotations([opaque, original])
+        adapter = create_adapter_from_object(sig).annotation_adapter
+
+        [item] = adapter.get_items()
+        adapter.set_items([item])
+        assert sig.get_annotations() == [opaque, original]
+
+        item.set_rect(2.0, 3.0, 8.0, 11.0)
+        adapter.set_items([item])
+
+        preserved_opaque, edited = sig.get_annotations()
+        assert preserved_opaque == opaque
+        assert edited["id"] == original["id"]
+        assert edited["metadata"] == original["metadata"]
+        assert edited["extensions"] == original["extensions"]
+        assert edited["locked"] is True
+        assert edited["x"] == pytest.approx(5.0)
+        assert edited["y"] == pytest.approx(7.0)
+        assert edited["width"] == pytest.approx(6.0)
+        assert edited["height"] == pytest.approx(8.0)
+
+
+def test_legacy_annotations_migrate_only_on_write():
+    """Reading is non-mutating while accepting the items migrates them."""
+    with qt_app_context(exec_loop=False):
+        sig = create_paracetamol_signal()
+        item = make.annotated_rectangle(1.0, 2.0, 5.0, 8.0, title="Legacy")
+        writer = JSONWriter(None)
+        save_items(writer, [item])
+        legacy = {
+            "type": "plotpy_item",
+            "item_class": type(item).__name__,
+            "plotpy_json": writer.get_json(),
+        }
+        opaque = {"consumer": "custom", "payload": {"keep": True}}
+        sig.set_annotations([legacy, opaque])
+        adapter = create_adapter_from_object(sig).annotation_adapter
+
+        items = adapter.get_items()
+        assert sig.get_annotations() == [legacy, opaque]
+
+        adapter.set_items(items)
+        migrated, preserved_opaque = sig.get_annotations()
+        assert migrated["format"] == "sigima.annotation"
+        assert "plotpy_json" not in migrated
+        assert preserved_opaque == opaque
+
+
+def test_unreadable_annotations_survive_replacement():
+    """Replacing visible annotations preserves unreadable and opaque data."""
+    with qt_app_context(exec_loop=False):
+        sig = create_paracetamol_signal()
+        canonical = annotation_to_dict(
+            RectangleAnnotation(x=3.0, y=5.0, width=4.0, height=6.0)
+        )
+        malformed = {"type": "plotpy_item", "plotpy_json": "{"}
+        opaque = {"consumer": "custom", "payload": {"keep": True}}
+        sig.set_annotations([canonical, malformed, opaque])
+        adapter = create_adapter_from_object(sig).annotation_adapter
+
+        assert len(adapter.get_items()) == 1
+        adapter.set_items([])
+
+        assert sig.get_annotations() == [malformed, opaque]
+
+
+def test_partially_supported_legacy_group_is_preserved_atomically():
+    """A legacy payload is not partly migrated when one item is unsupported."""
+    with qt_app_context(exec_loop=False):
+        sig = create_paracetamol_signal()
+        rectangle = make.annotated_rectangle(1.0, 2.0, 5.0, 8.0)
+        curve = make.curve([0.0, 1.0], [1.0, 2.0])
+        writer = JSONWriter(None)
+        save_items(writer, [rectangle, curve])
+        legacy = {
+            "type": "plotpy_item",
+            "plotpy_json": writer.get_json(),
+        }
+        sig.set_annotations([legacy])
+        adapter = create_adapter_from_object(sig).annotation_adapter
+
+        items = adapter.get_items()
+        assert len(items) == 2
+        adapter.set_items(items)
+
+        assert sig.get_annotations() == [legacy]
+
+
+def test_locked_annotation_remains_readonly_in_edit_mode():
+    """Persistent annotation locks override the dialog edit mode."""
+    with qt_app_context(exec_loop=False):
+        sig = create_paracetamol_signal()
+        sig.set_graphical_annotations(
+            [
+                RectangleAnnotation(width=1.0, height=1.0, locked=True),
+                RectangleAnnotation(x=2.0, width=1.0, height=1.0),
+            ]
+        )
+        adapter = create_adapter_from_object(sig)
+
+        locked, editable = list(adapter.iterate_shape_items(editable=True))
+
+        assert locked.is_readonly()
+        assert not editable.is_readonly()
+        assert adapter.annotation_adapter.is_annotation_item(locked)
+        assert adapter.annotation_adapter.is_annotation_item(editable)
 
 
 # ---------------------------------------------------------------------------

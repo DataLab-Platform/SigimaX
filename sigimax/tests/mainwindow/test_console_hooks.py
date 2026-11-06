@@ -149,6 +149,30 @@ def test_console_derived():
     print("Derived console test passed.")
 
 
+def test_console_show_on_error_option():
+    """Verify that the console is shown on errors only when the option is
+    enabled, whatever its value at startup and its changes."""
+
+    def receivers(win: SGMXMainWindow) -> int:
+        """Return the number of slots connected to the exception signal"""
+        return win.console.receivers(win.console.exception_occurred)
+
+    with qth.sigimax_app_context(exec_loop=False):
+        with Conf.show_console_on_error.context(True):
+            win = SGMXMainWindow(console=True)
+            # pylint: disable=protected-access
+            Conf.show_console_on_error.set(False)
+            win._update_console_show_mode()
+            count_off = receivers(win)
+            for state in (True, True, False, False, True):
+                Conf.show_console_on_error.set(state)
+                win._update_console_show_mode()
+                assert receivers(win) == count_off + int(state), state
+            win.set_modified(False)
+            win.close()
+
+
 if __name__ == "__main__":
     test_console_base()
     test_console_derived()
+    test_console_show_on_error_option()

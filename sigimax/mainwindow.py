@@ -29,6 +29,7 @@ import os.path as osp
 import sys
 import time
 import webbrowser
+from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -55,12 +56,12 @@ from sigimax.config import (
 )
 from sigimax.env import execenv
 from sigimax.h5 import H5Importer
+from sigimax.h5.utils import split_h5_file_selector
 from sigimax.utils import qthelpers as qth
 from sigimax.utils.qthelpers import (
     add_corner_menu,
     bring_to_front,
     configure_menu_about_to_show,
-    qt_handle_error_message,
 )
 from sigimax.widgets import logviewer, status
 from sigimax.widgets.h5browser import H5BrowserDialog
@@ -96,15 +97,20 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
 
     @classmethod
     def get_instance(cls, console=None, hide_on_close=False):
-        """Return the singleton instance for this window class."""
+        """Return the singleton instance for this window class.
+
+        A new window is created if there is no instance of this class, e.g. once
+        the previous one has been closed (unless it was only hidden, see
+        ``hide_on_close``).
+        """
         if not isinstance(SGMXMainWindow.__instance, cls):
             return cls(console, hide_on_close)
         return SGMXMainWindow.__instance
 
     def __init__(self, console=None, hide_on_close=False):
         """Initialize main window"""
-        SGMXMainWindow.__instance = self
         super().__init__()
+        SGMXMainWindow.__instance = self
         conf = get_conf()
         self.setObjectName(conf.app_name.get())
         self.setWindowIcon(get_icon(conf.app_logo_path.get()))
@@ -120,6 +126,8 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
 
         self.consolestatus: status.ConsoleStatus | None = None
         self.console: DockableConsole | None = None
+        #: True if the console is shown when an error occurs
+        self.__console_shown_on_error = False
 
         self.main_toolbar: QW.QToolBar | None = None
         self.tabwidget: QW.QTabWidget | None = None
@@ -145,10 +153,10 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
 
         self.__is_modified = False
         self.set_modified(False)
+        # Must precede setup(): restored dock sizes only hold at the final size
+        self._restore_pos_and_size()
         self.setup(console)
         self._after_setup(console)
-
-        self._restore_pos_and_size()
         execenv.log(self, "Initialization done")
 
     def _before_setup(self, console: bool) -> None:
@@ -312,10 +320,21 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
                 self.move(QC.QPoint(posx, posy))
 
     def _restore_state(self) -> None:
-        """Restore main window state from configuration"""
-        state = get_conf().window_state.get()
+        """Restore main window state from configuration
+
+        An invalid saved state (e.g. in a configuration file edited by hand) is
+        ignored and cleared, so that the window starts with its default layout.
+        """
+        conf = get_conf()
+        state = conf.window_state.get()
         if state:
-            state = base64.b64decode(state)
+            try:
+                state = base64.b64decode(state, validate=True)
+            except ValueError:  # binascii.Error
+                conf.window_state.set("")
+                return
+            # Qt 5 refits half-restored docks unless the window was laid out first
+            self.layout().activate()
             self.restoreState(QC.QByteArray(state), self.WINDOW_STATE_VERSION)
             for widget in self.children():
                 if isinstance(widget, QW.QDockWidget):
@@ -564,9 +583,26 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         """Adding menus"""
         for name, title in self._get_menubar_layout():
             setattr(self, f"{name}_menu", self.menuBar().addMenu(title))
-        configure_menu_about_to_show(self.file_menu, self._update_file_menu)
-        configure_menu_about_to_show(self.view_menu, self._update_view_menu)
+        configure_menu_about_to_show(
+            self.file_menu,
+            lambda: self.__rebuild_menu(self.file_menu, self._update_file_menu),
+        )
+        configure_menu_about_to_show(
+            self.view_menu,
+            lambda: self.__rebuild_menu(self.view_menu, self._update_view_menu),
+        )
         add_actions(self.help_menu, self._get_help_menu_actions())
+
+    @staticmethod
+    def __rebuild_menu(menu: QW.QMenu, update: Callable[[], None]) -> None:
+        """Clear a dynamic menu, then populate it before it is shown
+
+        Args:
+            menu: menu to rebuild
+            update: method populating the menu (e.g. :meth:`_update_file_menu`)
+        """
+        menu.clear()
+        update()
 
     def _update_console_show_mode(self) -> None:
         """Update console show mode from configuration option
@@ -578,10 +614,13 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
             cdock = self.docks[self.console]
             if not state and cdock.isVisible():
                 cdock.hide()
-            if state:
+            # The connection is tracked: with PyQt5, connecting twice requires two
+            # disconnections
+            if state and not self.__console_shown_on_error:
                 self.console.exception_occurred.connect(self.console.show_console)
-            else:
+            elif not state and self.__console_shown_on_error:
                 self.console.exception_occurred.disconnect(self.console.show_console)
+            self.__console_shown_on_error = state
 
     def _get_console_namespace(self) -> dict[str, object]:
         """Return the namespace dict exposed in the internal console.
@@ -632,6 +671,8 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         ns = self._get_console_namespace()
         msg = self._get_console_message()
         self.console = DockableConsole(self, namespace=ns, message=msg, debug=DEBUG)
+        # guidata's console is shown when an error occurs, once created
+        self.__console_shown_on_error = True
         self.console.setMaximumBlockCount(get_conf().console_max_line_count.get())
         self.console.go_to_error.connect(go_to_error)
         cdock = self._add_dockwidget(self.console, _("Console"), name="console")
@@ -729,7 +770,8 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         """Update file menu before showing up.
 
         Updates action states (via :meth:`_is_save_enabled`) and populates
-        the menu with actions returned by :meth:`_get_file_menu_actions`.
+        the menu with actions returned by :meth:`_get_file_menu_actions`. The
+        menu is cleared before this method is called.
 
         Override in subclasses to add extra logic (e.g., appending a
         submenu).  Call ``super()._update_file_menu()`` first to populate
@@ -753,9 +795,9 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
     def _update_view_menu(self) -> None:
         """Update view menu before showing up.
 
-        Override in subclasses to add extra logic.  Call
-        ``super()._update_view_menu()`` first to populate the default
-        actions.
+        The menu is cleared before this method is called. Override in subclasses
+        to add extra logic.  Call ``super()._update_view_menu()`` first to
+        populate the default actions.
         """
         add_actions(self.view_menu, self._get_view_menu_actions())
 
@@ -894,8 +936,8 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         """Notify that an HDF5 open/import is about to be performed.
 
         Called by :meth:`open_h5_files` once all arguments are resolved and
-        before any file is read. Override in derived applications to react to
-        the operation (e.g. record it in an application history).
+        checked, and before any file is read. Override in derived applications to
+        react to the operation (e.g. record it in an application history).
 
         Args:
             h5files: Resolved HDF5 filenames (optionally with dataset name,
@@ -937,9 +979,13 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         """Open/import HDF5 files.
 
         Args:
-            h5files: HDF5 filenames (optionally with dataset name, separated by ",")
+            h5files: HDF5 filenames (optionally with dataset name, separated by ",",
+             see :func:`sigimax.h5.utils.split_h5_file_selector`)
             import_all: Import all datasets from HDF5 files
             reset_all: Reset all application data before importing
+
+        Raises:
+            ValueError: if a selector of ``h5files`` is invalid (nothing is opened)
         """
         if not self.confirm_memory_state():
             return
@@ -971,20 +1017,19 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
                     self,
                     _("Open"),
                     basedir,
-                    _("HDF5 files (*.h5 *.hdf5 *.hdf *.he5);;All files (*)"),
+                    _(
+                        "HDF5 files (*.h5 *.hdf5 *.hdf *.he5 *.nxs *.nx5);;"
+                        "All files (*)"
+                    ),
                 )
         if not h5files:
             return
-        self._on_h5_open_requested(h5files, import_all, reset_all)
         filenames, dsetnames = [], []
-        for fname_with_dset in h5files:
-            if "," in fname_with_dset:
-                filename, dsetname = fname_with_dset.split(",")
-                dsetnames.append(dsetname)
-            else:
-                filename = fname_with_dset
-                dsetnames.append(None)
+        for selector in h5files:
+            filename, dsetname = split_h5_file_selector(selector)
             filenames.append(filename)
+            dsetnames.append(dsetname)
+        self._on_h5_open_requested(h5files, import_all, reset_all)
         if import_all is None and all(dsetname is None for dsetname in dsetnames):
             self.browse_h5_files(filenames, reset_all)
             return
@@ -1099,7 +1144,9 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         import, converts the checked nodes into native objects
         (:class:`SignalObj <sigima.objects.SignalObj>` /
         :class:`ImageObj <sigima.objects.ImageObj>`), and hands them over to
-        :meth:`_handle_imported_objects`.
+        :meth:`_handle_imported_objects`. Datasets that cannot be imported are
+        reported at once, after the other ones are imported
+        (:meth:`_report_import_errors`).
 
         Args:
             filenames: HDF5 filenames
@@ -1109,25 +1156,63 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
             self._check_h5file(filename, "load")
 
         dialog = H5BrowserDialog(self)
-        dialog.open_files(filenames)
-
-        if exec_dialog(dialog) == QW.QDialog.Accepted:
-            nodes = dialog.get_nodes()
-            if not nodes:
-                dialog.cleanup()
+        try:
+            dialog.open_files(filenames)
+            if exec_dialog(dialog) != QW.QDialog.Accepted:
                 return
-            objects = []
-            for node in nodes:
-                try:
-                    obj = node.get_native_object()
-                    if obj is not None:
-                        objects.append(obj)
-                except (OSError, ValueError) as exc:
-                    qt_handle_error_message(self, exc)
+            objects, errors = self._create_objects_from_nodes(dialog.get_nodes())
+        finally:
             dialog.cleanup()
-            self._handle_imported_objects(objects, bool(reset_all))
-        else:
-            dialog.cleanup()
+        self._handle_imported_objects(objects, bool(reset_all))
+        self._report_import_errors(errors)
+
+    @staticmethod
+    def _create_objects_from_nodes(nodes: list) -> tuple[list, list[str]]:
+        """Create the native objects of HDF5 nodes
+
+        Data of third-party files may be invalid or unreadable: the objects of the
+        other nodes are created, and the errors are collected.
+
+        Args:
+            nodes: HDF5 nodes to import
+
+        Returns:
+            Created objects, and the description of each error ("node: reason")
+        """
+        objects, errors = [], []
+        for node in nodes:
+            try:
+                obj = node.get_native_object()
+            except Exception as exc:  # pylint: disable=broad-except
+                errors.append(f"{node.id}: {exc}")
+                continue
+            if obj is not None:
+                objects.append(obj)
+        return objects, errors
+
+    def _report_import_errors(self, errors: list[str]) -> None:
+        """Report the datasets that could not be imported
+
+        Args:
+            errors: description of each error ("dataset: reason")
+
+        Raises:
+            ValueError: in unattended mode, or when errors are reported by the
+             caller (see :func:`sigimax.utils.qthelpers.errors_propagated_to_caller`),
+             if any dataset could not be imported
+        """
+        if not errors:
+            return
+        if execenv.unattended or qth.must_propagate_errors():
+            raise ValueError("\n".join(errors))
+        shown = errors[:10]
+        if len(errors) > len(shown):
+            shown.append(_("... and %d more") % (len(errors) - len(shown)))
+        QW.QMessageBox.warning(
+            self,
+            get_conf().app_name.get(),
+            _("Some datasets could not be imported:") + "\n\n" + "\n".join(shown),
+        )
 
     def save_h5_workspace(self, filename: str) -> None:
         """Save current workspace to an HDF5 file.
@@ -1158,7 +1243,9 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         converts every supported node into a native object
         (:class:`SignalObj <sigima.objects.SignalObj>` /
         :class:`ImageObj <sigima.objects.ImageObj>`), and hands them over to
-        :meth:`_handle_imported_objects`.
+        :meth:`_handle_imported_objects`. Datasets that cannot be imported are
+        reported at once, after the other ones are imported
+        (:meth:`_report_import_errors`).
 
         Override in subclasses that import through their own browser or
         progress dialog.
@@ -1170,18 +1257,13 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         with qth.qt_try_loadsave_file(self, filename, "load"):
             filename = self._check_h5file(filename, "load")
             importer = H5Importer(filename)
-            objects = []
-            for node in importer.nodes:
-                if not node.is_supported():
-                    continue
-                try:
-                    obj = node.get_native_object()
-                    if obj is not None:
-                        objects.append(obj)
-                except Exception as exc:  # pylint: disable=broad-except
-                    qt_handle_error_message(self, exc)
-            importer.close()
+            try:
+                nodes = [node for node in importer.nodes if node.is_supported()]
+                objects, errors = self._create_objects_from_nodes(nodes)
+            finally:
+                importer.close()
             self._handle_imported_objects(objects, bool(reset_all))
+            self._report_import_errors(errors)
 
     def reset_all(self) -> None:
         """Reset all application data.
@@ -1262,6 +1344,8 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         """
         mode = get_conf().color_mode.get()
         if startup and mode == "auto":
+            # Title bars following the color theme, also when the application was not
+            # created by guidata (e.g. SigimaX-based window embedded in another one)
             guidata_qth.win32_fix_title_bar_background(self)
             return
 
@@ -1353,6 +1437,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
             elif answer == QW.QMessageBox.Cancel:
                 return False
         self.hide()  # Avoid showing individual widgets closing one after the other
+        self.memorystatus.stop_updates()
         self._close_managed_widgets()
         self._cleanup_before_reset()
         self.reset_all()
@@ -1370,6 +1455,10 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
         else:
             if self.close_properly():
                 self.SIG_CLOSING.emit()
+                # A closed window must not be kept alive (with all its widgets and
+                # data) as the instance returned by `get_instance`
+                if SGMXMainWindow.__instance is self:
+                    SGMXMainWindow.__instance = None
                 event.accept()
             else:
                 event.ignore()

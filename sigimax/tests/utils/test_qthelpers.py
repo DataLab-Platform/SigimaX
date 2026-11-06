@@ -7,8 +7,11 @@ Tests for utils/qthelpers.py
 Covers:
 - get_log_contents, initialize_log_file, remove_empty_log_file (unit)
 - is_running_tests (unit)
+- must_propagate_errors, errors_propagated_to_caller (unit)
 - save_restore_stds (unit)
 - block_signals (gui)
+- qt_try_loadsave_file (gui)
+- sigimax_app_context (gui)
 """
 
 from __future__ import annotations
@@ -21,13 +24,19 @@ import pytest
 from guidata.qthelpers import qt_app_context
 from qtpy import QtWidgets as QW
 
+from sigimax.env import execenv
+from sigimax.utils import qthelpers
 from sigimax.utils.qthelpers import (
     block_signals,
+    errors_propagated_to_caller,
     get_log_contents,
     initialize_log_file,
     is_running_tests,
+    must_propagate_errors,
+    qt_try_loadsave_file,
     remove_empty_log_file,
     save_restore_stds,
+    sigimax_app_context,
 )
 
 # ======================== Unit tests =========================================
@@ -135,6 +144,43 @@ class TestIsRunningTests:
         assert "pytest" in sys.modules
 
 
+@pytest.fixture(name="outside_tests")
+def fixture_outside_tests(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Behave as outside test execution (production error boundaries)."""
+    monkeypatch.setattr(qthelpers, "is_running_tests", lambda: False)
+
+
+class TestMustPropagateErrors:
+    """Tests for must_propagate_errors and errors_propagated_to_caller."""
+
+    def test_true_during_tests(self):
+        """Errors are propagated when running tests."""
+        assert must_propagate_errors() is True
+
+    @pytest.mark.usefixtures("outside_tests")
+    def test_false_outside_context(self):
+        """Errors are not propagated outside tests and outside the context."""
+        assert must_propagate_errors() is False
+
+    @pytest.mark.usefixtures("outside_tests")
+    def test_nested_contexts(self):
+        """Errors are propagated until the outermost context exits."""
+        with errors_propagated_to_caller():
+            assert must_propagate_errors() is True
+            with errors_propagated_to_caller():
+                assert must_propagate_errors() is True
+            assert must_propagate_errors() is True
+        assert must_propagate_errors() is False
+
+    @pytest.mark.usefixtures("outside_tests")
+    def test_context_exited_by_exception(self):
+        """The context is exited when an exception goes through it."""
+        with pytest.raises(RuntimeError):
+            with errors_propagated_to_caller():
+                raise RuntimeError("test")
+        assert must_propagate_errors() is False
+
+
 class TestSaveRestoreStds:
     """Tests for save_restore_stds context manager."""
 
@@ -185,6 +231,67 @@ def test_block_signals_disabled():
         with block_signals(widget, enable=False):
             assert not widget.signalsBlocked()
         assert not widget.signalsBlocked()
+
+
+@pytest.mark.gui
+def test_block_signals_restores_nested_states():
+    """Nested blockers restore the states owned by their outer context."""
+    with qt_app_context():
+        parent = QW.QWidget()
+        child = QW.QWidget(parent)
+        child.blockSignals(True)
+
+        with block_signals(parent, children=True):
+            assert parent.signalsBlocked()
+            assert child.signalsBlocked()
+            with block_signals(parent, children=True):
+                assert parent.signalsBlocked()
+                assert child.signalsBlocked()
+            assert parent.signalsBlocked()
+            assert child.signalsBlocked()
+
+        assert not parent.signalsBlocked()
+        assert child.signalsBlocked()
+
+
+@pytest.mark.gui
+@pytest.mark.usefixtures("outside_tests")
+def test_qt_try_loadsave_file_error_boundary(monkeypatch: pytest.MonkeyPatch):
+    """Load errors are shown in a message box, or propagated to the caller."""
+    messages: list[str] = []
+    monkeypatch.setattr(
+        QW.QMessageBox,
+        "critical",
+        staticmethod(lambda _parent, _title, text: messages.append(text)),
+    )
+    with qt_app_context():
+        parent = QW.QWidget()
+        with qt_try_loadsave_file(parent, "missing.h5", "load"):
+            raise OSError("Unreadable file")
+        assert len(messages) == 1 and "Unreadable file" in messages[0]
+
+        with pytest.raises(OSError, match="Unreadable file"):
+            with errors_propagated_to_caller():
+                with qt_try_loadsave_file(parent, "missing.h5", "load"):
+                    raise OSError("Unreadable file")
+        assert len(messages) == 1
+        parent.close()
+
+
+@pytest.mark.gui
+def test_app_context_without_event_loop_leaves_no_close_timer():
+    """A context without ``exec()`` does not close a later top-level widget."""
+    with execenv.context(unattended=True, delay=0):
+        with sigimax_app_context(exec_loop=False, enable_logs=False) as application:
+            # Flush close timers left by app contexts of previous tests
+            application.processEvents()
+
+        widget = QW.QWidget()
+        widget.show()
+        application.processEvents()
+
+        assert widget.isVisible()
+        widget.close()
 
 
 if __name__ == "__main__":

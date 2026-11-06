@@ -134,8 +134,8 @@ msgstr "Enregistrer"
 msgid "Open"
 msgstr "Ouvrir"
 
-msgid "HDF5 files (*.h5 *.hdf5 *.hdf *.he5);;All files (*)"
-msgstr "Fichiers HDF5 (*.h5 *.hdf5 *.hdf *.he5);;Tous les fichiers (*)"
+msgid "HDF5 files (*.h5 *.hdf5 *.hdf *.he5 *.nxs *.nx5);;All files (*)"
+msgstr "Fichiers HDF5 (*.h5 *.hdf5 *.hdf *.he5 *.nxs *.nx5);;Tous les fichiers (*)"
 
 msgid "Do you want to clear current workspace before importing data from HDF5 files?"
 msgstr "Voulez-vous effacer l'espace de travail actuel avant d'importer des données depuis des fichiers HDF5 ?"
@@ -156,6 +156,22 @@ msgstr "Non"
 #, python-format
 msgid "%d object(s) imported successfully"
 msgstr "%d objet(s) importé(s) avec succès"
+
+#, python-format
+msgid "... and %d more"
+msgstr "... et %d autres"
+
+msgid "Some datasets could not be imported:"
+msgstr "Certains jeux de données n'ont pas pu être importés :"
+
+msgid "Home page"
+msgstr "Page d'accueil du projet"
+
+msgid "Documentation"
+msgstr "Documentation"
+
+msgid "Support"
+msgstr "Données non prises en charge"
 
 msgid "Developed and maintained by DataLab open-source project team"
 msgstr "Développé et maintenu par l'équipe du projet open-source DataLab"
@@ -290,6 +306,10 @@ msgstr "Connexion échouée : %s"
 msgid "Contents of file"
 msgstr "Contenu du fichier"
 
+#, python-format
+msgid "Model: %s"
+msgstr "Modèle : %s"
+
 msgid "Polymomial fit"
 msgstr "Ajustement polynomial"
 
@@ -353,8 +373,8 @@ msgstr "Ajustement CDF"
 msgid "Scale factor"
 msgstr "Facteur d'échelle"
 
-msgid "Width factor"
-msgstr "Facteur de largeur"
+msgid "Temperature factor"
+msgstr "Facteur de température"
 
 msgid "Planckian fit"
 msgstr "Ajustement planckien"
@@ -428,8 +448,57 @@ msgstr "Taille"
 msgid "Type"
 msgstr "Type"
 
+msgid "Loading..."
+msgstr "Chargement..."
+
 msgid "Unsupported data"
 msgstr "Données non prises en charge"
+
+msgid "Multidimensional data"
+msgstr "Données multidimensionnelles"
+
+msgid "Import these frames"
+msgstr "Importer ces trames"
+
+msgid "First"
+msgstr "Première"
+
+msgid "Last"
+msgstr "Dernière"
+
+msgid "Step"
+msgstr "Pas"
+
+msgid "View"
+msgstr "Vue"
+
+msgid "Frames along"
+msgstr "Trames selon"
+
+msgid "Fixed indices"
+msgstr "Indices fixés"
+
+#, python-format
+msgid "Signals along axis %s"
+msgstr "Signaux selon l'axe %s"
+
+#, python-format
+msgid "Images: rows along axis %s, columns along axis %s"
+msgstr "Images : lignes selon l'axe %s, colonnes selon l'axe %s"
+
+#, python-format
+msgid "axis %s"
+msgstr "axe %s"
+
+msgid "images"
+msgstr "images"
+
+msgid "signals"
+msgstr "signaux"
+
+#, python-format
+msgid "%d frame(s) as %s"
+msgstr "%d trame(s) en %s"
 
 msgid "Group"
 msgstr "Groupe"
@@ -454,6 +523,13 @@ msgstr "Fermer"
 
 msgid "Select HDF5 file"
 msgstr "Sélectionner un fichier HDF5"
+
+#, python-format
+msgid "%d frames of multidimensional datasets will be imported."
+msgstr "%d trames de jeux de données multidimensionnels vont être importées."
+
+msgid "Do you want to continue?"
+msgstr "Voulez-vous continuer ?"
 
 msgid "Check all"
 msgstr "Tout cocher"
@@ -520,6 +596,9 @@ msgstr "Distance minimale :"
 
 msgid "Signal peak detection"
 msgstr "Détection de pics du signal"
+
+msgid "Peaks:"
+msgstr "Pics :"
 
 msgid "Internal console"
 msgstr "Console interne"
@@ -655,3 +734,4 @@ msgstr "Générer"
 
 msgid "Signal generated"
 msgstr "Signal généré"
+

@@ -26,10 +26,12 @@ __all__ = [
     "SigimaXPlotWidget",
 ]
 
+import os.path as osp
 import warnings
 from typing import TYPE_CHECKING
 
 import numpy as np
+from guidata.configtools import get_image_file_path, get_pixmap
 from guidata.qthelpers import is_dark_theme
 from guidata.widgets.dockable import DockableWidget
 from plotpy.constants import PlotType
@@ -329,15 +331,28 @@ class DockablePlotWidget(DockableWidget):
     def _setup_watermark(self) -> None:
         """Create the watermark label from the configured image path.
 
-        If ``Conf.watermark_image_path`` is empty, no watermark is created.
+        If ``Conf.watermark_image_path`` is empty, no watermark is created. Like the
+        splash screen image, it may be an image name, looked up in the image paths
+        registered with guidata (see :func:`guidata.configtools.get_image_file_path`).
+        On high-DPI displays, the ``@2x`` high-resolution variant of the image is used
+        if available (see :func:`guidata.configtools.get_pixmap`).
         """
         path = get_conf().watermark_image_path.get()
-        if path:
-            self.watermark = QW.QLabel()
-            pixmap = QG.QPixmap(path)
-            self.watermark.setPixmap(pixmap)
-        else:
+        if not path:
             self.watermark = None
+            return
+        if not osp.isfile(path):
+            try:
+                path = get_image_file_path(path, default=None)
+            except RuntimeError:
+                pass
+        if osp.isfile(path):
+            pixmap = get_pixmap(osp.abspath(path), default=None)
+        else:
+            # Not a file (e.g. a Qt resource path)
+            pixmap = QG.QPixmap(path)
+        self.watermark = QW.QLabel()
+        self.watermark.setPixmap(pixmap)
 
     def __get_toolbar_row_col(self) -> tuple[int, int]:
         """Return toolbar row and column"""
@@ -390,6 +405,10 @@ class DockablePlotWidget(DockableWidget):
             widget.setBackgroundRole(QG.QPalette.Window)
             widget.setAutoFillBackground(True)
             widget.setPalette(palette)
+        # PlotPy updates the plot grid as soon as the color mode changes, before the
+        # application defaults (see `SigimaXOptions.get_plotpy_defaults`) are
+        # applied again for the new color mode: update the grid with these defaults
+        self.plotwidget.get_plot().update_color_mode()
 
     def get_plot(self) -> BasePlot:
         """Return plot instance"""

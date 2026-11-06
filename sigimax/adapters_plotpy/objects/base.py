@@ -176,7 +176,11 @@ class BaseObjPlotPyAdapter(Generic[TypeObj, TypePlotItem]):
             for item in self.annotation_adapter.get_items():
                 if isinstance(item, AnnotatedShape):
                     config_annotated_shape(item, fmt, lbl)
-                set_plot_item_editable(item, editable)
+                item_editable = editable and not self.annotation_adapter.is_item_locked(
+                    item
+                )
+                set_plot_item_editable(item, item_editable)
+                self.annotation_adapter.capture_item_reference(item)
                 yield item
 
     def update_plot_item_parameters(self, item: TypePlotItem) -> None:

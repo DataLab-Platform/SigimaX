@@ -176,7 +176,7 @@ SigimaX comes with a comprehensive test suite based on `pytest` (155 tests).
 
 The test suite has been checked with the following matrix:
 
-- **Python**: 3.9, 3.10, 3.11, 3.12, 3.13, 3.14
+- **Python**: 3.10, 3.11, 3.12, 3.13, 3.14
 - **Operating systems**: Windows, Linux
 - **Qt bindings**: PyQt5, PyQt6, PySide6 (future fix needed)
 

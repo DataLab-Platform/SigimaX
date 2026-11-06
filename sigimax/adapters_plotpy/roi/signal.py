@@ -262,6 +262,8 @@ class SegmentROIPlotPyAdapter(BaseSingleROIPlotPyAdapter[SegmentROI, AnnotatedXR
         title: ROI title
     """
 
+    ROI_CLASS = SegmentROI
+
     def to_plot_item(
         self,
         obj: SignalObj,
@@ -285,29 +287,24 @@ class SegmentROIPlotPyAdapter(BaseSingleROIPlotPyAdapter[SegmentROI, AnnotatedXR
             item.shape.set_signal_curve(x, y)
         if fill_color is not None:
             item.shape.set_fill_color(fill_color)
-        return item
+        return self._remember_item(item)
 
     @classmethod
-    def from_plot_item(
-        cls, item: AnnotatedXRange, obj: SignalObj | None = None
-    ) -> SegmentROI:
-        """Create ROI from plot item
+    def _item_coords(cls, item: AnnotatedXRange) -> list[float]:
+        """Return the physical coordinates (xmin, xmax) of the segment drawn by a
+        plot item
 
-        Args:
-            item: plot item
-            obj: signal object for coordinate rounding (optional)
-
-        Returns:
-            ROI
+        Raises:
+            TypeError: if the item is not an X range
         """
         if not isinstance(item, AnnotatedXRange):
             raise TypeError("Invalid plot item type")
-        coords = sorted(item.get_range())
-        # Round coordinates to appropriate precision
-        if obj is not None:
-            coords = round_signal_coords(obj, coords)
-        title = str(item.title().text())
-        return SegmentROI(coords, False, title)
+        return sorted(item.get_range())
+
+    @classmethod
+    def _round_coords(cls, obj: SignalObj, coords: list[float]) -> list[float]:
+        """Round segment coordinates to a precision suited to the signal"""
+        return round_signal_coords(obj, coords)
 
 
 class SignalROIPlotPyAdapter(BaseROIPlotPyAdapter[SignalROI]):

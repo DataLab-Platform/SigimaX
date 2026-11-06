@@ -11,6 +11,8 @@ How to install
 
 SigimaX is available in several forms:
 
+-   As a :ref:`install_conda`.
+
 -   As a Python package, which can be installed using the :ref:`install_pip`.
 
 -   As a precompiled :ref:`install_wheel`, which can be installed using ``pip``.
@@ -22,6 +24,19 @@ SigimaX is available in several forms:
     Impatient to try the next version of SigimaX? You can also install the
     latest development version from the main branch of the Git repository.
     See :ref:`install_development` for more information.
+
+.. _install_conda:
+
+Conda package
+^^^^^^^^^^^^^
+
+:octicon:`info;1em;sd-text-info` :bdg-info-line:`GNU/Linux` :bdg-info-line:`Windows` :bdg-info-line:`macOS`
+
+To install ``sigimax`` package from the `conda-forge` channel (https://anaconda.org/conda-forge/sigimax), run the following command:
+
+.. code-block:: console
+
+    $ conda install conda-forge::sigimax
 
 .. _install_pip:
 

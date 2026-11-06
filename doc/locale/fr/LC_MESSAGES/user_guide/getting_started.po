@@ -41,10 +41,10 @@ msgid "Key Concepts"
 msgstr "Concepts clés"
 
 msgid "**Configuration system**: Options are typed fields (``TypedOptionField``, ``EnumOptionField``, ``TupleOptionField``) that support ``get()``/``set()``/ ``context()`` API and JSON persistence."
-msgstr "**Système de configuration** : les options sont des champs typés (``TypedOptionField``, ``EnumOptionField``, ``TupleOptionField``) qui supportent l'API ``get()``/``set()``/ ``context()``, la persistance JSON et la synchronisation avec les variables d'environnement."
+msgstr "**Système de configuration** : les options sont des champs typés (``TypedOptionField``, ``EnumOptionField``, ``TupleOptionField``) qui prennent en charge l'API ``get()``/``set()``/ ``context()`` et la persistance JSON."
 
 msgid "**Overridable hooks**: The main window provides hooks that derived apps can override: ``reset_all()``, ``_is_save_enabled()``, ``_update_file_menu()``, ``_update_view_menu()``, ``_about()``, ``_before_setup()``, and ``_after_setup()``. See :doc:`lifecycle` for their ordering and initialization contract."
-msgstr "**Hooks redéfinissables** : la fenêtre principale fournit des hooks que les applications dérivées peuvent redéfinir : ``reset_all()``, ``_is_save_enabled()``, ``_update_file_menu()``, ``_update_view_menu()``, ``_about()``."
+msgstr "**Hooks redéfinissables** : la fenêtre principale fournit des hooks que les applications dérivées peuvent redéfinir : ``reset_all()``, ``_is_save_enabled()``, ``_update_file_menu()``, ``_update_view_menu()``, ``_about()``, ``_before_setup()`` et ``_after_setup()``. Voir :doc:`lifecycle` pour leur ordre d'appel et leur contrat d'initialisation."
 
 msgid "**Built-in features**: HDF5 GUI and generic dataset import; derived applications implement their own workspace persistence. SigimaX also provides an embedded Python console, status bar with memory monitoring, and splash screen support. See :doc:`hdf5_workspace` for the derived-application contract."
 msgstr "**Fonctionnalités intégrées** : interface HDF5 et import générique de jeux de données ; les applications dérivées implémentent leur propre persistance de l'espace de travail. SigimaX fournit également une console Python intégrée, une barre d'état avec surveillance mémoire et la prise en charge d'un écran de démarrage. Voir :doc:`hdf5_workspace` pour le contrat des applications dérivées."

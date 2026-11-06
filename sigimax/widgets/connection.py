@@ -17,7 +17,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from guidata.qthelpers import get_std_icon, win32_fix_title_bar_background
+from guidata.qthelpers import get_std_icon
 from qtpy import QtCore as QC
 from qtpy import QtGui as QG
 from qtpy import QtWidgets as QW
@@ -25,6 +25,20 @@ from qtpy import QtWidgets as QW
 from sigimax.config import _
 
 __all__ = ["ConnectionDialog"]
+
+#: Connection threads still running after their dialog was closed: they are kept
+#: alive until their callback returns (destroying a running thread aborts)
+_DETACHED_THREADS: set[ConnectionThread] = set()
+
+
+def _release_thread(thread: ConnectionThread) -> None:
+    """Release a detached connection thread once its callback has returned
+
+    Args:
+        thread: connection thread, which has emitted its ``finished`` signal
+    """
+    thread.wait()  # The thread ends right after emitting `finished`
+    _DETACHED_THREADS.discard(thread)
 
 
 class ConnectionThread(QC.QThread):
@@ -46,13 +60,20 @@ class ConnectionThread(QC.QThread):
         """Run thread"""
         try:
             self.connect_callback()
+        except Exception as exc:  # pylint: disable=broad-except
+            # Any failure must end the connection attempt shown by the dialog
+            self.SIG_CONNECTION_KO.emit(str(exc) or type(exc).__name__)
+        else:
             self.SIG_CONNECTION_OK.emit()
-        except ConnectionRefusedError as exc:
-            self.SIG_CONNECTION_KO.emit(str(exc))
 
 
 class ConnectionDialog(QW.QDialog):
     """Connection dialog, showing the progress of a connection attempt.
+
+    The connect callback runs in a background thread. When the dialog is closed
+    before the callback returns (e.g. cancelled while connecting), the dialog no
+    longer waits for it: the callback keeps running in the background until it
+    returns, and its result is ignored.
 
     Args:
         connect_callback: Callback function to connect to the remote server
@@ -69,12 +90,13 @@ class ConnectionDialog(QW.QDialog):
         banner: QG.QPixmap | None = None,
     ) -> None:
         super().__init__(parent)
-        win32_fix_title_bar_background(self)
         self.setWindowTitle(_("Connection"))
         if icon is not None:
             self.setWindowIcon(icon)
         self.resize(300, 50)
         self.__error_message = ""
+        #: True once the dialog no longer waits for the connection attempt
+        self.__detached = False
         layout = QW.QVBoxLayout()
         self.setLayout(layout)
         if banner is not None:
@@ -133,6 +155,22 @@ class ConnectionDialog(QW.QDialog):
     def get_error_message(self) -> str:
         """Get error message if connection failed"""
         return self.__error_message
+
+    def done(self, result: int) -> None:
+        """Close the dialog, without waiting for the connection attempt
+
+        Args:
+            result: dialog result code
+        """
+        if not self.__detached:
+            self.__detached = True
+            self.thread.SIG_CONNECTION_OK.disconnect(self.__on_connection_successful)
+            self.thread.SIG_CONNECTION_KO.disconnect(self.__on_connection_failed)
+            if self.thread.isRunning():
+                thread = self.thread
+                _DETACHED_THREADS.add(thread)
+                thread.finished.connect(lambda: _release_thread(thread))
+        super().done(result)
 
     def exec(self) -> int:
         """Execute dialog"""

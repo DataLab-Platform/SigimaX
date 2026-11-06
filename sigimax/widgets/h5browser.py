@@ -18,6 +18,7 @@ from __future__ import annotations
 import abc
 import os
 import os.path as osp
+from concurrent.futures import Future, ThreadPoolExecutor
 from typing import TYPE_CHECKING, Any, Callable
 
 from guidata.qthelpers import (
@@ -27,7 +28,6 @@ from guidata.qthelpers import (
     exec_dialog,
     get_icon,
     get_std_icon,
-    win32_fix_title_bar_background,
 )
 from guidata.utils.misc import to_string
 from guidata.widgets.arrayeditor import ArrayEditor
@@ -41,7 +41,12 @@ from sigima import ImageObj, SignalObj
 
 from sigimax.adapters_plotpy import CURVESTYLES, create_adapter_from_object
 from sigimax.config import _, get_conf
+from sigimax.env import execenv
 from sigimax.h5 import H5Importer
+from sigimax.h5.nexus import default_nxdata_path
+from sigimax.h5.selection import NDView
+from sigimax.h5.utils import ReadCancelled, cancellable_reads
+from sigimax.h5.views import NDViewMixin, count_frames, expand_views
 from sigimax.utils.qthelpers import block_signals, qt_handle_error_message
 
 __all__ = [
@@ -50,7 +55,11 @@ __all__ = [
     "H5BrowserDialog",
     "H5FileSelector",
     "H5TreeWidget",
+    "ViewSelector",
 ]
+
+#: Number of frames of multidimensional datasets imported without confirmation
+MAX_FRAMES_WITHOUT_CONFIRMATION = 100
 
 if TYPE_CHECKING:
     from plotpy.plot import BasePlot
@@ -226,18 +235,33 @@ class H5TreeWidget(AbstractTreeWidget):
         self.fnames: list[str] = []
         self.h5importers: list[H5Importer] = []
 
-    def add_root(self, fname: str) -> None:
+    def add_root(self, fname: str) -> QW.QTreeWidgetItem | None:
         """Add HDF5 root (new file)
 
         Args:
             fname: HDF5 file name
+
+        Returns:
+            Item of the default NeXus ``NXdata`` group of the file (``@default``
+            attributes), expanded, or None
         """
-        self.fnames.append(osp.abspath(fname))
         importer = H5Importer(fname)
+        index = self.topLevelItemCount()
+        self.fnames.append(osp.abspath(fname))
         self.h5importers.append(importer)
-        self.add_root_to_tree(importer)
+        try:
+            self.add_root_to_tree(importer)
+        except BaseException:
+            # Remove the partial tree: top-level items, file names and importers
+            # must stay aligned, and the file is closed
+            if self.topLevelItemCount() > index:
+                self.takeTopLevelItem(index)
+            self.fnames.pop()
+            self.h5importers.pop()
+            importer.close()
+            raise
         # Temporarily expand all items to calculate proper column widths
-        rootitem = self.topLevelItem(self.topLevelItemCount() - 1)
+        rootitem = self.topLevelItem(index)
         self.expand_all_children(rootitem)
         for col in range(4):
             self.resizeColumnToContents(col)
@@ -245,6 +269,56 @@ class H5TreeWidget(AbstractTreeWidget):
         for index in range(rootitem.childCount()):
             child = rootitem.child(index)
             self.collapseItem(child)
+        path = default_nxdata_path(importer.h5file)
+        if path is None:
+            return None
+        item = self.find_node_item(rootitem, path)
+        if item is not None:
+            parent = item.parent()
+            while parent is not None:
+                self.expandItem(parent)
+                parent = parent.parent()
+        return item
+
+    def find_node_item(
+        self, rootitem: QW.QTreeWidgetItem, node_id: str
+    ) -> QW.QTreeWidgetItem | None:
+        """Return the item of a node of a file, by node id
+
+        Args:
+            rootitem: root item of the file
+            node_id: node id
+        """
+        items = [rootitem]
+        while items:
+            item = items.pop()
+            if item.data(0, QC.Qt.UserRole) == node_id:
+                return item
+            items.extend(item.child(index) for index in range(item.childCount()))
+        return None
+
+    def set_item_importable(self, item: QW.QTreeWidgetItem, state: bool) -> None:
+        """Make the item of a multidimensional node checkable and checked, once
+        the import of its frames is enabled, or neither of them
+
+        Args:
+            item: tree item
+            state: True if the frames of the node are to be imported
+        """
+        node = self.get_node(item)
+        with block_signals(self):
+            if state:
+                item.setFlags(
+                    QC.Qt.ItemIsEnabled
+                    | QC.Qt.ItemIsSelectable
+                    | QC.Qt.ItemIsUserCheckable
+                )
+                item.setCheckState(0, QC.Qt.Checked)
+            else:
+                item.setData(0, QC.Qt.CheckStateRole, None)
+                item.setFlags(QC.Qt.ItemIsEnabled)
+            item.setIcon(0, get_icon(node.icon_name))
+        self.itemChanged.emit(item, 0)
 
     def remove_root(self, fname: str) -> None:
         """Remove HDF5 root
@@ -299,11 +373,19 @@ class H5TreeWidget(AbstractTreeWidget):
             return importer.get(node_id)
         return None
 
-    def get_nodes(self, only_checked_items: bool = True) -> list[BaseNode]:
+    def get_nodes(
+        self, only_checked_items: bool = True, expand: bool = True
+    ) -> list[BaseNode]:
         """Get all nodes associated to checked items
+
+        Multidimensional nodes are replaced by the nodes of the frames of their
+        view (see :func:`sigimax.h5.views.expand_views`), unless ``expand`` is
+        False.
 
         Args:
             only_checked_items: If True, only checked items are returned
+            expand: If True, multidimensional nodes are replaced by the nodes of
+             their frames
 
         Returns:
             List of HDF5 nodes
@@ -311,12 +393,12 @@ class H5TreeWidget(AbstractTreeWidget):
         datasets = []
         for item in self.find_all_items():
             if item.flags() & QC.Qt.ItemIsUserCheckable:
-                if only_checked_items and item.checkState(0) == 0:
+                if only_checked_items and item.checkState(0) == QC.Qt.Unchecked:
                     continue
                 if item is not self.topLevelItem(0):
                     node = self.get_node(item)
                     datasets.append(node)
-        return datasets
+        return expand_views(datasets) if expand else datasets
 
     def activated(self, item: QW.QTreeWidgetItem) -> None:
         """Double-click event"""
@@ -338,7 +420,7 @@ class H5TreeWidget(AbstractTreeWidget):
     def is_any_item_checked(self) -> bool:
         """Return True if any item is checked"""
         for item in self.find_all_items():
-            if item.checkState(0) > 0:
+            if item.checkState(0) != QC.Qt.Unchecked:
                 return True
         return False
 
@@ -366,6 +448,21 @@ class H5TreeWidget(AbstractTreeWidget):
                 item.setCheckState(0, QC.Qt.Checked if state else QC.Qt.Unchecked)
 
     @staticmethod
+    def __item_texts(node: BaseNode) -> list[str]:
+        """Return the texts of the columns of the item of a node
+
+        Args:
+            node: HDF5 node
+
+        Returns:
+            Name, size, type and value (truncated) of the node
+        """
+        text = to_string(node.text)
+        if len(text) > 30:
+            text = text[:30] + "..."
+        return [node.name, node.shape_str, node.dtype_str, text]
+
+    @staticmethod
     def __create_node(node: BaseNode) -> QW.QTreeWidgetItem:
         """Create tree node from HDF5 node
 
@@ -375,15 +472,38 @@ class H5TreeWidget(AbstractTreeWidget):
         Returns:
             Tree widget node
         """
-        text = to_string(node.text)
-        if len(text) > 30:
-            text = text[:30] + "..."
-        treeitem = QW.QTreeWidgetItem([node.name, node.shape_str, node.dtype_str, text])
+        treeitem = QW.QTreeWidgetItem(H5TreeWidget.__item_texts(node))
         treeitem.setData(0, QC.Qt.UserRole, node.id)
         if node.description:
             for col in range(treeitem.columnCount()):
                 treeitem.setToolTip(col, node.description)
         return treeitem
+
+    def update_item(self, item: QW.QTreeWidgetItem) -> None:
+        """Update the item of a node from its current state: texts, tooltip, icon
+        and check box (e.g. once problems were found when reading its data, which
+        make it no longer supported)
+
+        Args:
+            item: tree item
+        """
+        node = self.get_node(item)
+        with block_signals(self):
+            for col, text in enumerate(self.__item_texts(node)):
+                item.setText(col, text)
+                item.setToolTip(col, node.description)
+            if not node.is_supported():
+                item.setData(0, QC.Qt.CheckStateRole, None)
+                item.setFlags(QC.Qt.ItemIsEnabled)
+            elif not item.flags() & QC.Qt.ItemIsUserCheckable:
+                item.setFlags(
+                    QC.Qt.ItemIsEnabled
+                    | QC.Qt.ItemIsSelectable
+                    | QC.Qt.ItemIsUserCheckable
+                )
+                item.setCheckState(0, QC.Qt.Unchecked)
+            item.setIcon(0, get_icon(node.icon_name))
+        self.itemChanged.emit(item, 0)
 
     @staticmethod
     def __recursive_popfunc(parent_item: QW.QTreeWidgetItem, node: BaseNode) -> None:
@@ -471,10 +591,34 @@ class H5TreeWidget(AbstractTreeWidget):
 
 
 class PlotPreview(QW.QStackedWidget):
-    """Plot preview"""
+    """Plot preview
+
+    Preview data is read in a worker thread, so that the browser stays responsive
+    while a large dataset is read. Nodes may provide a decimated preview object
+    for datasets larger than :attr:`MAX_ITEMS` (see
+    :meth:`sigimax.h5.common.BaseNode.create_preview_object`). The preview of a
+    node replaces any pending one: previews of nodes selected meanwhile are not
+    read, and the preview being read stops at the next block of data (see
+    :func:`sigimax.h5.utils.cancellable_reads`), so that the main thread does not
+    wait for it to read the newly selected node.
+    """
+
+    #: Maximum number of data elements read for a preview
+    MAX_ITEMS = 2**24
+
+    SIG_LOADED = QC.Signal(int, object, object)
+    #: Emitted with the node whose preview could not be read, before the error is
+    #: shown: problems may have been found when reading its data (e.g. NeXus image
+    #: axes that are not strictly monotonic), which changes its description
+    SIG_PREVIEW_FAILED = QC.Signal(object)
 
     def __init__(self, parent: QW.QWidget) -> None:
         super().__init__(parent)
+        self.__generation = 0
+        self.__node: BaseNode | None = None
+        self.__executor: ThreadPoolExecutor | None = None
+        self.__pending: Future | None = None
+        self.SIG_LOADED.connect(self.__show_loaded_object)
         self.curvewidget = PlotWidget(
             self,
             options=PlotOptions(
@@ -497,24 +641,93 @@ class PlotPreview(QW.QStackedWidget):
         self.addWidget(self.imagewidget)
 
     def cleanup(self) -> None:
-        """Clean up widget"""
+        """Clean up widget, and stop its worker thread"""
+        self.wait()
+        if self.__executor is not None:
+            self.__executor.shutdown(wait=True)
+            self.__executor = None
         for widget in (self.imagewidget, self.curvewidget):
             widget.get_plot().del_all_items()
 
+    def discard(self) -> None:
+        """Discard the pending previews, without waiting: the preview being read,
+        if any, stops at the next block of data and is not shown, and the previews
+        not started yet are not read"""
+        self.__generation += 1
+        self.__node = None
+        if self.__pending is not None:
+            self.__pending.cancel()
+            self.__pending = None
+
+    def clear_preview(self) -> None:
+        """Discard the pending previews and clear the plot, without waiting (for
+        nodes that cannot be previewed)"""
+        self.discard()
+        plot: BasePlot = self.currentWidget().get_plot()
+        plot.del_all_items()
+        plot.replot()
+
+    def wait(self) -> None:
+        """Discard the pending previews and wait until no data is read
+        (before closing HDF5 files or importing objects)"""
+        self.discard()
+        if self.__executor is not None:
+            # The single worker runs calls in order: once this one is done, the
+            # previous ones are done or were discarded
+            self.__executor.submit(int).result()
+
+    def __load_object(self, generation: int, node: BaseNode) -> None:
+        """Create the preview object of a node (worker thread)"""
+        if generation != self.__generation:
+            return  # Another node was selected meanwhile: do not read this one
+        obj, error = None, None
+        try:
+            with cancellable_reads(lambda: generation != self.__generation):
+                obj = node.create_preview_object(self.MAX_ITEMS)
+        except ReadCancelled:
+            return  # Another node was selected while this one was read
+        except Exception as exc:  # pylint: disable=broad-except
+            error = exc
+        try:
+            self.SIG_LOADED.emit(generation, obj, error)
+        except RuntimeError:
+            pass  # Widget deleted while the data was read
+
+    def __show_message(self, text: str) -> None:
+        """Show a message instead of the preview"""
+        label = make.label(text, "C", (0, 0), "C")
+        plot: BasePlot = self.currentWidget().get_plot()
+        plot.del_all_items()
+        plot.add_item(label)
+        plot.replot()
+
     def update_plot_preview(self, node: BaseNode) -> None:
         """Update plot preview widget"""
-        try:
-            obj = node.get_native_object()
-        except Exception as msg:  # pylint: disable=broad-except
-            qt_handle_error_message(self, msg)
+        self.__generation += 1
+        self.__node = node
+        if self.__pending is not None:
+            self.__pending.cancel()
+        self.__show_message(_("Loading..."))
+        if self.__executor is None:
+            self.__executor = ThreadPoolExecutor(1, thread_name_prefix="h5preview")
+        self.__pending = self.__executor.submit(
+            self.__load_object, self.__generation, node
+        )
+
+    def __show_loaded_object(
+        self, generation: int, obj: SignalObj | ImageObj | None, error: Exception
+    ) -> None:
+        """Show the preview object, unless another node was selected meanwhile"""
+        if generation != self.__generation:
+            return
+        if error is not None:
+            self.__show_message(_("Unsupported data"))
+            self.SIG_PREVIEW_FAILED.emit(self.__node)
+            qt_handle_error_message(self, error)
             return
         if obj is None:
             # An error occurred while creating the object (invalid data, ...)
-            label = make.label(_("Unsupported data"), "C", (0, 0), "C")
-            plot: BasePlot = self.currentWidget().get_plot()
-            plot.del_all_items()
-            plot.add_item(label)
-            plot.replot()
+            self.__show_message(_("Unsupported data"))
             return
         if isinstance(obj, SignalObj):
             obj: SignalObj
@@ -531,6 +744,207 @@ class PlotPreview(QW.QStackedWidget):
         item.unselect()
         plot.do_autoscale()
         self.setCurrentWidget(widget)
+
+
+class ViewSelector(QW.QGroupBox):
+    """View of the multidimensional dataset selected in the HDF5 browser
+
+    The view shows frames of the dataset: signals along one axis or images of two
+    axes, taken along another axis from a first to a last index with a step, the
+    other axes being fixed. Its first frame is previewed; the frames are imported
+    once "Import these frames" is checked.
+    """
+
+    #: Emitted when the view is changed (to update the preview)
+    SIG_VIEW_CHANGED = QC.Signal()
+    #: Emitted when the import of the frames is enabled or disabled
+    SIG_IMPORT_CHANGED = QC.Signal(bool)
+
+    def __init__(self, parent: QW.QWidget) -> None:
+        super().__init__(_("Multidimensional data"), parent)
+        self.node: NDViewMixin | None = None
+        self.__views: list[tuple[int, ...]] = []
+        self.__hidden: list[int] = []
+        self.view_combo = QW.QComboBox(self)
+        self.frame_combo = QW.QComboBox(self)
+        self.first_spin = QW.QSpinBox(self)
+        self.last_spin = QW.QSpinBox(self)
+        self.step_spin = QW.QSpinBox(self)
+        self.step_spin.setMinimum(1)
+        self.fixed_spins: dict[int, QW.QSpinBox] = {}
+        self.fixed_layout = QW.QHBoxLayout()
+        self.count_label = QW.QLabel(self)
+        self.import_check = QW.QCheckBox(_("Import these frames"), self)
+        frames = QW.QHBoxLayout()
+        for label, spin in (
+            (_("First"), self.first_spin),
+            (_("Last"), self.last_spin),
+            (_("Step"), self.step_spin),
+        ):
+            frames.addWidget(QW.QLabel(label, self))
+            frames.addWidget(spin)
+        frames.addStretch()
+        layout = QW.QFormLayout(self)
+        layout.addRow(_("View"), self.view_combo)
+        layout.addRow(_("Frames along"), self.frame_combo)
+        layout.addRow("", frames)
+        layout.addRow(_("Fixed indices"), self.fixed_layout)
+        layout.addRow(self.count_label, self.import_check)
+        self.view_combo.currentIndexChanged.connect(self.__view_combo_changed)
+        self.frame_combo.currentIndexChanged.connect(self.__frame_combo_changed)
+        for spin in (self.first_spin, self.last_spin, self.step_spin):
+            spin.valueChanged.connect(self.__view_edited)
+        self.import_check.toggled.connect(self.__import_toggled)
+        self.setVisible(False)
+
+    @property
+    def ndim(self) -> int:
+        """Return the number of dimensions of the dataset"""
+        return len(self.node.nd_shape)
+
+    def set_node(self, node: BaseNode | None) -> None:
+        """Show the view of a node, or hide the selector if the node has no view
+
+        Args:
+            node: HDF5 node
+        """
+        if not isinstance(node, NDViewMixin) or node.view is None:
+            self.node = None
+            self.setVisible(False)
+            return
+        self.node = node
+        view = node.view
+        self.__views = [
+            (row, column)
+            for row in range(self.ndim)
+            for column in range(row + 1, self.ndim)
+        ] + [(dim,) for dim in range(self.ndim)]
+        if view.displayed not in self.__views:
+            self.__views.append(view.displayed)
+        with block_signals(self.view_combo):
+            self.view_combo.clear()
+            for displayed in self.__views:
+                self.view_combo.addItem(self.__view_text(displayed))
+            self.view_combo.setCurrentIndex(self.__views.index(view.displayed))
+        self.__set_hidden_axes(view)
+        with block_signals(self.import_check):
+            self.import_check.setChecked(node.import_view)
+        self.__update_count()
+        self.setVisible(True)
+
+    def __view_text(self, displayed: tuple[int, ...]) -> str:
+        """Return the text of a view of the view combo box"""
+        labels = [self.node.axis_label(dim) for dim in displayed]
+        if len(displayed) == 1:
+            return _("Signals along axis %s") % labels[0]
+        return _("Images: rows along axis %s, columns along axis %s") % tuple(labels)
+
+    def __set_hidden_axes(self, view: NDView) -> None:
+        """Set the frame axis combo box and the fixed index spin boxes from a view"""
+        shape = self.node.nd_shape
+        self.__hidden = view.hidden_axes(self.ndim)
+        indices = dict(zip(self.__hidden, view.indices))
+        with block_signals(self.frame_combo):
+            self.frame_combo.clear()
+            for dim in self.__hidden:
+                self.frame_combo.addItem(_("axis %s") % self.node.axis_label(dim))
+            frame_axis = view.frame_axis
+            if frame_axis is None:
+                frame_axis = self.__hidden[0]
+            self.frame_combo.setCurrentIndex(self.__hidden.index(frame_axis))
+        for spin in self.fixed_spins.values():
+            self.fixed_layout.removeWidget(spin)
+            spin.deleteLater()
+        self.fixed_spins = {}
+        for dim in self.__hidden:
+            if dim == frame_axis:
+                continue
+            spin = QW.QSpinBox(self)
+            spin.setRange(0, shape[dim] - 1)
+            spin.setValue(indices[dim])
+            spin.setPrefix(f"{dim}: ")
+            spin.valueChanged.connect(self.__view_edited)
+            self.fixed_spins[dim] = spin
+            self.fixed_layout.addWidget(spin)
+        last = view.last if view.frame_axis is not None else shape[frame_axis] - 1
+        self.__set_range(shape[frame_axis], indices[frame_axis], last, view.step)
+
+    def __set_range(self, size: int, first: int, last: int, step: int) -> None:
+        """Set the frame range spin boxes"""
+        spins = (self.first_spin, self.last_spin, self.step_spin)
+        for spin in spins:
+            spin.blockSignals(True)
+        try:
+            self.first_spin.setRange(0, size - 1)
+            self.last_spin.setRange(0, size - 1)
+            self.step_spin.setRange(1, max(1, size))
+            self.first_spin.setValue(first)
+            self.last_spin.setValue(last)
+            self.step_spin.setValue(step)
+        finally:
+            for spin in spins:
+                spin.blockSignals(False)
+
+    def current_view(self) -> NDView:
+        """Return the view set in the selector"""
+        displayed = self.__views[self.view_combo.currentIndex()]
+        frame_axis = self.__hidden[self.frame_combo.currentIndex()]
+        indices = tuple(
+            self.first_spin.value()
+            if dim == frame_axis
+            else self.fixed_spins[dim].value()
+            for dim in self.__hidden
+        )
+        last = max(self.last_spin.value(), self.first_spin.value())
+        return NDView(displayed, indices, frame_axis, last, self.step_spin.value())
+
+    def __view_combo_changed(self, index: int) -> None:
+        """Displayed axes changed: every frame along the first hidden axis"""
+        displayed = self.__views[index]
+        hidden = [dim for dim in range(self.ndim) if dim not in displayed]
+        last = self.node.nd_shape[hidden[0]] - 1
+        view = NDView(displayed, tuple(0 for _dim in hidden), hidden[0], last)
+        self.__set_hidden_axes(view)
+        self.__view_edited()
+
+    def __frame_combo_changed(self, index: int) -> None:
+        """Frame axis changed: every frame along the new axis, the former frame axis
+        being fixed at the first frame"""
+        displayed = self.__views[self.view_combo.currentIndex()]
+        frame_axis = self.__hidden[index]
+        previous = {dim: spin.value() for dim, spin in self.fixed_spins.items()}
+        indices = tuple(
+            0 if dim == frame_axis else previous.get(dim, self.first_spin.value())
+            for dim in self.__hidden
+        )
+        last = self.node.nd_shape[frame_axis] - 1
+        view = NDView(displayed, indices, frame_axis, last)
+        self.__set_hidden_axes(view)
+        self.__view_edited()
+
+    def __update_count(self) -> None:
+        """Show the number of frames of the view"""
+        count = self.node.frame_count()
+        kind = _("images") if len(self.node.view.displayed) == 2 else _("signals")
+        self.count_label.setText(_("%d frame(s) as %s") % (count, kind))
+
+    def __view_edited(self) -> None:
+        """Apply the view set in the selector to the node"""
+        if self.node is None:
+            return
+        try:
+            self.node.set_view(self.current_view(), self.node.import_view)
+        except ValueError:
+            return
+        self.__update_count()
+        self.SIG_VIEW_CHANGED.emit()
+
+    def __import_toggled(self, state: bool) -> None:
+        """Enable or disable the import of the frames"""
+        if self.node is None:
+            return
+        self.node.set_view(self.current_view(), state)
+        self.SIG_IMPORT_CHANGED.emit(state)
 
 
 class TablePreview(QW.QWidget):
@@ -598,6 +1012,7 @@ class GroupAndAttributes(QW.QTabWidget):
         """Clean up widget"""
         self.group.clear()
         self.attrs.clear()
+        self.__show_array_btn.setEnabled(False)
 
     def update_from_node(self, node: BaseNode) -> None:
         """Update widget from node
@@ -648,7 +1063,7 @@ class H5FileSelector(QW.QWidget):
         self.layout().addWidget(self.combo)
         self.btn_add = create_toolbutton(
             self,
-            icon=get_std_icon("DirOpenIcon"),
+            icon=get_icon("guidata:fileopen.svg"),
             text=_("Open") + " ...",
             autoraise=False,
             triggered=lambda _checked=False: self.add_file(),
@@ -725,7 +1140,7 @@ class H5FileSelector(QW.QWidget):
                 self,
                 _("Select HDF5 file"),
                 "",
-                _("HDF5 files (*.h5 *.hdf5 *.hdf *.he5);;All files (*)"),
+                _("HDF5 files (*.h5 *.hdf5 *.hdf *.he5 *.nxs *.nx5);;All files (*)"),
             )[0]
         if fname:
             self.SIG_ADD_FILENAME.emit(osp.abspath(fname))
@@ -753,6 +1168,7 @@ class H5Browser(QW.QSplitter):
 
     def __init__(self, parent: QW.QWidget | None = None) -> None:
         super().__init__(parent)
+        self.__current_item: QW.QTreeWidgetItem | None = None
         if parent is None:
             self.setWindowIcon(get_icon(get_conf().app_logo_path.get()))
         self.selector = H5FileSelector(self)
@@ -774,10 +1190,20 @@ class H5Browser(QW.QSplitter):
         preview.setOrientation(QC.Qt.Vertical)
         self.addWidget(preview)
         self.plotpreview = PlotPreview(self)
-        preview.addWidget(self.plotpreview)
+        self.plotpreview.SIG_PREVIEW_FAILED.connect(self.__preview_failed)
+        self.viewselector = ViewSelector(self)
+        self.viewselector.SIG_VIEW_CHANGED.connect(self.__view_changed)
+        self.viewselector.SIG_IMPORT_CHANGED.connect(self.__view_import_changed)
+        plotandview = QW.QWidget(self)
+        plotandview.setLayout(QW.QVBoxLayout())
+        plotandview.layout().setContentsMargins(0, 0, 0, 0)
+        plotandview.layout().addWidget(self.plotpreview)
+        plotandview.layout().addWidget(self.viewselector)
+        preview.addWidget(plotandview)
         self.groupandattrs = GroupAndAttributes(self, self.show_array)
         preview.addWidget(self.groupandattrs)
         preview.setSizes([int(self.size().height() / 2)] * 2)
+        self.tree.itemChanged.connect(self.__item_changed)
 
     def __create_toolbar(self) -> QW.QToolBar:
         """Create toolbar with tree actions
@@ -798,13 +1224,17 @@ class H5Browser(QW.QSplitter):
         return toolbar
 
     def open_file(self, fname: str) -> None:
-        """Open HDF5 file
+        """Open HDF5 file, and select its default NeXus ``NXdata`` group, if any
 
         Args:
             fname: HDF5 file name
         """
-        self.tree.add_root(fname)
+        default_item = self.tree.add_root(fname)
         self.selector.add_fname(fname)
+        if default_item is not None:
+            self.tree.setCurrentItem(default_item)
+            self.tree.scrollToItem(default_item)
+            self.__item_selected_on_tree(default_item)
 
     def close_file(self, fname: str) -> None:
         """Close HDF5 file
@@ -812,6 +1242,10 @@ class H5Browser(QW.QSplitter):
         Args:
             fname: HDF5 file name
         """
+        self.plotpreview.wait()
+        self.__current_item = None
+        self.groupandattrs.cleanup()
+        self.viewselector.set_node(None)
         self.tree.remove_root(fname)
         self.selector.remove_fname(fname)
 
@@ -836,8 +1270,8 @@ class H5Browser(QW.QSplitter):
 
     def cleanup(self) -> None:
         """Clean up widget"""
-        self.tree.cleanup()
         self.plotpreview.cleanup()
+        self.tree.cleanup()
 
     def get_node(self, item: QW.QTreeWidgetItem | None = None) -> BaseNode:
         """Return (selected) dataset
@@ -860,10 +1294,15 @@ class H5Browser(QW.QSplitter):
         """
         # View the selected item
         node = self.get_node(item)
-        if node.is_supported():
-            self.plotpreview.update_plot_preview(node)
+        self.__current_item = item
+        # Discard the previous preview first: its pending read is not started, and
+        # the read in progress stops at the next block of data, so that reading
+        # the node description below does not wait for it
+        self.plotpreview.discard()
         self.groupandattrs.update_from_node(node)
-        # Update the file selector combo box
+        self.viewselector.set_node(node)
+        # Update the file selector combo box (before starting the preview: reading
+        # the file name would wait for the first block of data to be read)
         with block_signals(self.selector.combo):
             # Avoid triggering current file changed signal, which would result in
             # loosing the current selection on the tree (side effect: "Show array"
@@ -871,6 +1310,10 @@ class H5Browser(QW.QSplitter):
             # that now the current node is not an array, thus causing an error if
             # the user clicks on the button).
             self.selector.set_current_fname(node.h5file.filename)
+        if node.can_preview():
+            self.plotpreview.update_plot_preview(node)
+        else:
+            self.plotpreview.clear_preview()
 
     def __selector_current_file_changed(self, fname: str) -> None:
         """Selector current file changed
@@ -881,13 +1324,59 @@ class H5Browser(QW.QSplitter):
         if fname:
             self.tree.set_current_file(fname)
 
+    def __view_changed(self) -> None:
+        """View of the current multidimensional node changed: preview it"""
+        self.plotpreview.update_plot_preview(self.viewselector.node)
+
+    def __preview_failed(self, node: BaseNode) -> None:
+        """Preview of a node could not be read: show the problems found meanwhile
+        (e.g. NeXus image axes that are not strictly monotonic) in its item and in
+        its description, the node being no longer importable"""
+        item = self.__current_item
+        if item is None or self.get_node(item) is not node:
+            return
+        self.tree.update_item(item)
+        self.groupandattrs.update_from_node(node)
+
+    def __view_import_changed(self, state: bool) -> None:
+        """Import of the frames of the current multidimensional node enabled or
+        disabled: make its item checkable and checked, or not"""
+        if self.__current_item is not None:
+            self.tree.set_item_importable(self.__current_item, state)
+
+    def __item_changed(self, item: QW.QTreeWidgetItem, _column: int = 0) -> None:
+        """Item check state changed: an unchecked multidimensional node is not
+        imported any more"""
+        node = self.tree.get_node(item)
+        if not isinstance(node, NDViewMixin) or not node.import_view:
+            return
+        if item.checkState(0) == QC.Qt.Unchecked:
+            node.import_view = False
+            self.tree.set_item_importable(item, False)
+            if self.viewselector.node is node:
+                self.viewselector.set_node(node)
+
     def show_array(self) -> None:
-        """Show array"""
-        node = self.get_node()
-        assert node.IS_ARRAY
+        """Show array of the current node, if it is an array
+
+        The "Show array" button is enabled when an array is selected with the
+        mouse: the current node may have changed since (e.g. with the keyboard).
+        Read errors are reported.
+        """
+        item = self.tree.currentItem()
+        node = None if item is None else self.get_node(item)
+        if node is None or not node.IS_ARRAY:
+            return
+        try:
+            data = node.data
+            if data is None:
+                raise OSError(f"Unable to read dataset '{node.id}'")
+        except OSError as exc:
+            qt_handle_error_message(self, exc)
+            return
         arrayeditor = ArrayEditor(self)
         arrayeditor.setup_and_check(
-            node.data, title=node.name, readonly=True, add_title_suffix=False
+            data, title=node.name, readonly=True, add_title_suffix=False
         )
         exec_dialog(arrayeditor)
 
@@ -908,7 +1397,6 @@ class H5BrowserDialog(QW.QDialog):
         self.setObjectName("h5browser")
         self.setWindowTitle(_("HDF5 Browser"))
         self.setWindowIcon(get_icon("h5browser.svg"))
-        win32_fix_title_bar_background(self)
         vlayout = QW.QVBoxLayout()
         self.setLayout(vlayout)
         self.button_layout: QW.QHBoxLayout | None = None
@@ -932,9 +1420,32 @@ class H5BrowserDialog(QW.QDialog):
         self.refresh_buttons()
 
     def accept(self) -> None:
-        """Accept changes"""
-        self.nodes = self.browser.tree.get_nodes()
+        """Accept changes, once confirmed if many frames of multidimensional
+        datasets are to be imported (the frames are counted, and only created
+        once confirmed)"""
+        nodes = self.browser.tree.get_nodes(expand=False)
+        frames = count_frames(nodes)
+        if (
+            frames > MAX_FRAMES_WITHOUT_CONFIRMATION
+            and not execenv.unattended
+            and QW.QMessageBox.question(
+                self,
+                self.windowTitle(),
+                _("%d frames of multidimensional datasets will be imported.") % frames
+                + "\n"
+                + _("Do you want to continue?"),
+            )
+            != QW.QMessageBox.Yes
+        ):
+            return
+        self.nodes = expand_views(nodes)
         QW.QDialog.accept(self)
+
+    def done(self, result: int) -> None:
+        """Close dialog, once the preview being read is done: the selected nodes
+        are then read by the caller, and the files closed"""
+        self.browser.plotpreview.wait()
+        super().done(result)
 
     def is_empty(self) -> bool:
         """Return True if tree is empty"""

@@ -8,19 +8,22 @@ The `sigimax` package requires the following Python modules:
       - Version
       - Summary
     * - Python
-      - >=3.9, <4
+      - >=3.10, <4
       - Python programming language
     * - guidata
-      - >= 3.15.0
+      - >= 3.17.2
       - Automatic GUI generation for easy dataset editing and display
     * - PlotPy
-      - >= 2.11.0
+      - >= 2.12.1
       - Curve and image plotting tools for Python/Qt applications
+    * - hdf5plugin
+      - >= 4.0
+      - HDF5 Plugins for Windows, MacOS, and Linux
     * - psutil
       - >= 5.7
       - Cross-platform lib for process and system monitoring.
     * - Sigima
-      - >= 1.2.0
+      - >= 1.4.0
       - Scientific computing engine for 1D signals and 2D images, part of the DataLab open-source platform.
 
 Optional modules for GUI support (Qt):
@@ -64,6 +67,9 @@ Optional modules for building the documentation:
     * - Name
       - Version
       - Summary
+    * - PyQt5
+      - >= 5.15.6
+      - Python bindings for the Qt cross platform application toolkit
     * - sphinx
       - 
       - Python documentation generator

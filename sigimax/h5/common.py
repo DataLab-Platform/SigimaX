@@ -16,14 +16,20 @@ import h5py
 import numpy as np
 from guidata.utils.misc import to_string
 from sigima.io.common.converters import convert_array_to_valid_dtype
-from sigima.objects import ImageObj, SignalObj
+from sigima.objects import EXPERIMENTAL_SOURCE_KEY, ImageObj, SignalObj
 
 from sigimax.config import get_conf
+
+#: Attributes with more elements are not copied to object metadata
+MAX_ATTRIBUTE_ITEMS = 10000
 
 
 def data_to_xy(data: np.ndarray) -> list[np.ndarray]:
     """Convert 2-D array into a list of 1-D array data (x, y, dx, dy).
     This is useful for importing data and creating a SigimaX signal with it.
+
+    A 1-D array, or a 2-D array with a single row or column, holds Y values (X
+    values are then indices).
 
     Args:
         data (numpy.ndarray): 2-D array of data
@@ -31,15 +37,14 @@ def data_to_xy(data: np.ndarray) -> list[np.ndarray]:
     Returns:
         list[np.ndarray]: list of 1-D array data (x, y, dx, dy)
     """
-    if len(data.ravel()) == len(data):
-        return np.arange(len(data)), data.ravel(), None, None
+    if data.ndim == 1 or (data.ndim == 2 and 1 in data.shape):
+        y = data.ravel()
+        return np.arange(y.size), y, None, None
     rows, cols = data.shape
     for colnb in (2, 3, 4):
         if cols == colnb and rows > colnb:
             data = data.T
             break
-    if len(data) == 1:
-        data = data.T
     if len(data) not in (2, 3, 4):
         raise ValueError(f"Invalid data: len(data)={len(data)} (expected 2, 3 or 4)")
     x, y = data[:2]
@@ -51,28 +56,53 @@ def data_to_xy(data: np.ndarray) -> list[np.ndarray]:
     return x, y, dx, dy
 
 
+def to_signal_data(data: np.ndarray) -> np.ndarray:
+    """Return signal values as float64, or as complex128 for complex data.
+
+    Integers are converted with Sigima's converter, which warns when values cannot
+    be represented exactly.
+
+    Args:
+        data: numeric array read from a dataset
+
+    Returns:
+        Array with a data type supported by signals
+    """
+    valid = (np.complex128,) if np.iscomplexobj(data) else (np.float64,)
+    return convert_array_to_valid_dtype(np.asarray(data), valid)
+
+
 class BaseNode(metaclass=abc.ABCMeta):
-    """Object representing a HDF5 node"""
+    """Object representing a HDF5 node
+
+    Args:
+        h5file: HDF5 file
+        dname: path of the node in *h5file*
+    """
 
     IS_ARRAY = False
 
     def __init__(self, h5file, dname):
         self.h5file = h5file
+        #: Path of the node in the opened file: an object reached through an
+        #: external link has another path (``dset.name``) in its own file
+        self.h5path = "/" + to_string(dname).strip("/")
         self.dset = h5file[dname]
         self.metadata = {}
         self.__obj = None
         self.children = []
+        # Kept for applications reading it: uint32 data is no longer clipped
         self.uint32_wng = False
 
     @property
     def id(self):
         """Return node id"""
-        return self.dset.name
+        return self.h5path
 
     @property
     def name(self):
         """Return node name, constructed from dataset name"""
-        return to_string(self.dset.name).split("/")[-1]
+        return self.h5path.split("/")[-1]
 
     @property
     def data(self):
@@ -111,6 +141,11 @@ class BaseNode(metaclass=abc.ABCMeta):
         """Return True if node is associated to supported data"""
         return False
 
+    def can_preview(self) -> bool:
+        """Return True if the node can be previewed (by default, if it is
+        supported: multidimensional nodes are previewed before being enabled)"""
+        return self.is_supported()
+
     def create_native_object(self):
         """Create native object, if supported"""
         return None
@@ -124,6 +159,17 @@ class BaseNode(metaclass=abc.ABCMeta):
             self.__obj = obj
         return self.__obj
 
+    def create_preview_object(self, max_items: int):  # pylint: disable=unused-argument
+        """Return the object shown as a preview of the node, if supported.
+
+        Subclasses may return a decimated object reading at most ``max_items``
+        elements, instead of the native object.
+
+        Args:
+            max_items: maximum number of data elements to read
+        """
+        return self.get_native_object()
+
     def collect_attributes(self):
         """Collect attributes from node.
 
@@ -133,9 +179,15 @@ class BaseNode(metaclass=abc.ABCMeta):
         ``REFERENCE_LIST`` arrays produced by ``h4toh5convert``) are exposed by
         h5py as ``object``-dtype arrays of :class:`h5py.h5r.Reference`, which
         raise ``TypeError: no default __reduce__`` when DataLab pickles the
-        object to run a computation in a worker process.
+        object to run a computation in a worker process. Attributes with more than
+        :data:`MAX_ATTRIBUTE_ITEMS` elements are skipped without being read.
         """
-        for key, value in self.dset.attrs.items():
+        attrs = self.dset.attrs
+        for key in attrs:
+            shape = attrs.get_id(key).shape
+            if shape and int(np.prod(shape, dtype=np.int64)) > MAX_ATTRIBUTE_ITEMS:
+                continue
+            value = attrs[key]
             if isinstance(value, bytes):
                 value = to_string(value)
             if isinstance(value, np.ndarray):
@@ -149,43 +201,54 @@ class BaseNode(metaclass=abc.ABCMeta):
 
     def __process_metadata(self, obj):
         """Process metadata from dataset to obj"""
+        source = obj.metadata.get(EXPERIMENTAL_SOURCE_KEY)
         obj.reset_metadata_to_defaults()
         obj.set_metadata_option("HDF5Path", self.h5file.filename)
         obj.set_metadata_option("HDF5Dataset", self.id)
         obj.metadata.update(self.metadata)
+        if source is not None:
+            obj.metadata[EXPERIMENTAL_SOURCE_KEY] = source
 
     @property
     def object_title(self):
         """Return signal/image object title"""
+        return self.make_title()
+
+    def make_title(self, suffix: str = "") -> str:
+        """Return the title of an object read from the node
+
+        Args:
+            suffix: text following the node name or path (e.g. frame indices),
+             before the file name
+        """
         conf = get_conf()
         if conf.h5_fullpath_in_title.get():
             title = self.id
         else:
             title = self.name
+        title += suffix
         if conf.h5_fname_in_title.get():
             title += f" ({osp.basename(self.h5file.filename)})"
         return title
 
     def set_signal_data(self, obj: SignalObj) -> None:
-        """Set signal data (handles various issues)"""
-        data = self.data
-        if data.dtype not in (float, np.complex128):
-            data = np.array(data, dtype=float)
-        data = convert_array_to_valid_dtype(data, SignalObj.VALID_DTYPES)
+        """Set signal data (handles various issues)
+
+        Raises:
+            ValueError: if a 2D table has complex X values or uncertainties
+        """
+        data = to_signal_data(self.data)
         if len(data.shape) == 1:
             obj.set_xydata(np.arange(data.size), data)
         else:
             x, y, dx, dy = data_to_xy(data)
+            if any(np.iscomplexobj(array) for array in (x, dx, dy)):
+                raise ValueError("Complex X values or uncertainties are not supported")
             obj.set_xydata(x, y, dx, dy)
 
     def set_image_data(self, obj: ImageObj) -> None:
         """Set image data (handles various issues)"""
-        data = self.data
-        if data.dtype == np.uint32:
-            self.uint32_wng = data.max() > np.iinfo(np.int32).max
-            clipped_data = data.clip(0, np.iinfo(np.int32).max)
-            data = np.array(clipped_data, dtype=np.int32)
-        obj.data = convert_array_to_valid_dtype(data, ImageObj.VALID_DTYPES)
+        obj.data = convert_array_to_valid_dtype(self.data, ImageObj.VALID_DTYPES)
 
 
 class H5Importer:
@@ -193,11 +256,15 @@ class H5Importer:
 
     def __init__(self, filename):
         self.h5file = h5py.File(filename)
-        self.__nodes = {}
-        self.root = RootNode(self.h5file)
-        self.__nodes[self.root.id] = self.root
-        self.root.collect_children(self.__nodes)
-        NODE_FACTORY.run_post_triggers(self)
+        try:
+            self.__nodes = {}
+            self.root = RootNode(self.h5file)
+            self.__nodes[self.root.id] = self.root
+            self.root.collect_children(self.__nodes)
+            NODE_FACTORY.run_post_triggers(self)
+        except BaseException:
+            self.h5file.close()
+            raise
 
     @property
     def nodes(self):
@@ -229,6 +296,7 @@ class NodeFactory:
         self.__generic_classes = []
         self.__thirdparty_classes = []
         self.__post_triggers = {}
+        self.__children_providers = []
 
     def add_ignored_datasets(self, names):
         """Add h5 dataset name to ignore list"""
@@ -248,9 +316,52 @@ class NodeFactory:
         else:
             self.__thirdparty_classes.append(cls)
 
-    def get(self, dset):
-        """Return node class that matches h5 dataset"""
-        for name in to_string(dset.name).split("/"):
+    def unregister(self, cls) -> None:
+        """Unregister node class and its post triggers, if registered.
+        This lets an application plugin remove its node classes when it is unloaded"""
+        for classes in (self.__thirdparty_classes, self.__generic_classes):
+            while cls in classes:
+                classes.remove(cls)
+        self.__post_triggers.pop(cls, None)
+
+    def add_children_provider(self, func: Callable) -> None:
+        """Add a function returning extra nodes to show under a group node.
+        Functions take the group node and return a list of nodes whose ids are
+        not HDF5 paths of the file"""
+        if func not in self.__children_providers:
+            self.__children_providers.append(func)
+
+    def remove_children_provider(self, func: Callable) -> None:
+        """Remove a function added with :meth:`add_children_provider`"""
+        if func in self.__children_providers:
+            self.__children_providers.remove(func)
+
+    def get_extra_children(self, node: GroupNode) -> list[BaseNode]:
+        """Return the extra nodes to show under a group node"""
+        children = []
+        for func in self.__children_providers:
+            try:
+                children.extend(func(node))
+            except (
+                UnicodeDecodeError,
+                TypeError,
+                ValueError,
+                KeyError,
+                OSError,
+            ) as exc:
+                print(f"Warning: Skipping extra nodes of '{node.id}': {exc}")
+        return children
+
+    def get(self, dset, path: str | None = None):
+        """Return node class that matches h5 dataset
+
+        Args:
+            dset: HDF5 dataset or group
+            path: path of *dset* in the opened file (default: ``dset.name``, its
+             path in its own file, which differs for an object reached through
+             an external link)
+        """
+        for name in to_string(dset.name if path is None else path).split("/"):
             if name in self.__ignored_datasets:
                 return None
         for cls in self.__thirdparty_classes + self.__generic_classes:
@@ -288,22 +399,67 @@ class GroupNode(BaseNode):
         """Icon name associated to node"""
         return "h5group.svg"
 
-    def collect_children(self, node_dict: dict[str, BaseNode]):
-        """Construct tree"""
-        for dset in self.dset.values():
+    def collect_children(
+        self,
+        node_dict: dict[str, BaseNode],
+        ancestors: tuple[h5py.Group, ...] = (),
+    ):
+        """Construct tree
+
+        Args:
+            node_dict: nodes by identifier, completed with the collected nodes
+            ancestors: groups containing this group: a link back to one of them (or
+             to this group) closes a cycle and is skipped
+        """
+        ancestors = (*ancestors, self.dset)
+        for name in self.dset:
+            # Path in the opened file, whatever the links leading to the child
+            # (the path of an object reached through an external link is that
+            # of its own file, where it may even designate another object)
+            path = f"{self.h5path.rstrip('/')}/{name}"
+            dset = self.dset.get(name)
+            if dset is None:
+                # Broken link: soft link to a missing object, or external link to
+                # a missing file (e.g. detector data of synchrotron master files)
+                link = self.dset.get(name, getlink=True)
+                if isinstance(link, h5py.ExternalLink):
+                    reason = f"broken external link to '{link.filename}:{link.path}'"
+                elif isinstance(link, h5py.SoftLink):
+                    reason = f"broken soft link to '{link.path}'"
+                else:
+                    reason = "object cannot be opened"
+                print(f"Warning: Skipping '{path}': {reason}")
+                continue
+            if isinstance(dset, h5py.Group):
+                # Identity comparison (file and object): a group reached again
+                # through a hard, soft or external link would be collected forever
+                looped = next((group for group in ancestors if group == dset), None)
+                if looped is not None:
+                    print(
+                        f"Warning: Skipping '{path}': link back to its parent group "
+                        f"'{looped.name}'"
+                    )
+                    continue
             try:
-                child_cls = NODE_FACTORY.get(dset)
+                child_cls = NODE_FACTORY.get(dset, path)
                 if child_cls is not None:
-                    child = child_cls(self.h5file, dset.name)
+                    child = child_cls(self.h5file, path)
                     node_dict[child.id] = child
                     self.children.append(child)
                     if isinstance(child, GroupNode):
-                        child.collect_children(node_dict)
+                        child.collect_children(node_dict, ancestors)
                     child.collect_attributes()
             except (UnicodeDecodeError, TypeError, ValueError, KeyError) as exc:
                 # Skip datasets that can't be processed due to various issues
-                print(f"Warning: Skipping dataset '{dset.name}' due to error: {exc}")
+                print(f"Warning: Skipping dataset '{path}' due to error: {exc}")
                 continue
+        for child in NODE_FACTORY.get_extra_children(self):
+            if child.id in node_dict:
+                print(f"Warning: Skipping node '{child.id}': id already used")
+                continue
+            child.collect_attributes()
+            node_dict[child.id] = child
+            self.children.append(child)
 
 
 class RootNode(GroupNode):
