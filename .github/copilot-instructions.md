@@ -420,6 +420,10 @@ Distinguish three categories of dependencies:
   * hdf5plugin ≥ 4.0 is required, for the HDF5 compression filters of detector data.
 ```
 
+## Releasing
+
+Follow [RELEASING.md](../RELEASING.md). **Never create a GitHub release by hand** (with `gh release create` or from the GitHub web page): pushing a tag `vX.Y.Z` (or `vX.Y.Z-rcN`) makes `.github/workflows/release.yml` create a draft release, and only publishing that draft uploads to PyPI (or TestPyPI). Each version needs a `## SigimaX Version X.Y.Z ##` section in the release notes: it becomes the description of the GitHub release.
+
 ## Related Projects
 
 - **Sigima**: Headless computation library (sibling, upstream)
