@@ -1,4 +1,11 @@
-# Version 1.1.0 #
+# Version 1.1 #
+
+## SigimaX Version 1.1.1 ##
+
+### Changes ###
+
+* Each GitHub release now provides the wheel, the source archive and a `SHA256SUMS` checksums file, identical to the files published on PyPI, with build provenance attestations that can be checked with `gh attestation verify` (these files were missing from the v1.1.0 release)
+* Release candidates (`vX.Y.Z-rcN`) are now published on TestPyPI, so that they can be tested before the final release
 
 ## SigimaX Version 1.1.0 ##
 
