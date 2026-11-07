@@ -48,7 +48,7 @@ on:
         default: "3.11"
     outputs:
       version:
-        description: "Version that was built (without leading v)"
+        description: "Version that was built (PEP 440, e.g. 1.2.0 or 1.2.0rc1)"
         value: ${{ jobs.preflight.outputs.version }}
 
 permissions:
@@ -91,7 +91,7 @@ jobs:
             echo "Using sigimax.__version__=$VERSION (no tag check)"
           else
             python scripts/ci_release_helpers.py check-tag "$GITHUB_REF_NAME"
-            VERSION="${GITHUB_REF_NAME#v}"
+            VERSION=$(python scripts/ci_release_helpers.py tag-info "$GITHUB_REF_NAME" | sed -n 's/^version=//p')
           fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 

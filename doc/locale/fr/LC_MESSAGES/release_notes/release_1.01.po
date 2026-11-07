@@ -12,8 +12,20 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-msgid "Version 1.1.0"
-msgstr "Version 1.1.0"
+msgid "Version 1.1"
+msgstr "Version 1.1"
+
+msgid "SigimaX Version 1.1.1"
+msgstr "SigimaX Version 1.1.1"
+
+msgid "Changes"
+msgstr "Modifications"
+
+msgid "Each GitHub release now provides the wheel, the source archive and a `SHA256SUMS` checksums file, identical to the files published on PyPI, with build provenance attestations that can be checked with `gh attestation verify` (these files were missing from the v1.1.0 release)"
+msgstr "Chaque version publiée sur GitHub fournit désormais la wheel, l'archive source et un fichier de sommes de contrôle `SHA256SUMS`, identiques aux fichiers publiés sur PyPI, avec des attestations de provenance vérifiables avec `gh attestation verify` (ces fichiers manquaient à la version v1.1.0)"
+
+msgid "Release candidates (`vX.Y.Z-rcN`) are now published on TestPyPI, so that they can be tested before the final release"
+msgstr "Les versions candidates (`vX.Y.Z-rcN`) sont désormais publiées sur TestPyPI, afin de pouvoir être testées avant la version finale"
 
 msgid "SigimaX Version 1.1.0"
 msgstr "SigimaX Version 1.1.0"

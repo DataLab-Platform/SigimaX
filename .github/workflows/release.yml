@@ -1,27 +1,44 @@
 # ============================================================================
-# Build and publish a SigimaX release.
+# Prepare and publish a SigimaX release (procedure: RELEASING.md).
 #
-# The build itself is delegated to the reusable `_build.yml` workflow
-# (modular, one artifact per stage). This file only adds the test gate and
-# the publication jobs: PyPI Trusted Publishing + draft GitHub Release.
+# Maintainers never create a GitHub release by hand. A release takes two
+# steps, each one running this workflow:
+#
+# 1. "Prepare vX.Y.Z" - a maintainer pushes a release tag:
+#      vX.Y.Z      final release, on `main`, sigimax.__version__ = "X.Y.Z"
+#      vX.Y.Z-rcN  release candidate, on any branch, __version__ = "X.Y.ZrcN"
+#    The tag is checked (format, version, release notes, no release already
+#    published), the tests run, the distributions are built (`_build.yml`),
+#    their build provenance is attested, and a DRAFT GitHub release is
+#    created with the wheel, the sdist and SHA256SUMS. Nothing is published
+#    yet: on failure, delete the tag, fix and tag again.
+#
+# 2. "Publish vX.Y.Z" - a maintainer reviews the draft release and publishes
+#    it. The files of the release are downloaded and checked against
+#    SHA256SUMS and the attestations of step 1, then uploaded with Trusted
+#    Publishing to PyPI (final release) or TestPyPI (release candidate).
+#    A release created by hand has no such files: nothing is uploaded.
 #
 # Documentation is NOT deployed here: SigimaX docs (HTML + PDF) are built
 # and hosted by Read the Docs, which rebuilds automatically on push/tag
 # through its own webhook (see `.readthedocs.yaml`).
 #
-# Triggers:
-#   * push of a tag matching vX.Y.Z (no pre-release suffix) on `main`.
-#
-# Prerequisites (one-time, off-CI):
-#   - Configure PyPI Trusted Publishing for `sigimax` -> environment `pypi`.
+# Prerequisites (one-time, off-CI): Trusted Publishing for `sigimax` with
+# this workflow (`release.yml`), on PyPI with environment `pypi` and on
+# TestPyPI with environment `testpypi`.
 # ============================================================================
 name: Release
+
+run-name: >-
+  ${{ github.event_name == 'release' && 'Publish' || 'Prepare' }}
+  ${{ github.ref_name }}
 
 on:
   push:
     tags:
       - "v[0-9]*.[0-9]*.[0-9]*"
-      - "!v*-*"  # exclude pre-release tags
+  release:
+    types: [published]
 
 permissions:
   contents: read
@@ -30,54 +47,62 @@ concurrency:
   group: release-${{ github.ref }}
   cancel-in-progress: false
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   # ---------------------------------------------------------------------------
-  # Test gate: the release is only built if both Qt bindings pass.
+  # Step 1 - Prepare: check the tag before spending time on tests and builds.
   # ---------------------------------------------------------------------------
+  check-tag:
+    name: Check the tag
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    outputs:
+      prerelease: ${{ steps.tag.outputs.prerelease }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+
+      - name: Check the tag, the version and the release notes
+        id: tag
+        run: |
+          python scripts/ci_release_helpers.py tag-info "$GITHUB_REF_NAME" >> "$GITHUB_OUTPUT"
+          python scripts/ci_release_helpers.py check-tag "$GITHUB_REF_NAME"
+          python scripts/ci_release_helpers.py release-notes "$GITHUB_REF_NAME"
+
+      - name: Check that no release was published by hand
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scripts/ci_release_helpers.py check-unpublished "$GITHUB_REF_NAME"
+
   test_pyqt5:
+    needs: check-tag
     uses: ./.github/workflows/test_pyqt5.yml
 
   test_pyqt6:
+    needs: check-tag
     uses: ./.github/workflows/test_pyqt6.yml
 
-  # ---------------------------------------------------------------------------
-  # Modular build (translations / dists) via reusable workflow.
-  # ---------------------------------------------------------------------------
   build:
-    needs: [test_pyqt5, test_pyqt6]
+    needs: [check-tag, test_pyqt5, test_pyqt6]
     uses: ./.github/workflows/_build.yml
     with:
+      # Release candidates may be tagged on any branch.
+      skip-tag-branch-check: ${{ needs.check-tag.outputs.prerelease == 'true' }}
       artifact-retention-days: 30
 
-  # ---------------------------------------------------------------------------
-  # Publish sdist + wheel to PyPI via Trusted Publishing (OIDC).
-  # ---------------------------------------------------------------------------
-  publish-pypi:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: pypi
-      url: https://pypi.org/p/sigimax
-    permissions:
-      id-token: write
-    steps:
-      - name: Download Python distributions
-        uses: actions/download-artifact@v7
-        with:
-          name: python-dists
-          path: dist
-
-      - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-
-  # ---------------------------------------------------------------------------
-  # Create a draft GitHub Release with all public artifacts.
-  # ---------------------------------------------------------------------------
-  github-release:
-    needs: build
+  draft-release:
+    name: Create the draft release
+    needs: [check-tag, build]
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: write       # create the draft release
       id-token: write       # required by attest-build-provenance (OIDC)
       attestations: write   # required by attest-build-provenance
     steps:
@@ -111,7 +136,8 @@ jobs:
 
       - name: Attest build provenance
         # Produces a Sigstore-backed attestation linking each artifact to
-        # this exact workflow run. Verifiable with `gh attestation verify`.
+        # this exact workflow run. Checked before publication (step 2), and
+        # verifiable by users with `gh attestation verify`.
         uses: actions/attest-build-provenance@v4
         with:
           subject-path: |
@@ -125,15 +151,116 @@ jobs:
           echo "--- release notes preview ---"
           head -n 20 release-notes.md
 
-      - name: Create draft GitHub Release
-        uses: softprops/action-gh-release@v3
+      # Checked again: a release may have been published by hand while the
+      # tests were running.
+      - name: Check that no release was published by hand
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scripts/ci_release_helpers.py check-unpublished "$GITHUB_REF_NAME"
+
+      - name: Delete the draft release left by a previous attempt
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api --paginate "repos/$GITHUB_REPOSITORY/releases" \
+            --jq ".[] | select(.draft and .tag_name == \"$GITHUB_REF_NAME\") | .id" |
+          while read -r id; do
+            echo "Deleting draft release $id"
+            gh api --method DELETE "repos/$GITHUB_REPOSITORY/releases/$id"
+          done
+
+      - name: Create the draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PRERELEASE: ${{ needs.check-tag.outputs.prerelease }}
+        run: |
+          options=(--draft --verify-tag --title "SigimaX $GITHUB_REF_NAME"
+                   --notes-file release-notes.md)
+          index=PyPI
+          if [ "$PRERELEASE" = "true" ]; then
+            options+=(--prerelease)
+            index=TestPyPI
+          fi
+          url=$(gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" \
+            "${options[@]}" assets/dists/*.whl assets/dists/*.tar.gz assets/SHA256SUMS)
+          echo "::notice title=Draft release ready::Review and publish $url to upload SigimaX $GITHUB_REF_NAME to $index."
+          {
+            echo "## Draft release ready"
+            echo
+            echo "Nothing is published yet. Review the draft release, then" \
+              "publish it: this uploads its files to $index."
+            echo
+            echo "$url"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # ---------------------------------------------------------------------------
+  # Step 2 - Publish: upload the checked files of the published release.
+  # ---------------------------------------------------------------------------
+  publish:
+    name: Publish to ${{ contains(github.ref_name, '-rc') && 'TestPyPI' || 'PyPI' }}
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ contains(github.ref_name, '-rc') && 'testpypi' || 'pypi' }}
+      url: ${{ contains(github.ref_name, '-rc') && 'https://test.pypi.org/p/sigimax' || 'https://pypi.org/p/sigimax' }}
+    permissions:
+      contents: read      # download the files of the release
+      attestations: read  # verify their build provenance
+      id-token: write     # Trusted Publishing
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
         with:
-          tag_name: ${{ github.ref_name }}
-          name: SigimaX ${{ github.ref_name }}
-          body_path: release-notes.md
-          draft: true
-          fail_on_unmatched_files: true
-          files: |
-            assets/dists/*.whl
-            assets/dists/*.tar.gz
-            assets/SHA256SUMS
+          python-version: "3.11"
+
+      - name: Check the tag
+        id: tag
+        run: python scripts/ci_release_helpers.py tag-info "$GITHUB_REF_NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Download the files of the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.tag.outputs.version }}
+        run: |
+          files=("sigimax-$VERSION-py3-none-any.whl" "sigimax-$VERSION.tar.gz" SHA256SUMS)
+          patterns=()
+          for f in "${files[@]}"; do patterns+=(--pattern "$f"); done
+          # Missing files are reported below with an explicit message.
+          gh release download "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" \
+            --dir assets "${patterns[@]}" || true
+          missing=0
+          for f in "${files[@]}"; do
+            if [ ! -f "assets/$f" ]; then
+              echo "::error::Missing release file: $f"
+              missing=1
+            fi
+          done
+          if [ "$missing" = 1 ]; then
+            echo "::error title=Release not prepared by the release workflow::Release $GITHUB_REF_NAME lacks the files built by the \"Prepare $GITHUB_REF_NAME\" run: it was probably created by hand. Nothing was uploaded. See RELEASING.md to recover."
+            exit 1
+          fi
+
+      - name: Check the files against SHA256SUMS and their attestations
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cd assets
+          sha256sum --check --strict SHA256SUMS
+          for f in *.whl *.tar.gz; do
+            gh attestation verify "$f" --repo "$GITHUB_REPOSITORY" \
+              --signer-workflow "$GITHUB_REPOSITORY/.github/workflows/release.yml" \
+              --source-ref "refs/tags/$GITHUB_REF_NAME" \
+              --deny-self-hosted-runners
+          done
+          mkdir ../dist
+          mv -- *.whl *.tar.gz ../dist/
+
+      - name: Upload to ${{ steps.tag.outputs.prerelease == 'true' && 'TestPyPI' || 'PyPI' }}
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: ${{ steps.tag.outputs.prerelease == 'true' && 'https://test.pypi.org/legacy/' || 'https://upload.pypi.org/legacy/' }}
+          # Makes re-running this job safe after a partial upload: the files
+          # were checked above.
+          skip-existing: true
