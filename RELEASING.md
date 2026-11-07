@@ -2,7 +2,7 @@
 
 > **Golden rule: never create a GitHub release by hand.** Push the tag, wait for the draft release prepared by the CI, then publish that draft.
 
-A release takes two steps, both run by [`.github/workflows/release.yml`](.github/workflows/release.yml):
+A release takes two steps, both run by [`.github/workflows/release.yml`](.github/workflows/release.yml), which relies on the [release actions](https://github.com/DataLab-Platform/release-actions) shared by the DataLab Platform projects:
 
 1. **Prepare**: pushing a release tag checks the tag, runs the tests, builds the wheel and the sdist, attests their build provenance and creates a **draft** GitHub release with these files. Nothing is published at this stage.
 2. **Publish**: when a maintainer publishes the draft release, its files are checked (checksums and attestations) and uploaded to PyPI. A release created by hand has none of these files, so nothing is uploaded.
