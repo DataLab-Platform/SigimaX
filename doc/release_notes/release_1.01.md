@@ -7,6 +7,10 @@
 * Each GitHub release now provides the wheel, the source archive and a `SHA256SUMS` checksums file, identical to the files published on PyPI, with build provenance attestations that can be checked with `gh attestation verify` (these files were missing from the v1.1.0 release)
 * Release candidates (`vX.Y.Z-rcN`) are now published on TestPyPI, so that they can be tested before the final release
 
+### Fixes ###
+
+* `--version` now shows the active application's name and version instead of option objects (fixes [Issue #74](https://github.com/DataLab-Platform/SigimaX/issues/74)).
+
 ## SigimaX Version 1.1.0 ##
 
 ### Requirements ###

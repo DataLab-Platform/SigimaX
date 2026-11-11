@@ -27,6 +27,12 @@ msgstr "Chaque version publiée sur GitHub fournit désormais la wheel, l'archiv
 msgid "Release candidates (`vX.Y.Z-rcN`) are now published on TestPyPI, so that they can be tested before the final release"
 msgstr "Les versions candidates (`vX.Y.Z-rcN`) sont désormais publiées sur TestPyPI, afin de pouvoir être testées avant la version finale"
 
+msgid "Fixes"
+msgstr "Corrections"
+
+msgid "`--version` now shows the active application's name and version instead of option objects (fixes [Issue #74](https://github.com/DataLab-Platform/SigimaX/issues/74))."
+msgstr "`--version` affiche désormais le nom et la version de l'application active au lieu d'objets d'option (corrige [Issue #74](https://github.com/DataLab-Platform/SigimaX/issues/74))."
+
 msgid "SigimaX Version 1.1.0"
 msgstr "SigimaX Version 1.1.0"
 
