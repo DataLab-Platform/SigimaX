@@ -15,8 +15,8 @@ msgstr ""
 msgid "Remote Control Widgets"
 msgstr "Widgets de contrôle à distance"
 
-msgid "SigimaX provides ready-to-use Qt widgets to build a *remote client* application: a separate process that connects to a running DataLab-derived application server and exchanges signals/images with it, using :class:`sigima.client.SimpleRemoteProxy` (or any proxy exposing the same ``connect``/``get_current_panel``/``get_group_titles_with_object_info`` API)."
-msgstr "SigimaX fournit des widgets Qt prêts à l'emploi pour créer une application *client distant* : un processus séparé qui se connecte à un serveur d'application dérivé de DataLab en cours d'exécution et échange des signaux/images avec celui-ci, en utilisant :class:`sigima.client.SimpleRemoteProxy` (ou tout proxy exposant la même API ``connect``/``get_current_panel``/``get_group_titles_with_object_info``)."
+msgid "SigimaX provides ready-to-use Qt widgets to build a *remote client* application: a separate process that connects to a running DataLab-derived application server and exchanges signals/images with it, using :class:`sigima.client.SimpleRemoteProxy` (or any proxy exposing the same ``connect``/``get_current_panel``/``set_current_panel``/ ``get_group_titles_with_object_info`` API)."
+msgstr "SigimaX fournit des widgets Qt prêts à l'emploi pour créer une application *client distant* : un processus séparé qui se connecte à un serveur d'application dérivé de DataLab en cours d'exécution et échange des signaux/images avec celui-ci, en utilisant :class:`sigima.client.SimpleRemoteProxy` (ou tout proxy exposant la même API ``connect``/``get_current_panel``/``set_current_panel``/ ``get_group_titles_with_object_info``)."
 
 msgid "These widgets originate from the (now unmaintained) ``cdlclient`` / `DataLab Simple Client <https://github.com/DataLab-Platform/DataLabSimpleClient>`_ package. They have been ported into SigimaX, generalized (no DataLab-specific branding hardcoded), and adapted to the current :mod:`sigima.client` API."
 msgstr "Ces widgets proviennent du package (aujourd'hui non maintenu) ``cdlclient`` / `DataLab Simple Client <https://github.com/DataLab-Platform/DataLabSimpleClient>`_. Ils ont été portés dans SigimaX, généralisés (aucun branding spécifique à DataLab codé en dur) et adaptés à l'API actuelle :mod:`sigima.client`."
@@ -42,8 +42,8 @@ msgstr "Une application dérivée (client) fournit :"
 msgid "the actual :class:`sigima.client.SimpleRemoteProxy` (or compatible proxy) instance and its connection parameters;"
 msgstr "L'instance réelle de :class:`sigima.client.SimpleRemoteProxy` (ou un proxy compatible) et ses paramètres de connexion ;"
 
-msgid "what to do with the object selected in :class:`~sigimax.widgets.objectdialog.GetObjectDialog` (e.g. retrieve its data with :meth:`~sigima.client.base.SimpleBaseProxy.get_object`); the widgets never modify the connection or the remote objects themselves."
-msgstr "Ce qu'il faut faire avec l'objet sélectionné dans :class:`~sigimax.widgets.objectdialog.GetObjectDialog` (par exemple récupérer ses données avec :meth:`~sigima.client.base.SimpleBaseProxy.get_object`) ; les widgets ne modifient jamais la connexion ni les objets distants eux-mêmes."
+msgid "what to do with the object selected in :class:`~sigimax.widgets.objectdialog.GetObjectDialog` (e.g. retrieve its data with :meth:`~sigima.client.base.SimpleBaseProxy.get_object`); the widgets never modify the remote objects themselves, but :class:`~sigimax.widgets.objectdialog.GetObjectDialog` switches the current panel of the remote application (``set_current_panel``) to list its objects."
+msgstr "Ce qu'il faut faire avec l'objet sélectionné dans :class:`~sigimax.widgets.objectdialog.GetObjectDialog` (par exemple récupérer ses données avec :meth:`~sigima.client.base.SimpleBaseProxy.get_object`) ; les widgets ne modifient jamais les objets distants eux-mêmes, mais :class:`~sigimax.widgets.objectdialog.GetObjectDialog` change le panneau courant de l'application distante (``set_current_panel``) pour en lister les objets."
 
 msgid "Connecting to a Server"
 msgstr "Connexion à un serveur"

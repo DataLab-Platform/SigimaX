@@ -8,6 +8,8 @@ SigimaX environment utilities (:mod:`sigimax.env`)
     :members:
 .. autoclass:: SGMXExecEnv
     :members:
+.. autodata:: execenv
+    :no-value:
 """
 
 from __future__ import annotations
@@ -541,4 +543,6 @@ class SGMXExecEnv:
                 setattr(self, key, value)
 
 
+#: Runtime environment of the application (command-line arguments are parsed by
+#: :func:`sigimax.app.run`, through :meth:`SGMXExecEnv.parse_args`)
 execenv = SGMXExecEnv(parse_args=False)

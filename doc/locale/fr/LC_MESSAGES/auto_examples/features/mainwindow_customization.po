@@ -27,8 +27,8 @@ msgstr "**Docks** — :meth:`~sigimax.mainwindow.SGMXMainWindow._setup_docks`"
 msgid "**Menu layout** — :meth:`~sigimax.mainwindow.SGMXMainWindow._get_menubar_layout`"
 msgstr "**Disposition des menus** — :meth:`~sigimax.mainwindow.SGMXMainWindow._get_menubar_layout`"
 
-msgid "**Actions** — populating menus (custom and standard) with :func:`guidata.qthelpers.create_action`/:func:`guidata.qthelpers.add_actions`"
-msgstr "**Actions** — remplir les menus (personnalisés et standards) avec :func:`guidata.qthelpers.create_action`/:func:`guidata.qthelpers.add_actions`"
+msgid "**Actions** — populating custom menus with :func:`guidata.qthelpers.create_action`/:func:`guidata.qthelpers.add_actions`, and extending standard menus with :meth:`~sigimax.mainwindow.SGMXMainWindow._get_file_menu_actions`"
+msgstr "**Actions** — remplir les menus personnalisés avec :func:`guidata.qthelpers.create_action`/:func:`guidata.qthelpers.add_actions`, et étendre les menus standards avec :meth:`~sigimax.mainwindow.SGMXMainWindow._get_file_menu_actions`"
 
 msgid "**Status bar** — :meth:`~sigimax.mainwindow.SGMXMainWindow._get_extra_status_widgets`"
 msgstr "**Barre d'état** — :meth:`~sigimax.mainwindow.SGMXMainWindow._get_extra_status_widgets`"
@@ -54,11 +54,11 @@ msgstr "Résumé"
 msgid "``_setup_docks`` / ``_get_menubar_layout`` / ``_get_extra_status_widgets`` return declarative descriptions consumed by the base class — override them instead of poking at Qt internals"
 msgstr "``_setup_docks`` / ``_get_menubar_layout`` / ``_get_extra_status_widgets`` renvoient des descriptions déclaratives consommées par la classe de base — surchargez-les plutôt que de manipuler les rouages internes de Qt"
 
-msgid "``_post_setup`` is where menus (custom or standard) get their actions, once everything else is guaranteed to exist"
-msgstr "``_post_setup`` est l'endroit où les menus (personnalisés ou standards) reçoivent leurs actions, une fois que tout le reste est garanti d'exister"
+msgid "``_post_setup`` is where custom menus get their actions, once everything else is guaranteed to exist"
+msgstr "``_post_setup`` est l'endroit où les menus personnalisés reçoivent leurs actions, une fois que tout le reste est garanti d'exister"
 
-msgid "Standard menus (``file_menu``, ``view_menu``, ``help_menu``) remain available for derived applications to extend, not just replace"
-msgstr "Les menus standards (``file_menu``, ``view_menu``, ``help_menu``) restent disponibles pour que les applications dérivées les étendent, et pas seulement les remplacent"
+msgid "The standard File and View menus are rebuilt each time they are shown: extend them by overriding ``_get_file_menu_actions`` / ``_get_view_menu_actions`` (calling ``super()``), not by adding actions to ``file_menu`` / ``view_menu`` directly"
+msgstr "Les menus standards Fichier et Affichage sont reconstruits à chaque affichage : étendez-les en surchargeant ``_get_file_menu_actions`` / ``_get_view_menu_actions`` (en appelant ``super()``), et non en ajoutant directement des actions à ``file_menu`` / ``view_menu``"
 
 msgid ":download:`Download Jupyter notebook: mainwindow_customization.ipynb <mainwindow_customization.ipynb>`"
 msgstr ":download:`Télécharger le notebook Jupyter : mainwindow_customization.ipynb <mainwindow_customization.ipynb>`"

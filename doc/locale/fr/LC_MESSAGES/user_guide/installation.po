@@ -36,8 +36,8 @@ msgstr "En tant que :ref:`install_wheel` précompilé, qui peut être installé 
 msgid "As a :ref:`install_source`, which can be installed from the Git repository."
 msgstr "En tant que :ref:`install_source`, qui peut être installé depuis le dépôt Git."
 
-msgid "Impatient to try the next version of SigimaX? You can also install the latest development version from the main branch of the Git repository. See :ref:`install_development` for more information."
-msgstr "Impatient d'essayer la prochaine version de SigimaX ? Vous pouvez également installer la dernière version de développement depuis la branche principale du dépôt Git. Voir :ref:`install_development` pour plus d'informations."
+msgid "Impatient to try the next version of SigimaX? You can also install the latest development version from the ``develop`` branch of the Git repository. See :ref:`install_development` for more information."
+msgstr "Impatient d'essayer la prochaine version de SigimaX ? Vous pouvez également installer la dernière version de développement depuis la branche ``develop`` du dépôt Git. Voir :ref:`install_development` pour plus d'informations."
 
 msgid "Conda package"
 msgstr "Paquet Conda"
@@ -78,8 +78,8 @@ msgstr "Ou, si vous préférez, vous pouvez l'installer en mode éditable depuis
 msgid "Development version"
 msgstr "Version de développement"
 
-msgid "If you want to try the latest development version of SigimaX, you can install it directly from the main branch of the Git repository."
-msgstr "Si vous souhaitez essayer la dernière version de développement de SigimaX, vous pouvez l'installer directement depuis la branche principale du dépôt Git."
+msgid "If you want to try the latest development version of SigimaX, you can install it directly from the ``develop`` branch of the Git repository (the default branch, ``main``, holds the latest release)."
+msgstr "Si vous souhaitez essayer la dernière version de développement de SigimaX, vous pouvez l'installer directement depuis la branche ``develop`` du dépôt Git (la branche par défaut, ``main``, contient la dernière version publiée)."
 
 msgid "The first time you install SigimaX from the Git repository, enter the following command:"
 msgstr "La première fois que vous installez SigimaX depuis le dépôt Git, entrez la commande suivante :"
@@ -128,7 +128,6 @@ msgstr ""
 
 msgid ">= 2.12.1"
 msgstr ""
-
 
 msgid "Curve and image plotting tools for Python/Qt applications"
 msgstr "Outils de tracé de courbes et d'images pour les applications Python/Qt"

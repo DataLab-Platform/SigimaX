@@ -38,6 +38,21 @@ with :func:`set_adapter_factory`.
 .. autofunction:: plotitem_to_singleroi
 .. autofunction:: singleroi_to_plotitem
 .. autofunction:: configure_roi_item
+.. autoclass:: sigimax.adapters_plotpy.objects.signal.CurveStyles
+    :members:
+.. data:: CURVESTYLES
+
+    Unique :class:`~sigimax.adapters_plotpy.objects.signal.CurveStyles`
+    instance, which gives the curves their automatic styles
+
+.. data:: TypePlotItem
+
+    Type variable of the PlotPy items (curves or images) made by the object
+    adapters
+
+.. data:: TypeROIItem
+
+    Type variable of the PlotPy annotation items made by the ROI adapters
 """
 
 from __future__ import annotations

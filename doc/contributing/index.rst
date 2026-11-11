@@ -91,15 +91,18 @@ bugs or implementing new features.
 Development setup
 ^^^^^^^^^^^^^^^^^
 
-1. Clone the repository:
+1. Clone the repository and install it in editable mode, with the development,
+   documentation and test dependencies:
 
    .. code-block:: console
 
        $ git clone https://github.com/DataLab-Platform/SigimaX.git
        $ cd SigimaX
-       $ pip install -e .[dev,doc]
+       $ pip install -e .[dev,doc,test]
 
-2. Run the tests:
+2. Copy ``.env.template`` to ``.env`` (``scripts/run_with_env.py`` requires
+   this file, which sets the ``PYTHONPATH`` and the Python interpreter), then
+   run the tests:
 
    .. code-block:: console
 
@@ -116,7 +119,8 @@ Code conventions
 ^^^^^^^^^^^^^^^^
 
 - Use ``from __future__ import annotations`` in all modules
-- Define ``__all__`` in all public modules
+- Define ``__all__`` in new public modules (some existing modules, such as
+  ``sigimax.app`` and ``sigimax.config``, do not define it yet)
 - Wrap UI strings with ``_()`` for internationalization
 - Follow Google-style docstrings
 - Use ``snake_case`` for functions, ``PascalCase`` for classes

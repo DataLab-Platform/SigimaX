@@ -22,8 +22,8 @@ SigimaX is available in several forms:
 .. seealso::
 
     Impatient to try the next version of SigimaX? You can also install the
-    latest development version from the main branch of the Git repository.
-    See :ref:`install_development` for more information.
+    latest development version from the ``develop`` branch of the Git
+    repository. See :ref:`install_development` for more information.
 
 .. _install_conda:
 
@@ -75,7 +75,7 @@ install SigimaX on an existing Python distribution:
 
 .. code-block:: console
 
-    $ pip install --upgrade sigimax-0.1.0-py2.py3-none-any.whl
+    $ pip install --upgrade sigimax-X.Y.Z-py3-none-any.whl
 
 .. _install_source:
 
@@ -88,7 +88,7 @@ Installing SigimaX directly from the source package may be done using ``pip``:
 
 .. code-block:: console
 
-    $ pip install --upgrade sigimax-0.1.0.tar.gz
+    $ pip install --upgrade sigimax-X.Y.Z.tar.gz
 
 Or, if you prefer, you can install it in editable mode from the root directory
 of the source package:
@@ -105,20 +105,21 @@ Development version
 :octicon:`info;1em;sd-text-info` :bdg-info-line:`GNU/Linux` :bdg-info-line:`Windows` :bdg-info-line:`macOS`
 
 If you want to try the latest development version of SigimaX, you can install
-it directly from the main branch of the Git repository.
+it directly from the ``develop`` branch of the Git repository (the default
+branch, ``main``, holds the latest release).
 
 The first time you install SigimaX from the Git repository, enter the following
 command:
 
 .. code-block:: console
 
-    $ pip install git+https://github.com/DataLab-Platform/SigimaX.git
+    $ pip install git+https://github.com/DataLab-Platform/SigimaX.git@develop
 
 Then, if at some point you want to upgrade to the latest version, run:
 
 .. code-block:: console
 
-    $ pip install --force-reinstall --no-deps git+https://github.com/DataLab-Platform/SigimaX.git
+    $ pip install --force-reinstall --no-deps git+https://github.com/DataLab-Platform/SigimaX.git@develop
 
 .. note::
 
