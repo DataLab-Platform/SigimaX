@@ -12,7 +12,8 @@ The three-step pattern is:
 
 1. **Subclass** :class:`~sigimax.config.SigimaXOptions` for app-specific options
 2. **Subclass** :class:`~sigimax.mainwindow.SGMXMainWindow` for custom UI
-3. **Call** :func:`~sigimax.app.create` to launch
+3. **Install** the options with :func:`~sigimax.config.set_conf`, then **call**
+   :func:`~sigimax.app.create` to launch
 
 This example creates a minimal "MyApp" with a dockable curve plot widget.
 """
@@ -24,8 +25,15 @@ This example creates a minimal "MyApp" with a dockable curve plot widget.
 from plotpy.constants import PlotType
 
 from sigimax.app import create
-from sigimax.config import CONF as Conf
-from sigimax.config import EnumOptionField, SigimaXOptions, TypedOptionField, _
+from sigimax.config import (
+    EnumOptionField,
+    SigimaXOptions,
+    TypedOptionField,
+    _,
+    get_conf,
+    reset_conf,
+    set_conf,
+)
 from sigimax.mainwindow import SGMXMainWindow
 from sigimax.utils.qthelpers import sigimax_app_context
 from sigimax.widgets.plotdock import DockablePlotWidget
@@ -69,46 +77,52 @@ class MyAppOptions(SigimaXOptions):
 # Step 2: Customize the main window
 # ----------------------------------
 #
-# Subclass :class:`~sigimax.mainwindow.SGMXMainWindow` to add your own menus,
-# toolbars, and dock widgets.
+# Subclass :class:`~sigimax.mainwindow.SGMXMainWindow` and override its setup
+# hooks to add your own menus, toolbars, and dock widgets. Docks are added in
+# ``_setup_docks``, with ``_add_dockwidget``: the saved window layout is then
+# applied to them, and they follow color theme changes.
 
 
 class MyAppMainWindow(SGMXMainWindow):
     """Main window with a dockable curve viewer."""
 
-    def __init__(self, console=None, hide_on_close=False):
-        Conf.app_name.set("MyApp")
-        Conf.app_version.set("0.1.0")
-        super().__init__(console=console, hide_on_close=hide_on_close)
-
+    def _setup_docks(self):
         # Add a dockable curve plot widget
         self.curve_dock = DockablePlotWidget(self, PlotType.CURVE)
-        dock, loc = self.curve_dock.create_dockwidget(_("Curve Viewer"))
-        self.addDockWidget(loc, dock)
+        self._add_dockwidget(self.curve_dock, _("Curve Viewer"), name="curve_viewer")
 
 
 # %%
 # Step 3: Launch the application
 # --------------------------------
 #
-# Use :func:`~sigimax.app.create` to instantiate the window (without entering
-# the Qt event loop, so sphinx-gallery can capture the screenshot).
+# Install the options with :func:`~sigimax.config.set_conf` before creating the
+# window: SigimaX and your own code read them with
+# :func:`~sigimax.config.get_conf`. Then use :func:`~sigimax.app.create` to
+# instantiate the window (without entering the Qt event loop, so sphinx-gallery
+# can capture the screenshot).
 
-with sigimax_app_context(exec_loop=False):
-    win = create(
-        window_class=MyAppMainWindow,
-        splash=False,
-        console=False,
-        size=(900, 600),
-    )
-    win.show()
+set_conf(MyAppOptions())
+try:
+    with sigimax_app_context(exec_loop=False):
+        win = create(
+            window_class=MyAppMainWindow,
+            splash=False,
+            console=False,
+            size=(900, 600),
+        )
+        win.show()
 
-    # Print configuration to verify it works
-    print(f"App name: {Conf.app_name.get()}")
-    print(f"Window title: {win.windowTitle()}")
+        # Print configuration to verify it works
+        print(f"App name: {get_conf().app_name.get()}")
+        print(f"Greeting: {get_conf().greeting.get()}")
+        print(f"Window title: {win.windowTitle()}")
 
-    win.set_modified(False)
-    win.close()
+        win.set_modified(False)
+        win.close()
+finally:
+    # Restore the base configuration so later examples/tests are unaffected
+    reset_conf()
 
 # %%
 # Summary
@@ -116,7 +130,8 @@ with sigimax_app_context(exec_loop=False):
 #
 # This example showed the minimal derivation pattern:
 #
-# - **Configuration**: ``MyAppOptions`` adds typed, validated options
+# - **Configuration**: ``MyAppOptions`` adds typed, validated options, and
+#   ``set_conf()`` makes it the active configuration
 # - **Main window**: ``MyAppMainWindow`` adds a curve plot dock
 # - **Launcher**: ``create()`` or ``run()`` starts the application
 #

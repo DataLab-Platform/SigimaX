@@ -54,14 +54,17 @@ msgstr "Surcharger :class:`~sigimax.mainwindow.SGMXMainWindow` pour ajouter des 
 msgid "Step 3: Launch and demonstrate"
 msgstr "Étape 3 : Lancer et démontrer"
 
+msgid "Install the options as the active configuration (:func:`~sigimax.config.set_conf`) before creating the window."
+msgstr "Installer les options comme configuration active (:func:`~sigimax.config.set_conf`) avant de créer la fenêtre."
+
 msgid "Summary"
 msgstr "Résumé"
 
 msgid "This example demonstrated a complete SigimaX-based application with:"
 msgstr "Cet exemple a présenté une application complète basée sur SigimaX avec :"
 
-msgid "**Custom configuration** (``SciAppOptions``) with typed fields"
-msgstr "**Configuration personnalisée** (``SciAppOptions``) avec des champs typés"
+msgid "**Custom configuration** (``SciAppOptions``) with typed fields, installed with ``set_conf()``"
+msgstr "**Configuration personnalisée** (``SciAppOptions``) avec des champs typés, installée avec ``set_conf()``"
 
 msgid "**Custom main window** (``SciAppMainWindow``) with Analysis menu and toolbar"
 msgstr "**Fenêtre principale personnalisée** (``SciAppMainWindow``) avec menu et barre d'outils d'analyse"

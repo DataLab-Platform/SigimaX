@@ -75,8 +75,8 @@ msgstr "Option de tuple de longueur fixe avec vérification de type."
 msgid "``FontOptionField``"
 msgstr "``FontOptionField``"
 
-msgid "Font option with validation against available system fonts."
-msgstr "Option de police avec validation par rapport aux polices système disponibles."
+msgid "Font option stored as a ``(family, size, bold)`` tuple; a list of candidate families is resolved to the first one available on the system."
+msgstr "Option de police stockée sous la forme d'un tuple ``(family, size, bold)`` ; une liste de familles candidates est résolue en la première disponible sur le système."
 
 msgid "JSON persistence"
 msgstr "Persistance JSON"
@@ -117,8 +117,8 @@ msgstr "Importer des jeux de données"
 msgid "``import_dataset_from_file()`` hook for derived apps to handle application-specific HDF5 dataset import."
 msgstr "Hook ``import_dataset_from_file()`` pour que les applications dérivées gèrent l'import de jeux de données HDF5 spécifiques à l'application."
 
-msgid ":class:`~sigimax.h5.H5Importer`"
-msgstr ":class:`~sigimax.h5.H5Importer`"
+msgid ":class:`~sigimax.h5.common.H5Importer`"
+msgstr ""
 
 msgid "Low-level HDF5 import utilities with node factory and data extraction."
 msgstr "Utilitaires d'import HDF5 bas niveau avec fabrique de nœuds et extraction de données."
@@ -283,13 +283,13 @@ msgid ":class:`~sigimax.env.VerbosityLevels`"
 msgstr ":class:`~sigimax.env.VerbosityLevels`"
 
 msgid "Enum with ``quiet``, ``normal``, and ``debug`` verbosity levels."
-msgstr "\\u00c9num\\u00e9ration avec les niveaux de verbosit\\u00e9 ``quiet``, ``normal`` et ``debug``."
+msgstr "Énumération avec les niveaux de verbosité ``quiet``, ``normal`` et ``debug``."
 
 msgid "Command-line arguments"
 msgstr "Arguments en ligne de commande"
 
-msgid "``--unattended``, ``--verbose``, ``--screenshot``, ``--delay``, ``--version``, ``--reset`` parsed automatically on startup."
-msgstr "``--unattended``, ``--verbose``, ``--screenshot``, ``--delay``, ``--version``, ``--reset`` analysés automatiquement au démarrage."
+msgid "``--unattended``, ``--accept_dialogs``, ``--verbose``, ``--screenshot``, ``--screenshot_path``, ``--delay``, ``-v``/``--version`` and ``--reset``, parsed on startup by :func:`~sigimax.app.run` (not by :func:`~sigimax.app.create`). The HDF5 file arguments (positional ``h5`` and ``-b``/``--h5browser``) are stored in ``execenv.h5files`` and ``execenv.h5browser_file`` for the derived application."
+msgstr "``--unattended``, ``--accept_dialogs``, ``--verbose``, ``--screenshot``, ``--screenshot_path``, ``--delay``, ``-v``/``--version`` et ``--reset``, analysés au démarrage par :func:`~sigimax.app.run` (et non par :func:`~sigimax.app.create`). Les arguments de fichiers HDF5 (``h5`` positionnel et ``-b``/``--h5browser``) sont stockés dans ``execenv.h5files`` et ``execenv.h5browser_file`` à l'intention de l'application dérivée."
 
 msgid "Context manager"
 msgstr "Gestionnaire de contexte"

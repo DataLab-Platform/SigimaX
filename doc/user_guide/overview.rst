@@ -95,7 +95,7 @@ Architecture
     │   ├── signaldeltax.py # Signal delta-X measurement
     │   ├── wizard.py       # Multi-page wizard dialog
     │   └── ...             # File dialogs, warning/error boxes
-    ├── h5/                 # HDF5 I/O (read/write/import)
+    ├── h5/                 # HDF5 browsing and import (read-only)
     ├── adapters_plotpy/    # Converters between PlotPy/guidata and Sigima objects
     ├── utils/              # Qt helpers, config dir resolution
     ├── data/               # Icons, resources
@@ -126,7 +126,8 @@ SigimaX separates the **generic application skeleton** from **domain-specific lo
 Derived applications follow a three-step pattern:
 
 1. **Subclass** :class:`~sigimax.config.SigimaXOptions` to add application-specific
-   configuration fields
+   configuration fields, and install an instance with
+   :func:`~sigimax.config.set_conf`
 2. **Subclass** :class:`~sigimax.mainwindow.SGMXMainWindow` to customize menus,
    toolbars, and dock widgets
 3. **Call** :func:`~sigimax.app.run` to launch the application with splash screen
@@ -142,7 +143,7 @@ The configuration system uses typed option fields that support:
 
 - **Type safety**: ``TypedOptionField`` (int, str, bool, float),
   ``EnumOptionField`` (constrained choices), ``TupleOptionField`` (fixed-length tuples),
-  ``FontOptionField`` (font validation)
+  ``FontOptionField`` (font specifications)
 - **Persistence**: JSON save/load with ``save()`` and ``load()`` methods
 - **Context managers**: Temporary overrides with ``option.context(value)``
 - **Defaults**: Built-in reset-to-defaults mechanism
@@ -176,7 +177,7 @@ What SigimaX Provides vs What Stays in Derived Apps
       - Action handler, plugin system
     * - Dockable plot widgets
       - Remote control (XML-RPC, Web API)
-    * - HDF5 I/O + browser
+    * - HDF5 browsing and import
       - Macro editor, new-object dialogs
     * - Scientific dialogs (fit, baseline, peak, cursor…)
       - Application-specific UI and processing

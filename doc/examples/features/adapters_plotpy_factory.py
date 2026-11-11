@@ -7,7 +7,7 @@ PlotPy Adapter Factory
 SigimaX converts Sigima objects (:class:`~sigima.objects.SignalObj`,
 :class:`~sigima.objects.ImageObj`, ROIs) to/from PlotPy plot items through a
 small set of adapter classes. Which adapter class is used for a given object
-is resolved by :class:`~sigimax.adapters_plotpy.factories.PlotPyAdapterFactory`
+is resolved by :class:`~sigimax.adapters_plotpy.PlotPyAdapterFactory`
 — a single, overridable indirection point.
 
 This is useful when a derived application:
@@ -41,9 +41,9 @@ from sigimax.adapters_plotpy.factories import (
 #
 # :func:`~sigimax.adapters_plotpy.create_adapter_from_object` asks the
 # *currently active* factory
-# (:func:`~sigimax.adapters_plotpy.factories.get_adapter_factory`)
+# (:func:`~sigimax.adapters_plotpy.get_adapter_factory`)
 # for the right adapter class, then instantiates it. Out of the box, this is
-# a :class:`~sigimax.adapters_plotpy.factories.PlotPyAdapterFactory` that
+# a :class:`~sigimax.adapters_plotpy.PlotPyAdapterFactory` that
 # dispatches on the Sigima object type.
 
 signal = SignalObj()
@@ -61,11 +61,11 @@ print(f"PlotPy item: {type(item).__name__}")
 # Overriding the factory
 # ------------------------
 #
-# Subclass :class:`~sigimax.adapters_plotpy.factories.PlotPyAdapterFactory`
+# Subclass :class:`~sigimax.adapters_plotpy.PlotPyAdapterFactory`
 # and override
-# :meth:`~sigimax.adapters_plotpy.factories.PlotPyAdapterFactory.get_adapter_class`,
+# :meth:`~sigimax.adapters_plotpy.PlotPyAdapterFactory.get_adapter_class`,
 # delegating to ``super()`` for the types you don't need to change. Install it
-# with :func:`~sigimax.adapters_plotpy.factories.set_adapter_factory` so that
+# with :func:`~sigimax.adapters_plotpy.set_adapter_factory` so that
 # every SigimaX component (dock widgets, HDF5 browser preview, ROI editing)
 # picks it up transparently.
 
@@ -94,12 +94,12 @@ finally:
 # - :func:`~sigimax.adapters_plotpy.create_adapter_from_object` is the single
 #   entry point application code should use to go from a Sigima object to a
 #   PlotPy adapter
-# - :func:`~sigimax.adapters_plotpy.factories.get_adapter_factory` /
-#   :func:`~sigimax.adapters_plotpy.factories.set_adapter_factory` let a
+# - :func:`~sigimax.adapters_plotpy.get_adapter_factory` /
+#   :func:`~sigimax.adapters_plotpy.set_adapter_factory` let a
 #   derived application install its own factory once, globally
 # - Override
-#   :meth:`~sigimax.adapters_plotpy.factories.PlotPyAdapterFactory.get_adapter_class`
+#   :meth:`~sigimax.adapters_plotpy.PlotPyAdapterFactory.get_adapter_class`
 #   for object-to-item resolution and ``get_adapter_class_for_plot_item()``
 #   for the reverse (item-to-ROI) direction
-# - Call :func:`~sigimax.adapters_plotpy.factories.reset_adapter_factory` to
+# - Call :func:`~sigimax.adapters_plotpy.reset_adapter_factory` to
 #   restore the SigimaX base factory (mostly useful in tests)

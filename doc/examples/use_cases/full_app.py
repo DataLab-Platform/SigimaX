@@ -30,8 +30,15 @@ from qtpy import QtCore as QC
 from qtpy import QtWidgets as QW
 
 from sigimax.app import create as sigimax_create
-from sigimax.config import CONF as Conf
-from sigimax.config import EnumOptionField, SigimaXOptions, TypedOptionField, _
+from sigimax.config import (
+    EnumOptionField,
+    SigimaXOptions,
+    TypedOptionField,
+    _,
+    get_conf,
+    reset_conf,
+    set_conf,
+)
 from sigimax.mainwindow import SGMXMainWindow
 from sigimax.utils.qthelpers import sigimax_app_context
 from sigimax.widgets.plotdock import DockablePlotWidget
@@ -81,8 +88,6 @@ class SciAppMainWindow(SGMXMainWindow):
     """Main window for the SciApp analysis application."""
 
     def __init__(self, console=None, hide_on_close=False):
-        Conf.app_name.set("SciApp")
-        Conf.app_version.set("1.0.0")
         self.curve_dock = None
         super().__init__(console=console, hide_on_close=hide_on_close)
 
@@ -150,25 +155,35 @@ class SciAppMainWindow(SGMXMainWindow):
 # %%
 # Step 3: Launch and demonstrate
 # --------------------------------
+#
+# Install the options as the active configuration
+# (:func:`~sigimax.config.set_conf`) before creating the window.
 
-with sigimax_app_context(exec_loop=False):
-    win = sigimax_create(
-        window_class=SciAppMainWindow,
-        splash=False,
-        console=False,
-        size=(1000, 650),
-    )
-    win.show()
+set_conf(SciAppOptions())
+try:
+    with sigimax_app_context(exec_loop=False):
+        win = sigimax_create(
+            window_class=SciAppMainWindow,
+            splash=False,
+            console=False,
+            size=(1000, 650),
+        )
+        win.show()
 
-    # Generate a signal to demonstrate
-    win._generate_signal()  # noqa: SLF001
+        # Generate a signal to demonstrate
+        win._generate_signal()  # noqa: SLF001
 
-    print(f"Application: {Conf.app_name.get()}")
-    print(f"Window title: {win.windowTitle()}")
-    print(f"Plot items: {len(win.curve_dock.get_plot().get_items())}")
+        conf = get_conf()
+        print(f"Application: {conf.app_name.get()}")
+        print(f"Sample rate: {conf.sample_rate.get()} Hz")
+        print(f"Window title: {win.windowTitle()}")
+        print(f"Plot items: {len(win.curve_dock.get_plot().get_items())}")
 
-    win.set_modified(False)
-    win.close()
+        win.set_modified(False)
+        win.close()
+finally:
+    # Restore the base configuration so later examples/tests are unaffected
+    reset_conf()
 
 # %%
 # Summary
@@ -176,7 +191,8 @@ with sigimax_app_context(exec_loop=False):
 #
 # This example demonstrated a complete SigimaX-based application with:
 #
-# - **Custom configuration** (``SciAppOptions``) with typed fields
+# - **Custom configuration** (``SciAppOptions``) with typed fields, installed
+#   with ``set_conf()``
 # - **Custom main window** (``SciAppMainWindow``) with Analysis menu and toolbar
 # - **Interactive plot** via ``DockablePlotWidget``
 # - **Status bar** messages on user actions

@@ -27,8 +27,8 @@ msgstr ":meth:`~sigimax.mainwindow.SGMXMainWindow.save_h5_workspace` — sérial
 msgid "``load_h5_workspace`` (a convention, not a base-class method) — the counterpart used to reload a workspace saved by your own application"
 msgstr "``load_h5_workspace`` (une convention, pas une méthode de la classe de base) — le pendant utilisé pour recharger un espace de travail enregistré par votre propre application"
 
-msgid ":meth:`~sigimax.mainwindow.SGMXMainWindow.import_dataset_from_file` — import data coming from a *generic* (non-SigimaX) HDF5 file, as offered by *File > Browse HDF5 file*"
-msgstr ":meth:`~sigimax.mainwindow.SGMXMainWindow.import_dataset_from_file` — importe des données provenant d'un fichier HDF5 *générique* (non-SigimaX), comme proposé par *Fichier > Parcourir un fichier HDF5*"
+msgid ":meth:`~sigimax.mainwindow.SGMXMainWindow.import_dataset_from_file` — import data coming from a *generic* (non-SigimaX) HDF5 file, as requested by *File > Open HDF5 files...* (*File > Browse HDF5 file...* imports the datasets checked in the HDF5 browser instead)"
+msgstr ":meth:`~sigimax.mainwindow.SGMXMainWindow.import_dataset_from_file` — importe des données provenant d'un fichier HDF5 *générique* (non-SigimaX), à la demande de *Fichier > Ouvrir des fichiers HDF5...* (*Fichier > Parcourir un fichier HDF5...* importe plutôt les jeux de données cochés dans le navigateur HDF5)"
 
 msgid "See :doc:`../../user_guide/hdf5_workspace` for the full reference and ``sigimax/tests/hdf5/test_h5_derived_app.py`` for the complete test this example is derived from."
 msgstr "Voir :doc:`../../user_guide/hdf5_workspace` pour la référence complète et ``sigimax/tests/hdf5/test_h5_derived_app.py`` pour le test complet dont cet exemple est issu."
@@ -57,14 +57,14 @@ msgstr "``save_to_h5_file(path)``/``save_h5_workspace(path)`` et ``load_h5_works
 msgid "Summary"
 msgstr "Résumé"
 
-msgid ":meth:`~sigimax.mainwindow.SGMXMainWindow.save_h5_workspace` is the single contract point SigimaX relies on for *File > Save* — the base implementation is a documented no-op, override it in your window class"
-msgstr ":meth:`~sigimax.mainwindow.SGMXMainWindow.save_h5_workspace` est l'unique point de contrat sur lequel SigimaX s'appuie pour *Fichier > Enregistrer* — l'implémentation de base est un no-op documenté, à surcharger dans votre classe de fenêtre"
+msgid ":meth:`~sigimax.mainwindow.SGMXMainWindow.save_h5_workspace` is the single contract point SigimaX relies on for *File > Save* — the base implementation raises :class:`NotImplementedError`, override it in your window class"
+msgstr ":meth:`~sigimax.mainwindow.SGMXMainWindow.save_h5_workspace` est l'unique point de contrat sur lequel SigimaX s'appuie pour *Fichier > Enregistrer* — l'implémentation de base lève :class:`NotImplementedError`, à surcharger dans votre classe de fenêtre"
 
 msgid "Add a symmetrical ``load_*`` method for reopening your own files; there is no base-class hook to override because the data model is entirely downstream"
 msgstr "Ajoutez une méthode symétrique ``load_*`` pour rouvrir vos propres fichiers ; il n'existe pas de point d'extension de la classe de base à surcharger car le modèle de données est entièrement en aval"
 
-msgid "Override :meth:`~sigimax.mainwindow.SGMXMainWindow.import_dataset_from_file` to support importing *generic* (non-SigimaX) HDF5 files through *File > Browse HDF5 file*"
-msgstr "Surchargez :meth:`~sigimax.mainwindow.SGMXMainWindow.import_dataset_from_file` pour prendre en charge l'import de fichiers HDF5 *génériques* (non-SigimaX) via *Fichier > Parcourir un fichier HDF5*"
+msgid "Override :meth:`~sigimax.mainwindow.SGMXMainWindow.import_dataset_from_file` to support importing *generic* (non-SigimaX) HDF5 files through *File > Open HDF5 files...* (the base implementation does nothing)"
+msgstr "Surchargez :meth:`~sigimax.mainwindow.SGMXMainWindow.import_dataset_from_file` pour prendre en charge l'import de fichiers HDF5 *génériques* (non-SigimaX) via *Fichier > Ouvrir des fichiers HDF5...* (l'implémentation de base ne fait rien)"
 
 msgid "To add a new node type recognized by the generic HDF5 browser itself (rather than importing raw datasets), subclass :class:`~sigimax.h5.common.BaseNode` and register it with ``sigimax.h5.common.NODE_FACTORY.register(MyNode)``"
 msgstr "Pour ajouter un nouveau type de nœud reconnu par le navigateur HDF5 générique lui-même (plutôt que d'importer des jeux de données bruts), sous-classez :class:`~sigimax.h5.common.BaseNode` et enregistrez-le avec ``sigimax.h5.common.NODE_FACTORY.register(MyNode)``"

@@ -46,7 +46,9 @@ Configuration System
     * - ``TupleOptionField``
       - Fixed-length tuple option with type checking.
     * - ``FontOptionField``
-      - Font option with validation against available system fonts.
+      - Font option stored as a ``(family, size, bold)`` tuple; a list of
+        candidate families is resolved to the first one available on the
+        system.
     * - JSON persistence
       - ``save()`` / ``load()`` methods for configuration persistence.
     * - Context managers
@@ -77,7 +79,7 @@ HDF5 Workspace
     * - Import datasets
       - ``import_dataset_from_file()`` hook for derived apps to handle
         application-specific HDF5 dataset import.
-    * - :class:`~sigimax.h5.H5Importer`
+    * - :class:`~sigimax.h5.common.H5Importer`
       - Low-level HDF5 import utilities with node factory and data extraction.
 
 See :doc:`hdf5_workspace` for the persistence contract and its complete
@@ -204,8 +206,12 @@ Runtime Environment
     * - :class:`~sigimax.env.VerbosityLevels`
       - Enum with ``quiet``, ``normal``, and ``debug`` verbosity levels.
     * - Command-line arguments
-      - ``--unattended``, ``--verbose``, ``--screenshot``, ``--delay``,
-        ``--version``, ``--reset`` parsed automatically on startup.
+      - ``--unattended``, ``--accept_dialogs``, ``--verbose``, ``--screenshot``,
+        ``--screenshot_path``, ``--delay``, ``-v``/``--version`` and
+        ``--reset``, parsed on startup by :func:`~sigimax.app.run` (not by
+        :func:`~sigimax.app.create`). The HDF5 file arguments (positional
+        ``h5`` and ``-b``/``--h5browser``) are stored in ``execenv.h5files``
+        and ``execenv.h5browser_file`` for the derived application.
     * - Context manager
       - ``execenv.context()`` for temporarily overriding environment settings.
 

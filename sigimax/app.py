@@ -64,10 +64,10 @@ def create(
          :class:`~sigimax.mainwindow.SGMXMainWindow`.
         splash: If ``True``, show a splash screen during initialization.
         splash_config: Explicit splash screen configuration. If ``None`` and
-         *splash* is ``True``, the configuration is built from
-         :data:`sigimax.config.CONF`.
+         *splash* is ``True``, the configuration is built from the active
+         configuration (:func:`sigimax.config.get_conf`).
         console: If ``True``, enable the embedded console. ``None`` reads
-         from :data:`sigimax.config.CONF`.
+         the ``console_enabled`` option of the active configuration.
         h5files: Optional list of HDF5 file paths to open after startup.
         size: Optional ``(width, height)`` tuple for the window size.
 

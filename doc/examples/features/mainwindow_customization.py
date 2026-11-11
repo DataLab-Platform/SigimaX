@@ -10,8 +10,10 @@ application typically overrides, in isolation:
 
 1. **Docks** — :meth:`~sigimax.mainwindow.SGMXMainWindow._setup_docks`
 2. **Menu layout** — :meth:`~sigimax.mainwindow.SGMXMainWindow._get_menubar_layout`
-3. **Actions** — populating menus (custom and standard) with
-   :func:`guidata.qthelpers.create_action`/:func:`guidata.qthelpers.add_actions`
+3. **Actions** — populating custom menus with
+   :func:`guidata.qthelpers.create_action`/:func:`guidata.qthelpers.add_actions`,
+   and extending standard menus with
+   :meth:`~sigimax.mainwindow.SGMXMainWindow._get_file_menu_actions`
 4. **Status bar** — :meth:`~sigimax.mainwindow.SGMXMainWindow._get_extra_status_widgets`
 
 See :doc:`../use_cases/full_app` for a complete application built the same way.
@@ -46,6 +48,7 @@ class MyAppMainWindow(SGMXMainWindow):
     def __init__(self, console=None, hide_on_close=False):
         Conf.app_name.set("CustomizedApp")
         self.curve_dock = None
+        self.export_action = None
         self.task_status = None
         super().__init__(console=console, hide_on_close=hide_on_close)
 
@@ -70,7 +73,19 @@ class MyAppMainWindow(SGMXMainWindow):
     # -- 3. Actions ----------------------------------------------------------
     #
     # ``_post_setup`` runs once menus, docks and the console all exist, so
-    # it is the right place to populate both custom and standard menus.
+    # it is the right place to populate custom menus. The standard File and
+    # View menus are different: they are cleared and rebuilt each time they
+    # are shown, from the actions returned by ``_get_file_menu_actions`` and
+    # ``_get_view_menu_actions``. To add an action to them, create it once
+    # (in ``_create_global_actions``) and extend these lists.
+
+    def _create_global_actions(self):
+        super()._create_global_actions()
+        self.export_action = create_action(
+            self,
+            _("Export report..."),
+            triggered=self._export_report,
+        )
 
     def _post_setup(self, console):
         # Populate our own menu (created from the layout above as `self.analysis_menu`)
@@ -85,17 +100,10 @@ class MyAppMainWindow(SGMXMainWindow):
                 ),
             ],
         )
+
+    def _get_file_menu_actions(self):
         # Add an action to a *standard* menu created by the base class
-        add_actions(
-            self.file_menu,
-            [
-                create_action(
-                    self,
-                    _("Export report..."),
-                    triggered=self._export_report,
-                ),
-            ],
-        )
+        return [*super()._get_file_menu_actions(), None, self.export_action]
 
     def _run_analysis(self):
         self.statusBar().showMessage(_("Running analysis..."), 2000)
@@ -124,6 +132,10 @@ with sigimax_app_context(exec_loop=False):
 
     print(f"Menu titles: {[a.text() for a in win.menuBar().actions()]}")
     print(f"Analysis menu actions: {[a.text() for a in win.analysis_menu.actions()]}")
+    # The File menu is populated when it is about to be shown
+    win.file_menu.aboutToShow.emit()
+    file_actions = [a.text() for a in win.file_menu.actions() if not a.isSeparator()]
+    print(f"File menu actions: {file_actions}")
     print(f"Extra status widgets: {win.task_status.text()}")
 
     win.close()
@@ -135,7 +147,9 @@ with sigimax_app_context(exec_loop=False):
 # - ``_setup_docks`` / ``_get_menubar_layout`` / ``_get_extra_status_widgets``
 #   return declarative descriptions consumed by the base class — override
 #   them instead of poking at Qt internals
-# - ``_post_setup`` is where menus (custom or standard) get their actions,
-#   once everything else is guaranteed to exist
-# - Standard menus (``file_menu``, ``view_menu``, ``help_menu``) remain
-#   available for derived applications to extend, not just replace
+# - ``_post_setup`` is where custom menus get their actions, once everything
+#   else is guaranteed to exist
+# - The standard File and View menus are rebuilt each time they are shown:
+#   extend them by overriding ``_get_file_menu_actions`` /
+#   ``_get_view_menu_actions`` (calling ``super()``), not by adding actions to
+#   ``file_menu`` / ``view_menu`` directly

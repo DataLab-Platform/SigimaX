@@ -160,37 +160,37 @@ msgid "Design Philosophy"
 msgstr "Philosophie de conception"
 
 msgid "SigimaX separates the **generic application skeleton** from **domain-specific logic**. Derived applications follow a three-step pattern:"
-msgstr "SigimaX s\\u00e9pare le **squelette g\\u00e9n\\u00e9rique de l'application** de la **logique sp\\u00e9cifique au domaine**. Les applications d\\u00e9riv\\u00e9es suivent un processus en trois \\u00e9tapes :"
+msgstr "SigimaX sépare le **squelette générique de l'application** de la **logique spécifique au domaine**. Les applications dérivées suivent un processus en trois étapes :"
 
-msgid "**Subclass** :class:`~sigimax.config.SigimaXOptions` to add application-specific configuration fields"
-msgstr "**Sous-classer** :class:`~sigimax.config.SigimaXOptions` pour ajouter des champs de configuration sp\\u00e9cifiques \\u00e0 l'application"
+msgid "**Subclass** :class:`~sigimax.config.SigimaXOptions` to add application-specific configuration fields, and install an instance with :func:`~sigimax.config.set_conf`"
+msgstr "**Sous-classer** :class:`~sigimax.config.SigimaXOptions` pour ajouter des champs de configuration spécifiques à l'application, et en installer une instance avec :func:`~sigimax.config.set_conf`"
 
 msgid "**Subclass** :class:`~sigimax.mainwindow.SGMXMainWindow` to customize menus, toolbars, and dock widgets"
 msgstr "**Sous-classer** :class:`~sigimax.mainwindow.SGMXMainWindow` pour personnaliser les menus, les barres d'outils et les widgets ancrables"
 
 msgid "**Call** :func:`~sigimax.app.run` to launch the application with splash screen support"
-msgstr "**Appeler** :func:`~sigimax.app.run` pour lancer l'application avec le support de l'\\u00e9cran de d\\u00e9marrage"
+msgstr "**Appeler** :func:`~sigimax.app.run` pour lancer l'application avec le support de l'écran de démarrage"
 
 msgid "This architecture is proven in production: `DataLab <https://datalab-platform.com/>`_ is built entirely on this pattern."
-msgstr "Cette architecture est \\u00e9prouv\\u00e9e en production : `DataLab <https://datalab-platform.com/>`_ est enti\\u00e8rement construit sur ce mod\\u00e8le."
+msgstr "Cette architecture est éprouvée en production : `DataLab <https://datalab-platform.com/>`_ est entièrement construit sur ce modèle."
 
 msgid "Configuration System"
-msgstr "Syst\\u00e8me de configuration"
+msgstr "Système de configuration"
 
 msgid "The configuration system uses typed option fields that support:"
-msgstr "Le syst\\u00e8me de configuration utilise des champs d'options typ\\u00e9s qui prennent en charge :"
+msgstr "Le système de configuration utilise des champs d'options typés qui prennent en charge :"
 
-msgid "**Type safety**: ``TypedOptionField`` (int, str, bool, float), ``EnumOptionField`` (constrained choices), ``TupleOptionField`` (fixed-length tuples), ``FontOptionField`` (font validation)"
-msgstr "**S\\u00e9curit\\u00e9 de typage** : ``TypedOptionField`` (int, str, bool, float), ``EnumOptionField`` (choix contraints), ``TupleOptionField`` (tuples de longueur fixe), ``FontOptionField`` (validation de police)"
+msgid "**Type safety**: ``TypedOptionField`` (int, str, bool, float), ``EnumOptionField`` (constrained choices), ``TupleOptionField`` (fixed-length tuples), ``FontOptionField`` (font specifications)"
+msgstr "**Sécurité de typage** : ``TypedOptionField`` (int, str, bool, float), ``EnumOptionField`` (choix contraints), ``TupleOptionField`` (tuples de longueur fixe), ``FontOptionField`` (spécifications de police)"
 
 msgid "**Persistence**: JSON save/load with ``save()`` and ``load()`` methods"
-msgstr "**Persistance** : sauvegarde/chargement JSON avec les m\\u00e9thodes ``save()`` et ``load()``"
+msgstr "**Persistance** : sauvegarde/chargement JSON avec les méthodes ``save()`` et ``load()``"
 
 msgid "**Context managers**: Temporary overrides with ``option.context(value)``"
 msgstr "**Gestionnaires de contexte** : surcharges temporaires avec ``option.context(value)``"
 
 msgid "**Defaults**: Built-in reset-to-defaults mechanism"
-msgstr "**Valeurs par d\\u00e9faut** : m\\u00e9canisme int\\u00e9gr\\u00e9 de r\\u00e9initialisation aux valeurs par d\\u00e9faut"
+msgstr "**Valeurs par défaut** : mécanisme intégré de réinitialisation aux valeurs par défaut"
 
 msgid "What SigimaX Provides vs What Stays in Derived Apps"
 msgstr "Ce que SigimaX fournit vs ce qui reste dans les applications dérivées"
@@ -219,8 +219,8 @@ msgstr "Widgets de tracé ancrables"
 msgid "Remote control (XML-RPC, Web API)"
 msgstr "Contrôle à distance (XML-RPC, API Web)"
 
-msgid "HDF5 I/O + browser"
-msgstr "E/S HDF5 + navigateur"
+msgid "HDF5 browsing and import"
+msgstr "Navigation et import HDF5"
 
 msgid "Macro editor, new-object dialogs"
 msgstr "Éditeur de macros, dialogues de création d'objets"
@@ -248,4 +248,3 @@ msgstr "Utilitaires d'environnement/exécution"
 
 msgid "Tour/tutorial features"
 msgstr "Fonctionnalités de visite guidée/tutoriel"
-

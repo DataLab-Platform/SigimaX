@@ -388,6 +388,7 @@ class NodeFactory:
                         func(node, importer)
 
 
+#: Registry of the node classes, used by :class:`H5Importer` to build the tree
 NODE_FACTORY = NodeFactory()
 
 
