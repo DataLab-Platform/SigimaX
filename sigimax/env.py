@@ -418,14 +418,15 @@ class SGMXExecEnv:
             # Local import: `sigimax.config` pulls in the PlotPy/Qt stack, which
             # this module must not require just to parse command line arguments.
             # pylint: disable=import-outside-toplevel
-            from sigimax.config import CONF as Conf
+            from sigimax.config import CONF, get_conf
 
-            print(
-                (
-                    f"{Conf.app_name} {Conf.app_version},"
-                    f" derivated from SigimaX {__version__} on {platform.system()}"
-                )
-            )
+            conf = get_conf()
+            name = conf.app_name.get()
+            version = __version__ if conf is CONF else conf.app_version.get()
+            text = f"{name} {version}"
+            if conf is not CONF:
+                text += f", derived from SigimaX {__version__}"
+            print(f"{text} on {platform.system()}")
             sys.exit()
         if args.reset:
             # Local import: see the `--version` branch above.
