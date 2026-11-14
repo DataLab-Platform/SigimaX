@@ -18,8 +18,8 @@ msgstr ":ref:`Aller à la fin <sphx_glr_download_auto_examples_features_h5_works
 msgid "HDF5 Workspace Save/Load"
 msgstr "Sauvegarde et chargement de l'espace de travail HDF5"
 
-msgid "SigimaX provides the plumbing for an HDF5-backed workspace (menu actions, file dialogs, browser) but does **not** know what a derived application's data model looks like. This example shows how to plug your own model in by overriding three extension points on :class:`~sigimax.mainwindow.SGMXMainWindow`:"
-msgstr "SigimaX fournit la plomberie d'un espace de travail basé sur HDF5 (actions de menu, boîtes de dialogue de fichiers, navigateur) mais ne connaît **pas** à quoi ressemble le modèle de données d'une application dérivée. Cet exemple montre comment y brancher votre propre modèle en surchargeant trois points d'extension de :class:`~sigimax.mainwindow.SGMXMainWindow` :"
+msgid "SigimaX provides the plumbing for an HDF5-backed workspace (menu actions, file dialogs, browser) but does **not** know what a derived application's data model looks like. This example shows how to plug your own model in by implementing a save/load workflow on :class:`~sigimax.mainwindow.SGMXMainWindow`:"
+msgstr "SigimaX fournit les mécanismes d'un espace de travail basé sur HDF5 (actions de menu, boîtes de dialogue de fichiers, navigateur), mais ne connaît **pas** le modèle de données d'une application dérivée. Cet exemple montre comment intégrer votre propre modèle en implémentant un mécanisme d'enregistrement et de chargement dans :class:`~sigimax.mainwindow.SGMXMainWindow` :"
 
 msgid ":meth:`~sigimax.mainwindow.SGMXMainWindow.save_h5_workspace` — serialize your objects when the user chooses *File > Save*"
 msgstr ":meth:`~sigimax.mainwindow.SGMXMainWindow.save_h5_workspace` — sérialise vos objets lorsque l'utilisateur choisit *Fichier > Enregistrer*"
@@ -27,8 +27,8 @@ msgstr ":meth:`~sigimax.mainwindow.SGMXMainWindow.save_h5_workspace` — sérial
 msgid "``load_h5_workspace`` (a convention, not a base-class method) — the counterpart used to reload a workspace saved by your own application"
 msgstr "``load_h5_workspace`` (une convention, pas une méthode de la classe de base) — le pendant utilisé pour recharger un espace de travail enregistré par votre propre application"
 
-msgid ":meth:`~sigimax.mainwindow.SGMXMainWindow.import_dataset_from_file` — import data coming from a *generic* (non-SigimaX) HDF5 file, as requested by *File > Open HDF5 files...* (*File > Browse HDF5 file...* imports the datasets checked in the HDF5 browser instead)"
-msgstr ":meth:`~sigimax.mainwindow.SGMXMainWindow.import_dataset_from_file` — importe des données provenant d'un fichier HDF5 *générique* (non-SigimaX), à la demande de *Fichier > Ouvrir des fichiers HDF5...* (*Fichier > Parcourir un fichier HDF5...* importe plutôt les jeux de données cochés dans le navigateur HDF5)"
+msgid "To support *File > Open HDF5 files...* for generic (non-SigimaX) HDF5 files, an application may also override :meth:`~sigimax.mainwindow.SGMXMainWindow.import_dataset_from_file`; this example does not implement that hook. *File > Browse HDF5 file...* imports the datasets checked in the HDF5 browser instead."
+msgstr "Pour prendre en charge les fichiers HDF5 génériques (non SigimaX) avec *Fichier > Ouvrir des fichiers HDF5...*, une application peut également surcharger :meth:`~sigimax.mainwindow.SGMXMainWindow.import_dataset_from_file` ; cet exemple ne l'implémente pas. *Fichier > Parcourir un fichier HDF5...* importe les jeux de données cochés dans le navigateur HDF5."
 
 msgid "See :doc:`../../user_guide/hdf5_workspace` for the full reference and ``sigimax/tests/hdf5/test_h5_derived_app.py`` for the complete test this example is derived from."
 msgstr "Voir :doc:`../../user_guide/hdf5_workspace` pour la référence complète et ``sigimax/tests/hdf5/test_h5_derived_app.py`` pour le test complet dont cet exemple est issu."

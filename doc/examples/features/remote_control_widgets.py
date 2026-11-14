@@ -11,7 +11,8 @@ remote client for a DataLab-derived application server.
 
 These widgets are generic: they only depend on
 :class:`sigima.client.SimpleRemoteProxy` (or any proxy exposing the same
-``connect``/``get_current_panel``/``get_group_titles_with_object_info`` API),
+``connect``/``get_current_panel``/``set_current_panel``/
+``get_group_titles_with_object_info`` API),
 never on a specific application's branding or object model.
 
 To keep this example runnable without a real DataLab-derived application,
@@ -59,10 +60,11 @@ with qt_app_context(exec_loop=False):
 # directly, through the server instance, to get a non-empty tree below. A
 # real DataLab-derived server groups newly added objects automatically.
 
-proxy.add_signal("Signal 1", np.arange(10.0), np.arange(10.0))
-proxy.add_signal("Signal 2", np.arange(10.0), np.arange(10.0) ** 2)
-group_uuid = next(iter(server.signal_groups))
-server.signal_groups[group_uuid].objects.extend(server.signals.keys())
+if connected:
+    proxy.add_signal("Signal 1", np.arange(10.0), np.arange(10.0))
+    proxy.add_signal("Signal 2", np.arange(10.0), np.arange(10.0) ** 2)
+    group_uuid = next(iter(server.signal_groups))
+    server.signal_groups[group_uuid].objects.extend(server.signals.keys())
 
 # %%
 # Picking an object from the server
@@ -72,11 +74,12 @@ server.signal_groups[group_uuid].objects.extend(server.signals.keys())
 # objects available on the server. Restricting ``panel`` to ``"signal"``
 # hides the panel selector combo box.
 
-with qt_app_context(exec_loop=False):
-    dlg = GetObjectDialog(None, proxy, panel="signal")
-    group_item = dlg.tree.topLevelItem(0)
-    dlg.tree.setCurrentItem(group_item.child(0))
-    print(f"Selected object UUID: {dlg.get_current_object_uuid()}")
+if connected:
+    with qt_app_context(exec_loop=False):
+        dlg = GetObjectDialog(None, proxy, panel="signal")
+        group_item = dlg.tree.topLevelItem(0)
+        dlg.tree.setCurrentItem(group_item.child(0))
+        print(f"Selected object UUID: {dlg.get_current_object_uuid()}")
 
 server.stop()
 

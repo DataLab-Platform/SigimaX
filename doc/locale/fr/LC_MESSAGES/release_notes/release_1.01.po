@@ -30,6 +30,9 @@ msgstr "Les versions candidates (`vX.Y.Z-rcN`) sont désormais publiées sur Tes
 msgid "Fixes"
 msgstr "Corrections"
 
+msgid "The remote-control widget example no longer tries to use the connection after it is cancelled, and the workspace example clarifies which HDF5 hooks it implements (fixes [Issue #78](https://github.com/DataLab-Platform/SigimaX/issues/78))."
+msgstr "L'exemple des widgets de contrôle à distance n'essaie plus d'utiliser la connexion après son annulation, et l'exemple d'espace de travail précise les points d'extension HDF5 qu'il implémente (corrige [l'issue #78](https://github.com/DataLab-Platform/SigimaX/issues/78))."
+
 msgid "`--version` now shows the active application's name and version instead of option objects (fixes [Issue #74](https://github.com/DataLab-Platform/SigimaX/issues/74))."
 msgstr "`--version` affiche désormais le nom et la version de l'application active au lieu d'objets d'option (corrige [Issue #74](https://github.com/DataLab-Platform/SigimaX/issues/74))."
 

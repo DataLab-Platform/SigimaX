@@ -20,8 +20,12 @@ never runs it through the automated test suite either (only a manual,
 from __future__ import annotations
 
 import gc
+import runpy
 import threading
 import time
+from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import Mock
 
 import pytest
 from guidata.qthelpers import qt_app_context, qt_wait
@@ -106,6 +110,32 @@ def test_connection_dialog_construction_with_icon_and_banner():
         banner = QG.QPixmap(10, 10)
         dlg = ConnectionDialog(lambda: None, icon=icon, banner=banner)
         assert dlg.get_error_message() == ""
+
+
+def test_remote_widget_example_stops_after_cancel(monkeypatch):
+    """The documentation example must not use a rejected connection."""
+    server = SimpleNamespace(
+        start=Mock(return_value=12345),
+        stop=Mock(),
+        signal_groups={"group": SimpleNamespace(objects=[])},
+        signals={},
+    )
+    proxy = Mock()
+    dialog = SimpleNamespace(exec=lambda: 0, get_error_message=lambda: "")
+    monkeypatch.setattr("sigima.client.stub.DataLabStubServer", lambda **_: server)
+    monkeypatch.setattr("sigima.client.SimpleRemoteProxy", lambda **_: proxy)
+    monkeypatch.setattr("sigimax.widgets.connection.ConnectionDialog", lambda _: dialog)
+
+    def unexpected_dialog(*args, **kwargs):
+        pytest.fail("The object dialog must not open after cancellation")
+
+    monkeypatch.setattr(
+        "sigimax.widgets.objectdialog.GetObjectDialog", unexpected_dialog
+    )
+    example = Path(__file__).resolve().parents[3] / "doc" / "examples" / "features"
+    runpy.run_path(str(example / "remote_control_widgets.py"))
+    proxy.add_signal.assert_not_called()
+    server.stop.assert_called_once()
 
 
 def _process_events_until(condition, timeout: float = 10.0) -> None:
