@@ -7,16 +7,18 @@ HDF5 Workspace Save/Load
 SigimaX provides the plumbing for an HDF5-backed workspace (menu actions,
 file dialogs, browser) but does **not** know what a derived application's
 data model looks like. This example shows how to plug your own model in by
-overriding three extension points on :class:`~sigimax.mainwindow.SGMXMainWindow`:
+implementing a save/load workflow on :class:`~sigimax.mainwindow.SGMXMainWindow`:
 
 - :meth:`~sigimax.mainwindow.SGMXMainWindow.save_h5_workspace` — serialize your
   objects when the user chooses *File > Save*
 - ``load_h5_workspace`` (a convention, not a base-class method) — the
   counterpart used to reload a workspace saved by your own application
-- :meth:`~sigimax.mainwindow.SGMXMainWindow.import_dataset_from_file` — import
-  data coming from a *generic* (non-SigimaX) HDF5 file, as requested by
-  *File > Open HDF5 files...* (*File > Browse HDF5 file...* imports the
-  datasets checked in the HDF5 browser instead)
+
+To support *File > Open HDF5 files...* for generic (non-SigimaX) HDF5 files,
+an application may also override
+:meth:`~sigimax.mainwindow.SGMXMainWindow.import_dataset_from_file`; this
+example does not implement that hook. *File > Browse HDF5 file...* imports
+the datasets checked in the HDF5 browser instead.
 
 See :doc:`../../user_guide/hdf5_workspace` for the full reference and
 ``sigimax/tests/hdf5/test_h5_derived_app.py`` for the complete test this

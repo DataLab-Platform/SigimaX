@@ -21,8 +21,8 @@ msgstr "Widgets de contrôle à distance"
 msgid "This example demonstrates how to use :class:`~sigimax.widgets.connection.ConnectionDialog` and :class:`~sigimax.widgets.objectdialog.GetObjectDialog` to build a minimal remote client for a DataLab-derived application server."
 msgstr "Cet exemple montre comment utiliser :class:`~sigimax.widgets.connection.ConnectionDialog` et :class:`~sigimax.widgets.objectdialog.GetObjectDialog` pour créer un client distant minimal pour un serveur d'application dérivé de DataLab."
 
-msgid "These widgets are generic: they only depend on :class:`sigima.client.SimpleRemoteProxy` (or any proxy exposing the same ``connect``/``get_current_panel``/``get_group_titles_with_object_info`` API), never on a specific application's branding or object model."
-msgstr "Ces widgets sont génériques : ils ne dépendent que de :class:`sigima.client.SimpleRemoteProxy` (ou de tout proxy exposant la même API ``connect``/``get_current_panel``/``get_group_titles_with_object_info``), jamais de l'image de marque ou du modèle d'objet d'une application spécifique."
+msgid "These widgets are generic: they only depend on :class:`sigima.client.SimpleRemoteProxy` (or any proxy exposing the same ``connect``/``get_current_panel``/``set_current_panel``/ ``get_group_titles_with_object_info`` API), never on a specific application's branding or object model."
+msgstr "Ces widgets sont génériques : ils ne dépendent que de :class:`sigima.client.SimpleRemoteProxy` (ou de tout proxy exposant la même API ``connect``/``get_current_panel``/``set_current_panel``/ ``get_group_titles_with_object_info``), jamais de l'identité ou du modèle d'objet d'une application particulière."
 
 msgid "To keep this example runnable without a real DataLab-derived application, :class:`sigima.client.stub.DataLabStubServer` is used to simulate one in-process."
 msgstr "Pour que cet exemple soit exécutable sans une véritable application dérivée de DataLab, :class:`sigima.client.stub.DataLabStubServer` est utilisé pour en simuler une en processus."

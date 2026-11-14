@@ -9,6 +9,7 @@
 
 ### Fixes ###
 
+* The remote-control widget example no longer tries to use the connection after it is cancelled, and the workspace example clarifies which HDF5 hooks it implements (fixes [Issue #78](https://github.com/DataLab-Platform/SigimaX/issues/78)).
 * `--version` now shows the active application's name and version instead of option objects (fixes [Issue #74](https://github.com/DataLab-Platform/SigimaX/issues/74)).
 
 ## SigimaX Version 1.1.0 ##
