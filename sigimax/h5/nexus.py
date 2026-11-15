@@ -582,8 +582,8 @@ def entry_information(group: h5py.Group) -> tuple[dict[str, str], dict[str, str]
         group: HDF5 group
 
     Returns:
-        Details (``{"entry_title": ...}``) and timestamps (``{"start": ...,
-        "end": ...}``), without the missing fields
+        Details (``{"entry_title": ...}``) and timestamps
+         (``{"start": ..., "end": ...}``), without the missing fields
     """
     entry = _entry_group(group)
     if entry is None:

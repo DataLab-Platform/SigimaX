@@ -27,13 +27,7 @@
 
 ### Highlights ###
 
-This release turns `SGMXMainWindow` and the SigimaX configuration system into a real
-extension surface: derived applications (DataLab and others) can now compose menus,
-docks, status bar widgets, HDF5 import and the whole application lifecycle by
-overriding small, well-documented hooks instead of duplicating entire methods. It
-also brings a simplified, more robust configuration option system, new remote-control
-widgets for connecting to a running DataLab-Kernel instance, and a batch of fixes
-ported from DataLab's `develop` branch.
+This release turns `SGMXMainWindow` and the SigimaX configuration system into a real extension surface: derived applications (DataLab and others) can now compose menus, docks, status bar widgets, HDF5 import and the whole application lifecycle by overriding small, well-documented hooks instead of duplicating entire methods. It also brings a simplified, more robust configuration option system, new remote-control widgets for connecting to a running DataLab-derived application over XML-RPC, and a batch of fixes ported from DataLab's `develop` branch.
 
 ### Application framework ###
 
@@ -114,9 +108,7 @@ ported from DataLab's `develop` branch.
 
 ### Widgets ###
 
-* Added `DataLabSimpleClient` widgets: a connection dialog and an object
-  browsing dialog for remote-controlling a running DataLab-Kernel instance
-  over HTTP ([DataLab-Platform/DataLab#183](https://github.com/DataLab-Platform/DataLab/issues/183))
+* Added `DataLabSimpleClient` widgets: a connection dialog and an object browsing dialog for remote-controlling a running DataLab-derived application over XML-RPC, through `sigima.client` ([DataLab-Platform/DataLab#183](https://github.com/DataLab-Platform/DataLab/issues/183))
 * Aligned the plot dock's curve statistics with PlotPy: the hand-written,
   NaN-robust statistics label functions are replaced by PlotPy's own
   `CurveStatsTool.LABELFUNCS`, and the y-range cursor sum is now a plain sum

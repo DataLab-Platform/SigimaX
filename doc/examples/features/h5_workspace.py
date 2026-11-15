@@ -7,15 +7,18 @@ HDF5 Workspace Save/Load
 SigimaX provides the plumbing for an HDF5-backed workspace (menu actions,
 file dialogs, browser) but does **not** know what a derived application's
 data model looks like. This example shows how to plug your own model in by
-overriding three extension points on :class:`~sigimax.mainwindow.SGMXMainWindow`:
+implementing a save/load workflow on :class:`~sigimax.mainwindow.SGMXMainWindow`:
 
 - :meth:`~sigimax.mainwindow.SGMXMainWindow.save_h5_workspace` — serialize your
   objects when the user chooses *File > Save*
 - ``load_h5_workspace`` (a convention, not a base-class method) — the
   counterpart used to reload a workspace saved by your own application
-- :meth:`~sigimax.mainwindow.SGMXMainWindow.import_dataset_from_file` — import
-  data coming from a *generic* (non-SigimaX) HDF5 file, as offered by
-  *File > Browse HDF5 file*
+
+To support *File > Open HDF5 files...* for generic (non-SigimaX) HDF5 files,
+an application may also override
+:meth:`~sigimax.mainwindow.SGMXMainWindow.import_dataset_from_file`; this
+example does not implement that hook. *File > Browse HDF5 file...* imports
+the datasets checked in the HDF5 browser instead.
 
 See :doc:`../../user_guide/hdf5_workspace` for the full reference and
 ``sigimax/tests/hdf5/test_h5_derived_app.py`` for the complete test this
@@ -167,13 +170,14 @@ with qth.sigimax_app_context(exec_loop=False):
 #
 # - :meth:`~sigimax.mainwindow.SGMXMainWindow.save_h5_workspace` is the single
 #   contract point SigimaX relies on for *File > Save* — the base
-#   implementation is a documented no-op, override it in your window class
+#   implementation raises :class:`NotImplementedError`, override it in your
+#   window class
 # - Add a symmetrical ``load_*`` method for reopening your own files; there is
 #   no base-class hook to override because the data model is entirely
 #   downstream
 # - Override :meth:`~sigimax.mainwindow.SGMXMainWindow.import_dataset_from_file`
 #   to support importing *generic* (non-SigimaX) HDF5 files through
-#   *File > Browse HDF5 file*
+#   *File > Open HDF5 files...* (the base implementation does nothing)
 # - To add a new node type recognized by the generic HDF5 browser itself
 #   (rather than importing raw datasets), subclass
 #   :class:`~sigimax.h5.common.BaseNode` and register it with

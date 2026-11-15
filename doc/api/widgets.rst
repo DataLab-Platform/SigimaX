@@ -10,11 +10,23 @@ Submodules
 .. automodule:: sigimax.widgets.plotdock
     :no-members:
 
+.. autoclass:: sigimax.widgets.plotdock.CurveStatsToolFunctions
+    :members:
+
 .. automodule:: sigimax.widgets.splashscreen
     :no-members:
 
 .. automodule:: sigimax.widgets.h5browser
     :no-members:
+
+.. autoclass:: sigimax.widgets.h5browser.AbstractTreeWidget
+    :members:
+
+.. autoclass:: sigimax.widgets.h5browser.ViewSelector
+    :members:
+
+.. autoclass:: sigimax.widgets.h5browser.H5FileSelector
+    :members:
 
 .. automodule:: sigimax.widgets.logviewer
     :no-members:
@@ -46,14 +58,19 @@ Submodules
 .. automodule:: sigimax.widgets.warningerror
     :no-members:
 
+.. autofunction:: sigimax.widgets.warningerror.go_to_error
+
 .. automodule:: sigimax.widgets.filedialog
     :no-members:
 
 .. automodule:: sigimax.widgets.fileviewer
-    :no-members:
+    :members:
 
 .. automodule:: sigimax.widgets.connection
     :no-members:
 
 .. automodule:: sigimax.widgets.objectdialog
     :no-members:
+
+.. autoclass:: sigimax.widgets.objectdialog.SimpleObjectTree
+    :members:

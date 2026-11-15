@@ -102,8 +102,8 @@ class SplashScreenConfig:
 
     @classmethod
     def from_conf(cls) -> SplashScreenConfig:
-        """Build a :class:`SplashScreenConfig` from the global
-        :data:`sigimax.config.CONF` options.
+        """Build a :class:`SplashScreenConfig` from the options of the active
+        configuration (:func:`sigimax.config.get_conf`).
 
         Returns:
             Configuration instance populated from global options.
@@ -131,7 +131,8 @@ class SigimaXSplashScreen(QW.QSplashScreen):
 
     Args:
         config: Splash screen configuration. If ``None``, a default
-         configuration is built from :data:`sigimax.config.CONF`.
+         configuration is built from the active configuration
+         (:func:`sigimax.config.get_conf`).
     """
 
     def __init__(self, config: SplashScreenConfig | None = None) -> None:

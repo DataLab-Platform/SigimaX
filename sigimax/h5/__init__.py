@@ -10,13 +10,18 @@ The importer walks an HDF5 file and turns each dataset into a
 module-level :data:`~sigimax.h5.common.NODE_FACTORY` registry. Applications
 extend the supported data model by subclassing
 :class:`~sigimax.h5.common.BaseNode` (or :class:`~sigimax.h5.common.GroupNode`)
-and registering it with ``NODE_FACTORY.register(MyNode)`` — see
-:doc:`../user_guide/hdf5_workspace` for a worked example.
+and registering it with ``NODE_FACTORY.register(MyNode)`` (which
+``NODE_FACTORY.unregister(MyNode)`` reverts), or by adding extra nodes under
+groups with ``NODE_FACTORY.add_children_provider(func)``: see
+:class:`~sigimax.h5.common.NodeFactory`. The generic, NeXus and data mapping
+nodes described in :doc:`../user_guide/hdf5_workspace` are registered this way.
 
 .. autoclass:: sigimax.h5.common.H5Importer
     :members:
 .. autoclass:: sigimax.h5.common.NodeFactory
     :members:
+.. autodata:: sigimax.h5.common.NODE_FACTORY
+    :no-value:
 .. autoclass:: sigimax.h5.common.BaseNode
     :members:
 .. autoclass:: sigimax.h5.common.GroupNode
@@ -39,6 +44,9 @@ multidimensional datasets are read with
 .. autofunction:: sigimax.h5.nexus.default_nxdata_path
 .. autofunction:: sigimax.h5.nexus.entry_information
 .. autodata:: sigimax.h5.nexus.UNIFORM_AXIS_TOLERANCE
+.. autoclass:: sigimax.h5.nexus.NXdataDescription
+.. autoclass:: sigimax.h5.nexus.NXAxis
+.. autoclass:: sigimax.h5.nexus.NonMonotonicAxisError
 
 Files without suitable ``NXdata`` groups are described by declarative data
 mappings (:mod:`sigimax.h5.mapping`), registered by applications or plugins.
@@ -48,6 +56,8 @@ mappings (:mod:`sigimax.h5.mapping`), registered by applications or plugins.
 .. autofunction:: sigimax.h5.mapping.register_mapping
 .. autofunction:: sigimax.h5.mapping.unregister_mapping
 .. autofunction:: sigimax.h5.mapping.describe_mapping
+.. autofunction:: sigimax.h5.mapping.registered_mappings
+.. autodata:: sigimax.h5.mapping.MAPPING_VERSION
 .. autoclass:: sigimax.h5.mapping.DataMapping
 .. autoclass:: sigimax.h5.mapping.MappedObject
 .. autoclass:: sigimax.h5.mapping.MappedAxis
@@ -64,6 +74,7 @@ mappings (:mod:`sigimax.h5.mapping`), registered by applications or plugins.
 .. autoclass:: sigimax.h5.views.FrameNode
 .. autofunction:: sigimax.h5.views.expand_views
 .. autofunction:: sigimax.h5.views.count_frames
+.. autofunction:: sigimax.h5.views.frame_index_text
 .. autofunction:: sigimax.h5.utils.unavailable_filters
 .. autofunction:: sigimax.h5.utils.split_h5_file_selector
 """

@@ -36,8 +36,9 @@ the building blocks for creating scientific desktop applications.
         splash screen, status bar, and dockable plot widgets.
 
     * - :mod:`sigimax.h5`
-      - HDF5 I/O — import, read, write, and browse HDF5 files with node
-        factory and data extraction utilities.
+      - HDF5 browsing and import — read and import HDF5 files with node
+        factory and data extraction utilities. Workspace persistence is
+        provided by the derived application.
 
     * - :mod:`sigimax.adapters_plotpy`
       - PlotPy adapters — converters between Sigima objects

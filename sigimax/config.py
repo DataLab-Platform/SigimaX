@@ -49,7 +49,7 @@ Extending for a derived application:
 
 .. code-block:: python
 
-    from sigimax.options import SigimaXOptions
+    from sigimax.config import SigimaXOptions, TypedOptionField, get_conf, set_conf
 
     class MyAppOptions(SigimaXOptions):
         def __init__(self):
@@ -60,7 +60,9 @@ Extending for a derived application:
                 description="My custom option for MyApp",
             )
 
-    options = MyAppOptions()
+    # Make it the active configuration, read by SigimaX modules via get_conf()
+    set_conf(MyAppOptions())
+    value = get_conf().my_custom_option.get()
 
 .. autoclass:: SigimaXOptions
     :members:

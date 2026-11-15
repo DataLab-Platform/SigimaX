@@ -30,8 +30,8 @@ msgstr "**Sous-classer** :class:`~sigimax.config.SigimaXOptions` pour les option
 msgid "**Subclass** :class:`~sigimax.mainwindow.SGMXMainWindow` for custom UI"
 msgstr "**Sous-classer** :class:`~sigimax.mainwindow.SGMXMainWindow` pour l'interface personnalisée"
 
-msgid "**Call** :func:`~sigimax.app.create` to launch"
-msgstr "**Appeler** :func:`~sigimax.app.create` pour lancer"
+msgid "**Install** the options with :func:`~sigimax.config.set_conf`, then **call** :func:`~sigimax.app.create` to launch"
+msgstr "**Installer** les options avec :func:`~sigimax.config.set_conf`, puis **appeler** :func:`~sigimax.app.create` pour lancer l'application"
 
 msgid "This example creates a minimal \"MyApp\" with a dockable curve plot widget."
 msgstr "Cet exemple crée une application minimale \"MyApp\" avec un widget de graphique de courbes ancrable."
@@ -48,14 +48,14 @@ msgstr "Sous-classer :class:`~sigimax.config.SigimaXOptions` pour ajouter des ch
 msgid "Step 2: Customize the main window"
 msgstr "Étape 2 : Personnaliser la fenêtre principale"
 
-msgid "Subclass :class:`~sigimax.mainwindow.SGMXMainWindow` to add your own menus, toolbars, and dock widgets."
-msgstr "Sous-classer :class:`~sigimax.mainwindow.SGMXMainWindow` pour ajouter vos propres menus, barres d'outils et widgets ancrables."
+msgid "Subclass :class:`~sigimax.mainwindow.SGMXMainWindow` and override its setup hooks to add your own menus, toolbars, and dock widgets. Docks are added in ``_setup_docks``, with ``_add_dockwidget``: the saved window layout is then applied to them, and they follow color theme changes."
+msgstr "Sous-classer :class:`~sigimax.mainwindow.SGMXMainWindow` et surcharger ses hooks d'initialisation pour ajouter vos propres menus, barres d'outils et widgets ancrables. Les docks sont ajoutés dans ``_setup_docks``, avec ``_add_dockwidget`` : la disposition enregistrée de la fenêtre leur est alors appliquée, et ils suivent les changements de thème de couleur."
 
 msgid "Step 3: Launch the application"
 msgstr "Étape 3 : Lancer l'application"
 
-msgid "Use :func:`~sigimax.app.create` to instantiate the window (without entering the Qt event loop, so sphinx-gallery can capture the screenshot)."
-msgstr "Utiliser :func:`~sigimax.app.create` pour instancier la fenêtre (sans entrer dans la boucle d'événements Qt, afin que sphinx-gallery puisse capturer la capture d'écran)."
+msgid "Install the options with :func:`~sigimax.config.set_conf` before creating the window: SigimaX and your own code read them with :func:`~sigimax.config.get_conf`. Then use :func:`~sigimax.app.create` to instantiate the window (without entering the Qt event loop, so sphinx-gallery can capture the screenshot)."
+msgstr "Installer les options avec :func:`~sigimax.config.set_conf` avant de créer la fenêtre : SigimaX et votre propre code les lisent avec :func:`~sigimax.config.get_conf`. Utiliser ensuite :func:`~sigimax.app.create` pour instancier la fenêtre (sans entrer dans la boucle d'événements Qt, afin que sphinx-gallery puisse faire la capture d'écran)."
 
 msgid "Summary"
 msgstr "Résumé"
@@ -63,8 +63,8 @@ msgstr "Résumé"
 msgid "This example showed the minimal derivation pattern:"
 msgstr "Cet exemple a présenté le patron de dérivation minimal :"
 
-msgid "**Configuration**: ``MyAppOptions`` adds typed, validated options"
-msgstr "**Configuration** : ``MyAppOptions`` ajoute des options typées et validées"
+msgid "**Configuration**: ``MyAppOptions`` adds typed, validated options, and ``set_conf()`` makes it the active configuration"
+msgstr "**Configuration** : ``MyAppOptions`` ajoute des options typées et validées, et ``set_conf()`` en fait la configuration active"
 
 msgid "**Main window**: ``MyAppMainWindow`` adds a curve plot dock"
 msgstr "**Fenêtre principale** : ``MyAppMainWindow`` ajoute un dock de graphique de courbes"

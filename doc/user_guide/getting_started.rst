@@ -23,7 +23,7 @@ application-specific configuration fields:
     class MyAppOptions(SigimaXOptions):
         def __init__(self):
             super().__init__()
-          self.app_name.set("MyApp")
+            self.app_name.set("MyApp")
             self.greeting = TypedOptionField(
                 self, "greeting", default="Hello!",
                 expected_type=str, description="Startup message",
@@ -35,34 +35,63 @@ application-specific configuration fields:
             )
 
 **Step 2 — Subclass** :class:`~sigimax.mainwindow.SGMXMainWindow` to customize
-the user interface:
+the user interface, by overriding its setup hooks:
 
 .. code-block:: python
 
-    from sigimax.config import CONF as Conf, _
+    from sigimax.config import _
     from sigimax.mainwindow import SGMXMainWindow
     from sigimax.widgets.plotdock import DockablePlotWidget
     from plotpy.constants import PlotType
 
     class MyAppMainWindow(SGMXMainWindow):
-        def __init__(self, console=None, hide_on_close=False):
-            Conf.app_name.set("MyApp")
-            super().__init__(console=console, hide_on_close=hide_on_close)
+        def _setup_docks(self):
             # Add a dockable curve plot
             self.curve_dock = DockablePlotWidget(self, PlotType.CURVE)
-            dock, loc = self.curve_dock.create_dockwidget(_("Curve Viewer"))
-            self.addDockWidget(loc, dock)
+            self._add_dockwidget(
+                self.curve_dock, _("Curve Viewer"), name="curve_viewer"
+            )
 
-**Step 3 — Launch** the application:
+``_setup_docks()`` is called before the saved window layout is restored, and
+``_add_dockwidget()`` registers the dock in ``self.docks``: the dock gets its
+saved geometry back and follows color theme changes. The ``name`` argument is
+the stable Qt object name under which its layout is saved.
+
+**Step 3 — Install** the configuration and **launch** the application:
 
 .. code-block:: python
 
     from sigimax.app import run
+    from sigimax.config import set_conf
 
+    set_conf(MyAppOptions())
     run(window_class=MyAppMainWindow)
 
-That's it. Three classes, three steps — and you have a full-featured scientific
-desktop application with menus, toolbars, console, HDF5 workspace, and status bar.
+That's it. Two classes, three steps — and you have a full-featured scientific
+desktop application with menus, toolbars, console, HDF5 browsing and import,
+and status bar.
+
+Active Configuration
+^^^^^^^^^^^^^^^^^^^^
+
+SigimaX modules read options through :func:`~sigimax.config.get_conf`, which
+returns the *active* options container. :func:`~sigimax.config.set_conf` makes
+your container the active one. Call it once, before the main window is created
+(DataLab does it when its configuration module is imported), then read your
+options with ``get_conf()``:
+
+.. code-block:: python
+
+    from sigimax.config import get_conf
+
+    greeting = get_conf().greeting.get()
+
+``CONF`` is the SigimaX base container: once another container is installed,
+set and read options through ``get_conf()``, not ``CONF``.
+:func:`~sigimax.config.set_conf` raises :class:`ValueError` if the container
+lacks one of the base options (a :class:`~sigimax.config.SigimaXOptions`
+subclass has them all). :func:`~sigimax.config.reset_conf` restores the base
+container (mainly for tests).
 
 Key Concepts
 ^^^^^^^^^^^^
@@ -72,10 +101,11 @@ Key Concepts
   ``context()`` API and JSON persistence.
 
 - **Overridable hooks**: The main window provides hooks that derived apps can
-  override: ``reset_all()``, ``_is_save_enabled()``, ``_update_file_menu()``,
-  ``_update_view_menu()``, ``_about()``, ``_before_setup()``, and
-  ``_after_setup()``. See :doc:`lifecycle` for their ordering and
-  initialization contract.
+  override: ``reset_all()``, ``_is_save_enabled()``,
+  ``_get_file_menu_actions()``, ``_update_file_menu()``,
+  ``_update_view_menu()``, ``_about()``, ``_before_setup()``,
+  ``_setup_docks()``, ``_post_setup()``, and ``_after_setup()``. See
+  :doc:`lifecycle` for their ordering and initialization contract.
 
 - **Built-in features**: HDF5 GUI and generic dataset import; derived
   applications implement their own workspace persistence. SigimaX also
@@ -99,17 +129,17 @@ SigimaX provides 15+ ready-to-use scientific widgets:
       - Embeddable PlotPy plot in dock widgets
     * - :class:`~sigimax.widgets.h5browser.H5BrowserDialog`
       - Interactive HDF5 file browser
-    * - :class:`~sigimax.widgets.fitdialog`
+    * - :mod:`~sigimax.widgets.fitdialog`
       - Curve fitting dialogs (Gaussian, polynomial, etc.)
-    * - :class:`~sigimax.widgets.signalpeak`
+    * - :mod:`~sigimax.widgets.signalpeak`
       - Signal peak detection dialog
-    * - :class:`~sigimax.widgets.signalbaseline`
+    * - :mod:`~sigimax.widgets.signalbaseline`
       - Signal baseline selection dialog
-    * - :class:`~sigimax.widgets.signalcursor`
+    * - :mod:`~sigimax.widgets.signalcursor`
       - Signal cursor selection dialog
-    * - :class:`~sigimax.widgets.signaldeltax`
+    * - :mod:`~sigimax.widgets.signaldeltax`
       - Signal delta-X measurement dialog
-    * - :class:`~sigimax.widgets.imagebackground`
+    * - :mod:`~sigimax.widgets.imagebackground`
       - Image background selection dialog
     * - :class:`~sigimax.widgets.logviewer.LogViewerWindow`
       - Log viewer dialog

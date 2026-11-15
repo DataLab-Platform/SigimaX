@@ -5,7 +5,8 @@ SigimaX provides ready-to-use Qt widgets to build a *remote client*
 application: a separate process that connects to a running DataLab-derived
 application server and exchanges signals/images with it, using
 :class:`sigima.client.SimpleRemoteProxy` (or any proxy exposing the same
-``connect``/``get_current_panel``/``get_group_titles_with_object_info`` API).
+``connect``/``get_current_panel``/``set_current_panel``/
+``get_group_titles_with_object_info`` API).
 
 These widgets originate from the (now unmaintained) ``cdlclient`` /
 `DataLab Simple Client <https://github.com/DataLab-Platform/DataLabSimpleClient>`_
@@ -32,7 +33,9 @@ A derived (client) application provides:
   instance and its connection parameters;
 - what to do with the object selected in :class:`~sigimax.widgets.objectdialog.GetObjectDialog`
   (e.g. retrieve its data with :meth:`~sigima.client.base.SimpleBaseProxy.get_object`);
-  the widgets never modify the connection or the remote objects themselves.
+  the widgets never modify the remote objects themselves, but
+  :class:`~sigimax.widgets.objectdialog.GetObjectDialog` switches the current
+  panel of the remote application (``set_current_panel``) to list its objects.
 
 Connecting to a Server
 -----------------------

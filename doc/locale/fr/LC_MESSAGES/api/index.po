@@ -60,8 +60,8 @@ msgstr "Widgets Qt réutilisables — boîtes de dialogue scientifiques (ajustem
 msgid ":mod:`sigimax.h5`"
 msgstr ":mod:`sigimax.h5`"
 
-msgid "HDF5 I/O — import, read, write, and browse HDF5 files with node factory and data extraction utilities."
-msgstr "E/S HDF5 — import, lecture, écriture et navigation dans les fichiers HDF5 avec utilitaires de fabrique de nœuds et d'extraction de données."
+msgid "HDF5 browsing and import — read and import HDF5 files with node factory and data extraction utilities. Workspace persistence is provided by the derived application."
+msgstr "Navigation et import HDF5 — lecture et import de fichiers HDF5 avec utilitaires de fabrique de nœuds et d'extraction de données. La persistance de l'espace de travail est fournie par l'application dérivée."
 
 msgid ":mod:`sigimax.adapters_plotpy`"
 msgstr ":mod:`sigimax.adapters_plotpy`"

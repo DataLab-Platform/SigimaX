@@ -30,7 +30,7 @@ End-user apps (DataLab, custom scientific apps)
 sigimax/
 ├── app.py              # Application launcher (create / run)
 ├── config.py           # Configuration system (SigimaXOptions, CONF singleton)
-├── env.py              # ExecEnv runtime environment (verbosity, unattended)
+├── env.py              # SGMXExecEnv runtime environment (verbosity, unattended)
 ├── mainwindow.py        # SGMXMainWindow (generic main window)
 ├── widgets/            # Reusable Qt widgets
 │   ├── plotdock.py     # DockablePlotWidget
@@ -48,7 +48,7 @@ sigimax/
 │   ├── signalcursor.py       # Signal cursor selection
 │   ├── signaldeltax.py       # Signal delta-X measurement
 │   └── signalpeak.py         # Signal peak detection
-├── h5/                 # HDF5 I/O (read/write/import)
+├── h5/                 # HDF5 browsing and import (read-only)
 ├── adapters_plotpy/    # Converters between PlotPy/guidata and Sigima objects
 ├── utils/              # Qt helpers, config dir resolution
 ├── data/               # Icons, resources
@@ -60,7 +60,7 @@ sigimax/
 
 ### Running Commands
 
-**ALWAYS use `scripts/run_with_env.py`** to load `.env` before running Python commands:
+**ALWAYS use `scripts/run_with_env.py`** to load `.env` before running Python commands (`.env` is not versioned: create it from `.env.template`, otherwise the script fails):
 
 ```powershell
 # ✅ CORRECT
@@ -77,7 +77,7 @@ python -m pytest
 python scripts/run_with_env.py python -m pytest --ff
 
 # Run specific test
-python scripts/run_with_env.py python -m pytest sigimax/tests/derivated_app_test.py
+python scripts/run_with_env.py python -m pytest sigimax/tests/mainwindow/test_derived_app.py
 
 # Show Qt windows during tests (default is offscreen)
 python scripts/run_with_env.py python -m pytest --show-windows
@@ -129,7 +129,6 @@ from sigimax.config import EnumOptionField, SigimaXOptions, TypedOptionField
 
 
 class MyAppOptions(SigimaXOptions):
-    ENV_VAR = "MYAPP_OPTIONS_JSON"
     APP_NAME = "MyApp"
 
     def __init__(self):
@@ -151,27 +150,35 @@ class MyAppOptions(SigimaXOptions):
         )
 ```
 
-**Step 2 — Subclass `SGMXMainWindow`** for custom UI:
+**Step 2 — Subclass `SGMXMainWindow`** for custom UI, by overriding the hooks called during setup (see `doc/user_guide/lifecycle.rst`), not by adding widgets after `super().__init__()`:
 
 ```python
+from plotpy.constants import PlotType
+
+from sigimax.config import _
 from sigimax.mainwindow import SGMXMainWindow
-from sigimax.config import CONF as Conf
+from sigimax.widgets.plotdock import DockablePlotWidget
 
 
 class MyAppMainWindow(SGMXMainWindow):
-    def __init__(self, console=None, hide_on_close=False):
-        Conf.app_name.set("MyApp")
-        super().__init__(console=console, hide_on_close=hide_on_close)
-        self._add_custom_menus()
-        self._add_custom_docks()
+    def _setup_docks(self):
+        # Docks added here get the saved layout and follow color theme changes
+        self.plot_dock = DockablePlotWidget(self, PlotType.CURVE)
+        self._add_dockwidget(self.plot_dock, _("My Plot"), name="my_plot")
+
+    def _post_setup(self, console):
+        # Custom menus, toolbars and wiring, once the whole UI exists
+        ...
 ```
 
-**Step 3 — Launch with `sigimax.app.run()`**:
+**Step 3 — Install the configuration with `set_conf()`, then launch with `sigimax.app.run()`**:
 
 ```python
 from sigimax.app import run
+from sigimax.config import set_conf
 from sigimax.widgets.splashscreen import SplashScreenConfig
 
+set_conf(MyAppOptions())  # SigimaX modules read options through get_conf()
 run(
     window_class=MyAppMainWindow,
     splash_config=SplashScreenConfig(
@@ -203,6 +210,8 @@ Conf.save()  # Save to config file
 Conf.load()  # Load from config file
 ```
 
+`CONF` is the SigimaX base container. SigimaX modules read the active container through `get_conf()`: once a derived application has installed its own container with `set_conf()`, read options with `get_conf()`, not `CONF`.
+
 **Custom option field types**:
 - `TypedOptionField` — type-checked (int, str, bool, float)
 - `EnumOptionField` — constrained to a set of choices
@@ -224,21 +233,26 @@ from sigimax.widgets.signalpeak import SignalPeakDetectionDialog
 
 ### 4. DockablePlotWidget
 
-Embeds PlotPy plots in dock widgets:
+Embeds PlotPy plots in dock widgets. Add them in the `_setup_docks()` hook, with `_add_dockwidget()` (which registers them in `self.docks` and gives them a stable Qt object name):
 
 ```python
+from plotpy.constants import PlotType
+
 from sigimax.widgets.plotdock import DockablePlotWidget
 
-dock = DockablePlotWidget(self, plot_type=PlotType.CURVE, title="My Plot")
-self.addDockWidget(Qt.RightDockWidgetArea, dock)
+
+class MyAppMainWindow(SGMXMainWindow):
+    def _setup_docks(self):
+        self.plot_dock = DockablePlotWidget(self, PlotType.CURVE)
+        self._add_dockwidget(self.plot_dock, _("My Plot"), name="my_plot")
 ```
 
 ### 5. HDF5 Workspace
 
-The main window provides built-in HDF5 workspace management:
-- `open_h5_files()` — open HDF5 files
-- `save_to_h5_file()` — save workspace
-- `browse_h5_files()` — browse HDF5 files with `H5BrowserDialog`
+The main window provides the HDF5 actions, the HDF5 browser and the workspace-state contract (modified state, save prompt on close); the derived application provides the workspace persistence:
+- `open_h5_files()` — open/import HDF5 files: through the `import_dataset_from_file()` hook (a no-op in the base class) with `import_all=True` (*Open HDF5 files...*), through `browse_h5_files()` with `import_all=None` (*Browse HDF5 file...*)
+- `save_to_h5_file()` — save the workspace through `save_h5_workspace()`, which the derived application must override (the base implementation raises `NotImplementedError`)
+- `browse_h5_files()` — browse HDF5 files with `H5BrowserDialog`, and hand the checked datasets to `_handle_imported_objects()`
 
 ### 6. Application Launcher
 
@@ -259,7 +273,7 @@ run(window_class=MyWindow, splash_config=config)
 | Configuration system (`config.py`) | Signal/Image panels, processors |
 | Generic main window (`mainwindow.py`) | Action handler, plugin system |
 | Dockable plot widgets (`widgets/plotdock.py`) | Remote control (XML-RPC, Web API) |
-| HDF5 I/O + browser (`h5/`, `widgets/h5browser.py`) | Macro editor, new-object dialogs |
+| HDF5 browsing and import (`h5/`, `widgets/h5browser.py`) | Macro editor, new-object dialogs |
 | Scientific dialogs (fit, baseline, peak, cursor…) | DataLab-specific UI and processing |
 | Log viewer, status bar, splash screen, wizard | Object model, plot handler |
 | PlotPy adapters (`adapters_plotpy/`) | Processor registration pattern |
@@ -308,7 +322,7 @@ if TYPE_CHECKING:
 
 ### Module Exports
 
-**Always define `__all__`** in every module:
+**Define `__all__`** in every new module (some existing modules, such as `app.py`, `config.py`, `utils/qthelpers.py` and the `h5/` and `adapters_plotpy/` submodules, do not define it yet):
 
 ```python
 __all__ = [
@@ -361,20 +375,21 @@ action_text = _("Open HDF5 files")
 
 | File | Purpose |
 |------|---------|
-| `sigimax/__init__.py` | Package metadata (`__version__`, URLs) |
+| `sigimax/_metadata.py` | Package metadata (`__version__`, URLs), re-exported by `sigimax/__init__.py` |
 | `sigimax/app.py` | Application launcher (`create()`, `run()`) |
-| `sigimax/config.py` | Configuration system (`SigimaXOptions`, `CONF`) |
-| `sigimax/env.py` | Runtime environment (`ExecEnv`, `execenv` singleton) |
+| `sigimax/config.py` | Configuration system (`SigimaXOptions`, `CONF`, `get_conf()`, `set_conf()`) |
+| `sigimax/env.py` | Runtime environment (`SGMXExecEnv`, `execenv` singleton) |
 | `sigimax/mainwindow.py` | `SGMXMainWindow` — generic main window |
 | `sigimax/widgets/plotdock.py` | `DockablePlotWidget` — embeddable plot docks |
 | `sigimax/widgets/__init__.py` | Convenience re-exports of common widgets |
 | `sigimax/widgets/splashscreen.py` | `SplashScreenConfig`, `SigimaXSplashScreen` |
 | `sigimax/widgets/h5browser.py` | HDF5 browser widget and dialog |
-| `sigimax/h5/__init__.py` | HDF5 I/O handler |
+| `sigimax/h5/__init__.py` | HDF5 browsing and import (`H5Importer`, node registry) |
 | `sigimax/adapters_plotpy/__init__.py` | PlotPy/Sigima object converters |
-| `sigimax/tests/derivated_app_test.py` | Reference example of derived application |
+| `sigimax/tests/mainwindow/test_derived_app.py` | Reference example of derived application |
+| `sigimax/tests/hdf5/test_h5_derived_app.py` | Reference example of derived application with HDF5 workspace persistence |
 | `scripts/run_with_env.py` | Environment loader (loads `.env`) |
-| `.env` | Local PYTHONPATH for development |
+| `.env` | Local PYTHONPATH for development (created from `.env.template`) |
 
 ## VS Code Tasks
 
@@ -434,4 +449,4 @@ Follow [RELEASING.md](../RELEASING.md). **Never create a GitHub release by hand*
 
 ---
 
-**Remember**: Always use `scripts/run_with_env.py` for Python commands, wrap UI strings with `_()`, define `__all__` in every module, and follow the subclassing pattern for derived applications.
+**Remember**: Always use `scripts/run_with_env.py` for Python commands, wrap UI strings with `_()`, define `__all__` in every new module, and follow the subclassing pattern for derived applications.

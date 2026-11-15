@@ -52,10 +52,9 @@ Build a scientific desktop application in three steps:
 .. code-block:: python
 
     from sigimax.app import run
-    from sigimax.config import CONF as Conf, SigimaXOptions, _
+    from sigimax.config import SigimaXOptions, _, set_conf
     from sigimax.mainwindow import SGMXMainWindow
     from sigimax.widgets.plotdock import DockablePlotWidget
-    from sigimax.config import TypedOptionField
     from plotpy.constants import PlotType
 
     # 1. Custom configuration
@@ -66,14 +65,12 @@ Build a scientific desktop application in three steps:
 
     # 2. Custom main window
     class MyAppMainWindow(SGMXMainWindow):
-        def __init__(self, console=None, hide_on_close=False):
-            Conf.app_name.set("MyApp")
-            super().__init__(console=console, hide_on_close=hide_on_close)
-            dock_widget = DockablePlotWidget(self, PlotType.CURVE)
-            dock, loc = dock_widget.create_dockwidget(_("Plot"))
-            self.addDockWidget(loc, dock)
+        def _setup_docks(self):
+            self.plot_dock = DockablePlotWidget(self, PlotType.CURVE)
+            self._add_dockwidget(self.plot_dock, _("Plot"), name="plot")
 
-    # 3. Launch
+    # 3. Install the configuration, then launch
+    set_conf(MyAppOptions())
     run(window_class=MyAppMainWindow)
 
 
@@ -109,7 +106,6 @@ SigimaX has been funded by the following stakeholders:
    auto_examples/index
    api/index
    contributing/index
-   requirements
    release_notes/index
 
 .. _DataLab: https://www.datalab-platform.com

@@ -111,11 +111,11 @@ msgstr "Si vous êtes développeur, vous pouvez contribuer au cœur du projet en
 msgid "Development setup"
 msgstr "Configuration du développement"
 
-msgid "Clone the repository:"
-msgstr "Clonez le dépôt :"
+msgid "Clone the repository and install it in editable mode, with the development, documentation and test dependencies:"
+msgstr "Clonez le dépôt et installez-le en mode éditable, avec les dépendances de développement, de documentation et de test :"
 
-msgid "Run the tests:"
-msgstr "Exécutez les tests :"
+msgid "Copy ``.env.template`` to ``.env`` (``scripts/run_with_env.py`` requires this file, which sets the ``PYTHONPATH`` and the Python interpreter), then run the tests:"
+msgstr "Copiez ``.env.template`` en ``.env`` (``scripts/run_with_env.py`` exige ce fichier, qui définit le ``PYTHONPATH`` et l'interpréteur Python), puis exécutez les tests :"
 
 msgid "Format and lint:"
 msgstr "Formatez et vérifiez :"
@@ -126,8 +126,8 @@ msgstr "Conventions de code"
 msgid "Use ``from __future__ import annotations`` in all modules"
 msgstr "Utilisez ``from __future__ import annotations`` dans tous les modules"
 
-msgid "Define ``__all__`` in all public modules"
-msgstr "Définissez ``__all__`` dans tous les modules publics"
+msgid "Define ``__all__`` in new public modules (some existing modules, such as ``sigimax.app`` and ``sigimax.config``, do not define it yet)"
+msgstr "Définissez ``__all__`` dans les nouveaux modules publics (certains modules existants, comme ``sigimax.app`` et ``sigimax.config``, ne le définissent pas encore)"
 
 msgid "Wrap UI strings with ``_()`` for internationalization"
 msgstr "Encapsulez les chaînes d'interface utilisateur avec ``_()`` pour l'internationalisation"

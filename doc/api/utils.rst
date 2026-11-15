@@ -8,10 +8,17 @@ Submodules
 ----------
 
 .. automodule:: sigimax.utils.qthelpers
-    :no-members:
+    :members:
 
 .. automodule:: sigimax.utils.conf
-    :no-members:
+    :members:
 
 .. automodule:: sigimax.utils.svg_icons
-    :no-members:
+    :members: svgtext_to_icon
+
+.. data:: SIGNAL
+          IMAGE
+          GROUP
+
+    SVG sources of the signal, image and group icons, to be converted into
+    icons with :func:`svgtext_to_icon`

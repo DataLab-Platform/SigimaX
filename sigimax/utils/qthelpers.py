@@ -265,7 +265,7 @@ class CallbackWorker(QC.QThread):
     Args:
         callback: The function to be executed in a separate thread, that takes
          optionnally 'worker' as argument (instance of this class), and any other
-         argument passed with **kwargs
+         argument passed with ``**kwargs``
         kwargs: Callback keyword arguments
     """
 

@@ -46,9 +46,10 @@ class CurveStyles:
     and is then restored instead of the automatic style.
     """
 
-    #: Curve colors: contrast ratio of at least 3:1 against both the light (white)
-    #: and the dark (#222222) plot backgrounds, and hues as distinct as possible,
-    #: also for deuteranopia (none of them belongs to :py:attr:`LEGACY_COLORS`)
+    #: Curve colors, with a contrast ratio of at least 3 to 1 against both the light
+    #: (white) and the dark (#222222) plot backgrounds, and hues as distinct as
+    #: possible, also for deuteranopia (none of them belongs to
+    #: :py:attr:`LEGACY_COLORS`)
     COLORS = (
         "#2a77ae",  # blue
         "#d47900",  # orange

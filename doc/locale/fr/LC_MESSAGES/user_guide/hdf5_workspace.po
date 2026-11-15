@@ -27,8 +27,8 @@ msgstr "SigimaX fournit :"
 msgid "File, Open/Import, Browse, and Save actions;"
 msgstr "les actions Fichier, Ouvrir/Importer, Parcourir et Enregistrer ;"
 
-msgid "the HDF5 browser and :class:`sigimax.h5.H5Importer` for arbitrary datasets;"
-msgstr "le navigateur HDF5 et :class:`sigimax.h5.H5Importer` pour des jeux de données arbitraires ;"
+msgid "the HDF5 browser and :class:`~sigimax.h5.common.H5Importer` for arbitrary datasets;"
+msgstr "le navigateur HDF5 et :class:`~sigimax.h5.common.H5Importer` pour des jeux de données arbitraires ;"
 
 msgid ":meth:`sigimax.mainwindow.SGMXMainWindow.set_modified`, the save prompt, and the close workflow;"
 msgstr ":meth:`sigimax.mainwindow.SGMXMainWindow.set_modified`, l'invite d'enregistrement et le flux de fermeture ;"

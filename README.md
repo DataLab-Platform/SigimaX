@@ -24,7 +24,7 @@
 
 - **Extensible configuration system** — `OptionField`-based settings with `get()`/`set()`/`context()` API and JSON persistence
 - **Rich widget catalog** — 15 ready-to-use scientific widgets: curve fitting, peak detection, signal baseline, HDF5 browser, log viewer, wizard dialogs, and more
-- **Complete HDF5 infrastructure** — built-in file browser, importer, and workspace save/load
+- **HDF5 infrastructure** — built-in file browser and dataset import; workspace persistence is provided by the derived application
 - **Embedded Python console** — `DockableConsole` with error-to-console routing and configurable namespace
 - **Production-grade status bar** — memory usage monitoring with alarm threshold, console toggle
 - **PlotPy integration** — `DockablePlotWidget` and adapters for signal/image/ROI objects
@@ -47,7 +47,7 @@ SigimaX is meant to be:
 
 SigimaX separates the **generic application skeleton** from **domain-specific logic**. Derived applications follow a three-step pattern:
 
-1. **Subclass `SigimaXOptions`** to add application-specific configuration fields
+1. **Subclass `SigimaXOptions`** to add application-specific configuration fields, and install an instance with `set_conf()`
 2. **Subclass `SGMXMainWindow`** to customize menus, toolbars, and dock widgets
 3. **Call `sigimax.app.run()`** to launch the application with splash screen support
 
@@ -71,14 +71,10 @@ End-user apps (DataLab, custom scientific apps)
 
 ```python
 from sigimax.app import run
-from sigimax.config import CONF as Conf, SigimaXOptions, EnumOptionField, _
+from sigimax.config import SigimaXOptions, TypedOptionField, _, get_conf, set_conf
 from sigimax.mainwindow import SGMXMainWindow
 from sigimax.widgets.plotdock import DockablePlotWidget
-from sigimax.config import TypedOptionField
 from plotpy.constants import PlotType
-
-# A missing option may be initialized on first read:
-color_mode = Conf.color_mode.get("auto")
 
 
 # 1. Define custom options
@@ -97,16 +93,17 @@ class MyAppOptions(SigimaXOptions):
 
 # 2. Customize the main window
 class MyAppMainWindow(SGMXMainWindow):
-    def __init__(self, console=None, hide_on_close=False):
-        Conf.app_name.set("MyApp")
-        super().__init__(console=console, hide_on_close=hide_on_close)
+    def _setup_docks(self):
         # Add a dockable curve plot
         self.curve_dock = DockablePlotWidget(self, PlotType.CURVE)
-        dock, loc = self.curve_dock.create_dockwidget(_("Curve Viewer"))
-        self.addDockWidget(loc, dock)
+        self._add_dockwidget(self.curve_dock, _("Curve Viewer"), name="curve_viewer")
 
 
-# 3. Launch
+# 3. Install the options as the active configuration, then launch
+set_conf(MyAppOptions())
+# Options are read from the active configuration (`get_conf()`);
+# a missing option may be initialized on first read:
+color_mode = get_conf().color_mode.get("auto")
 run(window_class=MyAppMainWindow)
 ```
 
@@ -133,7 +130,7 @@ sigimax/
 │   ├── signaldeltax.py # Signal delta-X measurement
 │   ├── wizard.py       # Multi-page wizard dialog
 │   └── ...             # File dialogs, warning/error boxes
-├── h5/                 # HDF5 I/O (read/write/import)
+├── h5/                 # HDF5 browsing and import (read-only)
 ├── adapters_plotpy/    # Converters between PlotPy/guidata and Sigima objects
 ├── utils/              # Qt helpers, config dir resolution
 ├── data/               # Icons, resources
@@ -170,7 +167,7 @@ pip install -e .
 
 ## 🧪 Testing
 
-SigimaX comes with a comprehensive test suite based on `pytest` (155 tests).
+SigimaX comes with a comprehensive test suite based on `pytest`.
 
 ### ✅ Validated Environments
 
@@ -181,6 +178,8 @@ The test suite has been checked with the following matrix:
 - **Qt bindings**: PyQt5, PyQt6, PySide6 (future fix needed)
 
 > ⚠️ Note: PySide6 is currently known to be not fully working in this matrix.
+
+In a development environment, install the test dependencies with `pip install -e .[test]`, then copy `.env.template` to `.env`: `scripts/run_with_env.py` requires this file.
 
 ```bash
 # Run all tests (offscreen, no GUI)
@@ -201,8 +200,7 @@ See [LICENSE](./LICENSE) for details.
 
 ## 🤝 Contributing
 
-Bug reports, feature requests and pull requests are welcome!
-See the [CONTRIBUTING](https://datalab-platform.com/en/contributing) guide to get started.
+Bug reports, feature requests and pull requests are welcome! See the [CONTRIBUTING](https://sigimax.readthedocs.io/en/latest/contributing/index.html) guide to get started.
 
 ---
 

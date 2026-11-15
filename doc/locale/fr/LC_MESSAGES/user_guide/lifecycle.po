@@ -27,23 +27,50 @@ msgstr "Lorsqu'une :class:`~sigimax.mainwindow.SGMXMainWindow` est créée, Sigi
 msgid "initializes its own non-virtual state;"
 msgstr "initialise son propre état non virtuel ;"
 
-msgid "calls ``_before_setup(console)``;"
-msgstr "appelle ``_before_setup(console)`` ;"
+msgid "calls :meth:`~sigimax.mainwindow.SGMXMainWindow._before_setup`;"
+msgstr "appelle :meth:`~sigimax.mainwindow.SGMXMainWindow._before_setup` ;"
 
-msgid "applies the color mode through ``_update_color_mode(startup=True)``;"
-msgstr "applique le mode de couleur via ``_update_color_mode(startup=True)`` ;"
+msgid "applies the color mode through :meth:`~sigimax.mainwindow.SGMXMainWindow._update_color_mode` (``startup=True``);"
+msgstr "applique le mode de couleur via :meth:`~sigimax.mainwindow.SGMXMainWindow._update_color_mode` (``startup=True``) ;"
 
-msgid "creates the generic status bar, actions, central widget, menus, and restored window state;"
-msgstr "crée la barre d'état générique, les actions, le widget central, les menus et restaure l'état de la fenêtre ;"
+msgid "clears the modified state and restores the window position and size (:meth:`~sigimax.mainwindow.SGMXMainWindow._restore_pos_and_size`);"
+msgstr "efface l'état modifié et restaure la position et la taille de la fenêtre (:meth:`~sigimax.mainwindow.SGMXMainWindow._restore_pos_and_size`) ;"
 
-msgid "calls ``_after_setup(console)``; and"
-msgstr "appelle ``_after_setup(console)`` ; et"
+msgid "calls :meth:`~sigimax.mainwindow.SGMXMainWindow.setup`, which:"
+msgstr "appelle :meth:`~sigimax.mainwindow.SGMXMainWindow.setup`, qui :"
 
-msgid "restores the window geometry."
-msgstr "restaure la géométrie de la fenêtre."
+msgid "creates the status bar, with the widgets returned by :meth:`~sigimax.mainwindow.SGMXMainWindow._get_extra_status_widgets`;"
+msgstr "crée la barre d'état, avec les widgets renvoyés par :meth:`~sigimax.mainwindow.SGMXMainWindow._get_extra_status_widgets` ;"
 
-msgid "Use ``_before_setup`` for derived state that another protected hook may need during startup. Use ``_after_setup`` for work that requires generic widgets such as actions, menus, or the status bar."
-msgstr "Utilisez ``_before_setup`` pour l'état dérivé dont un autre point d'extension protégé pourrait avoir besoin au démarrage. Utilisez ``_after_setup`` pour les travaux nécessitant les widgets génériques tels que les actions, les menus ou la barre d'état."
+msgid "creates the global actions (:meth:`~sigimax.mainwindow.SGMXMainWindow._create_global_actions`) and the main toolbar (:meth:`~sigimax.mainwindow.SGMXMainWindow._get_main_toolbar_actions`);"
+msgstr "crée les actions globales (:meth:`~sigimax.mainwindow.SGMXMainWindow._create_global_actions`) et la barre d'outils principale (:meth:`~sigimax.mainwindow.SGMXMainWindow._get_main_toolbar_actions`) ;"
+
+msgid "calls :meth:`~sigimax.mainwindow.SGMXMainWindow._setup_panels`;"
+msgstr "appelle :meth:`~sigimax.mainwindow.SGMXMainWindow._setup_panels` ;"
+
+msgid "creates the central widget and the menus (:meth:`~sigimax.mainwindow.SGMXMainWindow._get_menubar_layout`);"
+msgstr "crée le widget central et les menus (:meth:`~sigimax.mainwindow.SGMXMainWindow._get_menubar_layout`) ;"
+
+msgid "creates the console, if enabled (:meth:`~sigimax.mainwindow.SGMXMainWindow._configure_console`);"
+msgstr "crée la console, si elle est activée (:meth:`~sigimax.mainwindow.SGMXMainWindow._configure_console`) ;"
+
+msgid "calls :meth:`~sigimax.mainwindow.SGMXMainWindow._setup_docks`, then :meth:`~sigimax.mainwindow.SGMXMainWindow._post_setup`; and"
+msgstr "appelle :meth:`~sigimax.mainwindow.SGMXMainWindow._setup_docks`, puis :meth:`~sigimax.mainwindow.SGMXMainWindow._post_setup` ; et"
+
+msgid "restores the saved window state, i.e. the layout of docks and toolbars (:meth:`~sigimax.mainwindow.SGMXMainWindow._restore_state`), last;"
+msgstr "restaure en dernier l'état enregistré de la fenêtre, c'est-à-dire la disposition des docks et des barres d'outils (:meth:`~sigimax.mainwindow.SGMXMainWindow._restore_state`) ;"
+
+msgid "calls :meth:`~sigimax.mainwindow.SGMXMainWindow._after_setup`."
+msgstr "appelle :meth:`~sigimax.mainwindow.SGMXMainWindow._after_setup`."
+
+msgid "Use ``_before_setup`` for derived state that another protected hook may need during startup. Add dock widgets in ``_setup_docks`` with :meth:`~sigimax.mainwindow.SGMXMainWindow._add_dockwidget`: docks added after ``_restore_state`` keep their default geometry. Use ``_post_setup`` or ``_after_setup`` for work that requires generic widgets such as actions, menus, or the status bar. Override the hooks called by ``setup`` rather than ``setup`` itself."
+msgstr "Utilisez ``_before_setup`` pour l'état dérivé dont un autre point d'extension protégé pourrait avoir besoin au démarrage. Ajoutez les widgets ancrables dans ``_setup_docks`` avec :meth:`~sigimax.mainwindow.SGMXMainWindow._add_dockwidget` : les docks ajoutés après ``_restore_state`` conservent leur géométrie par défaut. Utilisez ``_post_setup`` ou ``_after_setup`` pour les travaux nécessitant les widgets génériques tels que les actions, les menus ou la barre d'état. Redéfinissez les points d'extension appelés par ``setup`` plutôt que ``setup`` lui-même."
+
+msgid "The File and View menus are cleared and rebuilt each time they are shown: extend them through :meth:`~sigimax.mainwindow.SGMXMainWindow._get_file_menu_actions` and :meth:`~sigimax.mainwindow.SGMXMainWindow._get_view_menu_actions` (or :meth:`~sigimax.mainwindow.SGMXMainWindow._update_file_menu` and :meth:`~sigimax.mainwindow.SGMXMainWindow._update_view_menu`), not by adding actions to ``file_menu`` or ``view_menu``."
+msgstr "Les menus Fichier et Affichage sont vidés et reconstruits à chaque affichage : étendez-les via :meth:`~sigimax.mainwindow.SGMXMainWindow._get_file_menu_actions` et :meth:`~sigimax.mainwindow.SGMXMainWindow._get_view_menu_actions` (ou :meth:`~sigimax.mainwindow.SGMXMainWindow._update_file_menu` et :meth:`~sigimax.mainwindow.SGMXMainWindow._update_view_menu`), et non en ajoutant des actions à ``file_menu`` ou ``view_menu``."
+
+msgid "The :class:`~sigimax.mainwindow.SGMXMainWindow` reference documents all the protected hooks."
+msgstr "La référence de :class:`~sigimax.mainwindow.SGMXMainWindow` documente tous les points d'extension protégés."
 
 msgid "The HDF5 reference application follows this rule by creating its data model in ``_before_setup``:"
 msgstr "L'application de référence HDF5 suit cette règle en créant son modèle de données dans ``_before_setup`` :"
@@ -62,4 +89,3 @@ msgstr "Pour un espace de travail modifié, le flux de fermeture demande d'abord
 
 msgid "Derived applications should use these hooks for their own managed resources and call ``super()`` when preserving the generic behavior is required."
 msgstr "Les applications dérivées doivent utiliser ces points d'extension pour leurs propres ressources gérées et appeler ``super()`` lorsque la préservation du comportement générique est requise."
-

@@ -18,7 +18,6 @@ msgstr "Premiers pas"
 msgid "This page provides a quick introduction to building applications with SigimaX."
 msgstr "Cette page fournit une introduction rapide à la construction d'applications avec SigimaX."
 
-
 msgid "SigimaX follows a **three-step derivation pattern**: subclass the configuration, subclass the main window, and launch with ``run()``. This pattern is proven in production — `DataLab <https://datalab-platform.com/>`_ is built entirely on it."
 msgstr "SigimaX suit un **patron de dérivation en trois étapes** : hériter de la configuration, hériter de la fenêtre principale et lancer avec ``run()``. Ce patron est éprouvé en production — `DataLab <https://datalab-platform.com/>`_ est entièrement construit dessus."
 
@@ -28,14 +27,26 @@ msgstr "Le patron de dérivation"
 msgid "**Step 1 — Subclass** :class:`~sigimax.config.SigimaXOptions` to add application-specific configuration fields:"
 msgstr "**Étape 1 — Hériter de** :class:`~sigimax.config.SigimaXOptions` pour ajouter des champs de configuration spécifiques à l'application :"
 
-msgid "**Step 2 — Subclass** :class:`~sigimax.mainwindow.SGMXMainWindow` to customize the user interface:"
-msgstr "**Étape 2 — Hériter de** :class:`~sigimax.mainwindow.SGMXMainWindow` pour personnaliser l'interface utilisateur :"
+msgid "**Step 2 — Subclass** :class:`~sigimax.mainwindow.SGMXMainWindow` to customize the user interface, by overriding its setup hooks:"
+msgstr "**Étape 2 — Hériter de** :class:`~sigimax.mainwindow.SGMXMainWindow` pour personnaliser l'interface utilisateur, en redéfinissant ses hooks d'initialisation :"
 
-msgid "**Step 3 — Launch** the application:"
-msgstr "**Étape 3 — Lancer** l'application :"
+msgid "``_setup_docks()`` is called before the saved window layout is restored, and ``_add_dockwidget()`` registers the dock in ``self.docks``: the dock gets its saved geometry back and follows color theme changes. The ``name`` argument is the stable Qt object name under which its layout is saved."
+msgstr "``_setup_docks()`` est appelé avant la restauration de la disposition enregistrée de la fenêtre, et ``_add_dockwidget()`` enregistre le dock dans ``self.docks`` : le dock retrouve sa géométrie enregistrée et suit les changements de thème de couleur. L'argument ``name`` est le nom d'objet Qt stable sous lequel sa disposition est enregistrée."
 
-msgid "That's it. Three classes, three steps — and you have a full-featured scientific desktop application with menus, toolbars, console, HDF5 workspace, and status bar."
-msgstr "C'est tout. Trois classes, trois étapes — et vous avez une application scientifique de bureau complète avec menus, barres d'outils, console, espace de travail HDF5 et barre d'état."
+msgid "**Step 3 — Install** the configuration and **launch** the application:"
+msgstr "**Étape 3 — Installer** la configuration et **lancer** l'application :"
+
+msgid "That's it. Two classes, three steps — and you have a full-featured scientific desktop application with menus, toolbars, console, HDF5 browsing and import, and status bar."
+msgstr "C'est tout. Deux classes, trois étapes — et vous avez une application scientifique de bureau complète avec menus, barres d'outils, console, navigation et import HDF5, et barre d'état."
+
+msgid "Active Configuration"
+msgstr "Configuration active"
+
+msgid "SigimaX modules read options through :func:`~sigimax.config.get_conf`, which returns the *active* options container. :func:`~sigimax.config.set_conf` makes your container the active one. Call it once, before the main window is created (DataLab does it when its configuration module is imported), then read your options with ``get_conf()``:"
+msgstr "Les modules SigimaX lisent les options via :func:`~sigimax.config.get_conf`, qui renvoie le conteneur d'options *actif*. :func:`~sigimax.config.set_conf` fait de votre conteneur le conteneur actif. Appelez-la une seule fois, avant la création de la fenêtre principale (DataLab le fait à l'import de son module de configuration), puis lisez vos options avec ``get_conf()`` :"
+
+msgid "``CONF`` is the SigimaX base container: once another container is installed, set and read options through ``get_conf()``, not ``CONF``. :func:`~sigimax.config.set_conf` raises :class:`ValueError` if the container lacks one of the base options (a :class:`~sigimax.config.SigimaXOptions` subclass has them all). :func:`~sigimax.config.reset_conf` restores the base container (mainly for tests)."
+msgstr "``CONF`` est le conteneur de base de SigimaX : une fois un autre conteneur installé, définissez et lisez les options via ``get_conf()``, et non via ``CONF``. :func:`~sigimax.config.set_conf` lève :class:`ValueError` s'il manque au conteneur l'une des options de base (une sous-classe de :class:`~sigimax.config.SigimaXOptions` les possède toutes). :func:`~sigimax.config.reset_conf` restaure le conteneur de base (principalement pour les tests)."
 
 msgid "Key Concepts"
 msgstr "Concepts clés"
@@ -43,8 +54,8 @@ msgstr "Concepts clés"
 msgid "**Configuration system**: Options are typed fields (``TypedOptionField``, ``EnumOptionField``, ``TupleOptionField``) that support ``get()``/``set()``/ ``context()`` API and JSON persistence."
 msgstr "**Système de configuration** : les options sont des champs typés (``TypedOptionField``, ``EnumOptionField``, ``TupleOptionField``) qui prennent en charge l'API ``get()``/``set()``/ ``context()`` et la persistance JSON."
 
-msgid "**Overridable hooks**: The main window provides hooks that derived apps can override: ``reset_all()``, ``_is_save_enabled()``, ``_update_file_menu()``, ``_update_view_menu()``, ``_about()``, ``_before_setup()``, and ``_after_setup()``. See :doc:`lifecycle` for their ordering and initialization contract."
-msgstr "**Hooks redéfinissables** : la fenêtre principale fournit des hooks que les applications dérivées peuvent redéfinir : ``reset_all()``, ``_is_save_enabled()``, ``_update_file_menu()``, ``_update_view_menu()``, ``_about()``, ``_before_setup()`` et ``_after_setup()``. Voir :doc:`lifecycle` pour leur ordre d'appel et leur contrat d'initialisation."
+msgid "**Overridable hooks**: The main window provides hooks that derived apps can override: ``reset_all()``, ``_is_save_enabled()``, ``_get_file_menu_actions()``, ``_update_file_menu()``, ``_update_view_menu()``, ``_about()``, ``_before_setup()``, ``_setup_docks()``, ``_post_setup()``, and ``_after_setup()``. See :doc:`lifecycle` for their ordering and initialization contract."
+msgstr "**Hooks redéfinissables** : la fenêtre principale fournit des hooks que les applications dérivées peuvent redéfinir : ``reset_all()``, ``_is_save_enabled()``, ``_get_file_menu_actions()``, ``_update_file_menu()``, ``_update_view_menu()``, ``_about()``, ``_before_setup()``, ``_setup_docks()``, ``_post_setup()`` et ``_after_setup()``. Voir :doc:`lifecycle` pour leur ordre d'appel et leur contrat d'initialisation."
 
 msgid "**Built-in features**: HDF5 GUI and generic dataset import; derived applications implement their own workspace persistence. SigimaX also provides an embedded Python console, status bar with memory monitoring, and splash screen support. See :doc:`hdf5_workspace` for the derived-application contract."
 msgstr "**Fonctionnalités intégrées** : interface HDF5 et import générique de jeux de données ; les applications dérivées implémentent leur propre persistance de l'espace de travail. SigimaX fournit également une console Python intégrée, une barre d'état avec surveillance mémoire et la prise en charge d'un écran de démarrage. Voir :doc:`hdf5_workspace` pour le contrat des applications dérivées."
@@ -73,38 +84,38 @@ msgstr ":class:`~sigimax.widgets.h5browser.H5BrowserDialog`"
 msgid "Interactive HDF5 file browser"
 msgstr "Explorateur interactif de fichiers HDF5"
 
-msgid ":class:`~sigimax.widgets.fitdialog`"
-msgstr ":class:`~sigimax.widgets.fitdialog`"
+msgid ":mod:`~sigimax.widgets.fitdialog`"
+msgstr ""
 
 msgid "Curve fitting dialogs (Gaussian, polynomial, etc.)"
 msgstr "Dialogues d'ajustement de courbe (gaussien, polynomial, etc.)"
 
-msgid ":class:`~sigimax.widgets.signalpeak`"
-msgstr ":class:`~sigimax.widgets.signalpeak`"
+msgid ":mod:`~sigimax.widgets.signalpeak`"
+msgstr ""
 
 msgid "Signal peak detection dialog"
 msgstr "Dialogue de détection de pics de signal"
 
-msgid ":class:`~sigimax.widgets.signalbaseline`"
-msgstr ":class:`~sigimax.widgets.signalbaseline`"
+msgid ":mod:`~sigimax.widgets.signalbaseline`"
+msgstr ""
 
 msgid "Signal baseline selection dialog"
 msgstr "Dialogue de sélection de ligne de base"
 
-msgid ":class:`~sigimax.widgets.signalcursor`"
-msgstr ":class:`~sigimax.widgets.signalcursor`"
+msgid ":mod:`~sigimax.widgets.signalcursor`"
+msgstr ""
 
 msgid "Signal cursor selection dialog"
 msgstr "Dialogue de sélection par curseur"
 
-msgid ":class:`~sigimax.widgets.signaldeltax`"
-msgstr ":class:`~sigimax.widgets.signaldeltax`"
+msgid ":mod:`~sigimax.widgets.signaldeltax`"
+msgstr ""
 
 msgid "Signal delta-X measurement dialog"
 msgstr "Dialogue de mesure de delta-X"
 
-msgid ":class:`~sigimax.widgets.imagebackground`"
-msgstr ":class:`~sigimax.widgets.imagebackground`"
+msgid ":mod:`~sigimax.widgets.imagebackground`"
+msgstr ""
 
 msgid "Image background selection dialog"
 msgstr "Dialogue de sélection du fond d'image"

@@ -10,8 +10,28 @@ It is designed to be flexible and extensible, allowing to easily add
 new panels, actions, menus and toolbars.
 It also provides a set of signals to communicate with other parts of the application.
 
+The protected methods listed below are the hooks that derived applications
+override (see :doc:`../user_guide/lifecycle` for the order in which they are
+called).
+
 .. autoclass:: SGMXMainWindow
     :members:
+    :private-members: _before_setup, _after_setup, _restore_pos_and_size,
+        _restore_state, _save_pos_size_and_state, _setup_panels, _setup_docks,
+        _post_setup, _configure_statusbar, _get_extra_status_widgets,
+        _add_toolbar, _create_global_actions, _get_main_toolbar_actions,
+        _setup_central_widget, _get_menubar_layout, _add_menus,
+        _get_console_namespace, _get_console_message, _configure_console,
+        _normalize_modified_state, _add_dockwidget, _is_save_enabled,
+        _get_file_menu_actions, _update_file_menu, _get_view_menu_actions,
+        _update_view_menu, _get_help_menu_actions, _get_help_doc_actions,
+        _get_help_support_actions, _get_help_about_actions, _about,
+        _check_h5file, _on_h5_save_requested, _on_h5_open_requested,
+        _is_workspace_empty, _get_clear_workspace_message,
+        _handle_imported_objects, _create_objects_from_nodes,
+        _report_import_errors, _update_color_mode, _update_extra_color_mode,
+        _get_save_before_quit_message, _close_managed_widgets,
+        _cleanup_before_reset, _cleanup_after_state_save
 """
 
 # pylint: disable=invalid-name  # Allows short reference names like x, y, ...
@@ -1177,7 +1197,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
             nodes: HDF5 nodes to import
 
         Returns:
-            Created objects, and the description of each error ("node: reason")
+            Created objects, and the description of each error (``"node: reason"``)
         """
         objects, errors = [], []
         for node in nodes:
@@ -1239,7 +1259,7 @@ class SGMXMainWindow(QW.QMainWindow, metaclass=SGMXMainWindowMeta):
     ) -> None:
         """Import every supported dataset of an HDF5 file, without any dialog.
 
-        Uses :class:`H5Importer <sigimax.h5.H5Importer>` to scan the file,
+        Uses :class:`H5Importer <sigimax.h5.common.H5Importer>` to scan the file,
         converts every supported node into a native object
         (:class:`SignalObj <sigima.objects.SignalObj>` /
         :class:`ImageObj <sigima.objects.ImageObj>`), and hands them over to

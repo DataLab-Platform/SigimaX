@@ -15,10 +15,14 @@ Covers:
 from __future__ import annotations
 
 import io
+import platform
+import sys
 
 import pytest
 
-from sigimax.env import VerbosityLevels, execenv
+from sigimax import __version__
+from sigimax import config as config_module
+from sigimax.env import SGMXExecEnv, VerbosityLevels, execenv
 
 pytestmark = pytest.mark.unit
 
@@ -131,6 +135,51 @@ class TestSGMXExecEnv:
         finally:
             execenv.unattended = old_unattended
             execenv.delay = old_delay
+
+
+class TestVersionCLI:
+    """Tests for version reporting from the active configuration."""
+
+    @pytest.mark.parametrize("argument", ["--version", "-v"])
+    def test_base_version(self, monkeypatch, capsys, argument):
+        """The base container reports SigimaX's version without changing options."""
+        conf = config_module.CONF
+        monkeypatch.setattr(config_module, "_active_conf", conf)
+        monkeypatch.setattr(sys, "argv", ["sigimax", argument])
+        with conf.app_name.context("SigimaX"), conf.app_version.context("0.1.0"):
+            with pytest.raises(SystemExit) as caught:
+                SGMXExecEnv(parse_args=False).parse_args()
+            output = capsys.readouterr()
+            assert caught.value.code in (None, 0)
+            assert output.out.strip() == f"SigimaX {__version__} on {platform.system()}"
+            assert output.err == ""
+            assert conf.app_version.get() == "0.1.0"
+
+    @pytest.mark.parametrize(
+        ("name", "version"),
+        [("ExampleApp", "9.2.3"), ("SigimaX", "0.1.0"), ("SigimaX", __version__)],
+    )
+    def test_derived_version(self, monkeypatch, capsys, name, version):
+        """Derived applications report their configured name and version."""
+
+        class ExampleOptions(config_module.SigimaXOptions):
+            APP_NAME = "ExampleApp"
+
+        conf = ExampleOptions()
+        conf.app_name.set(name)
+        conf.app_version.set(version)
+        monkeypatch.setattr(config_module, "_active_conf", config_module.get_conf())
+        config_module.set_conf(conf)
+        monkeypatch.setattr(sys, "argv", ["example-app", "--version"])
+        with pytest.raises(SystemExit) as caught:
+            SGMXExecEnv(parse_args=False).parse_args()
+        output = capsys.readouterr()
+        assert caught.value.code in (None, 0)
+        assert output.out.strip() == (
+            f"{name} {version}, derived from SigimaX {__version__} on "
+            f"{platform.system()}"
+        )
+        assert output.err == ""
 
 
 if __name__ == "__main__":

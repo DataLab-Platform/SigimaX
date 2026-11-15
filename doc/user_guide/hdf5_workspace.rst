@@ -11,7 +11,8 @@ Responsibilities
 SigimaX provides:
 
 - File, Open/Import, Browse, and Save actions;
-- the HDF5 browser and :class:`sigimax.h5.H5Importer` for arbitrary datasets;
+- the HDF5 browser and :class:`~sigimax.h5.common.H5Importer` for arbitrary
+  datasets;
 - :meth:`sigimax.mainwindow.SGMXMainWindow.set_modified`, the save prompt, and
   the close workflow;
 - protected HDF5 hooks for derived applications.
