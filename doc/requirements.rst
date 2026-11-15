@@ -11,7 +11,7 @@ The `sigimax` package requires the following Python modules:
       - >=3.10, <4
       - Python programming language
     * - guidata
-      - >= 3.17.2
+      - >= 3.17.3
       - Automatic GUI generation for easy dataset editing and display
     * - PlotPy
       - >= 2.12.1

@@ -2,7 +2,7 @@ Coverage
 PlotPy >= 2.12.1
 PyQt5 >= 5.15.6
 Sigima >= 1.4.0
-guidata >= 3.17.2
+guidata >= 3.17.3
 hdf5plugin >= 4.0
 myst-nb
 myst_parser
